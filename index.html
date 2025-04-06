@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Government Engineering College, Rajkot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --accent: #3B82F6;
+            --bg: #ffffff;
+            --text: #1f2937;
+            --card-bg: #f9fafb;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg) 0%, #f3f4f6 100%);
+            min-height: 100vh;
+            color: var(--text);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        .hover-scale {
+            transition: all 0.3s ease;
+        }
+        .hover-scale:hover {
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+        }
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-slide-in {
+            animation: slideIn 1s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .gradient-text {
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .portal-card {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(59, 130, 246, 0.1));
+            border: 1px solid rgba(79, 70, 229, 0.2);
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+        .portal-card:hover {
+            transform: rotateY(5deg) rotateX(5deg);
+        }
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .chatbot-button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .chatbot-button:hover {
+            transform: scale(1.1);
+        }
+        .chatbot-window {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 300px;
+            height: 400px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            display: none;
+            flex-direction: column;
+        }
+        .chatbot-header {
+            padding: 15px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border-radius: 10px 10px 0 0;
+        }
+        .chatbot-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        .chatbot-input {
+            padding: 15px;
+            border-top: 1px solid #e5e7eb;
+        }
+        .message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+        .user-message {
+            background: #e5e7eb;
+            margin-left: auto;
+        }
+        .bot-message {
+            background: #f3f4f6;
+        }
+    </style>
+</head>
+<body>
+    <!-- 3D Logo -->
+    <div id="logo-container" class="fixed top-4 left-4 w-16 h-16"></div>
+
+    <!-- Navigation -->
+    <nav class="glass-card fixed w-full z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <img src="logo.png" alt="GEC Rajkot Logo" class="w-8 h-8 object-contain">
+                    <div class="text-2xl font-bold gradient-text">GEC Rajkot</div>
+                </div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="#home" class="text-gray-600 hover:text-indigo-600 transition-colors">Home</a>
+                    <a href="#about" class="text-gray-600 hover:text-indigo-600 transition-colors">About</a>
+                    <a href="#departments" class="text-gray-600 hover:text-indigo-600 transition-colors">Departments</a>
+                    <a href="#facilities" class="text-gray-600 hover:text-indigo-600 transition-colors">Facilities</a>
+                    <a href="#contact" class="text-gray-600 hover:text-indigo-600 transition-colors">Contact</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="min-h-screen flex items-center justify-center px-4 pt-20">
+        <div class="container mx-auto text-center">
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 animate-slide-in gradient-text">
+                Government Engineering College
+            </h1>
+            <p class="text-xl md:text-2xl mb-12 animate-slide-in text-gray-600" style="animation-delay: 0.2s">
+                Rajkot, Gujarat
+            </p>
+            
+           
+            <!-- Login Portals -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                <div class="portal-card p-6 rounded-lg hover-scale animate-float" style="animation-delay: 0.4s">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Student Portal</h3>
+                    <a href="login/student.html" class="inline-block bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-6 py-2 rounded-md transition-all duration-300">
+                        Login
+                    </a>
+                </div>
+                <div class="portal-card p-6 rounded-lg hover-scale animate-float" style="animation-delay: 0.6s">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Faculty Portal</h3>
+                    <a href="login/faculty.html" class="inline-block bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-6 py-2 rounded-md transition-all duration-300">
+                        Login
+                    </a>
+                </div>
+                <div class="portal-card p-6 rounded-lg hover-scale animate-float" style="animation-delay: 0.8s">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Visitor Portal</h3>
+                    <a href="login/visitor.html" class="inline-block bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-6 py-2 rounded-md transition-all duration-300">
+                        Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-20 px-4">
+        <div class="container mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-16 gradient-text">About GEC Rajkot</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="glass-card p-8 rounded-lg hover-scale animate-slide-in">
+                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Our History</h3>
+                    <p class="text-gray-600">Established in 2004, Government Engineering College, Rajkot has been a pioneer in technical education in Gujarat. We have consistently maintained high academic standards and produced skilled engineers who contribute to the nation's development.</p>
+                </div>
+                <div class="glass-card p-8 rounded-lg hover-scale animate-slide-in" style="animation-delay: 0.2s">
+                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Vision & Mission</h3>
+                    <p class="text-gray-600">To be a center of excellence in technical education and research, producing competent engineers with strong ethical values and leadership qualities, contributing to the technological advancement of society.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Departments Section -->
+    <section id="departments" class="py-20 px-4 bg-gray-50">
+        <div class="container mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-16 gradient-text">Our Departments</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="glass-card p-8 rounded-lg hover-scale">
+                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Computer Engineering</h3>
+                    <p class="text-gray-600">State-of-the-art labs and experienced faculty providing cutting-edge education in software development, AI, and computer systems.</p>
+                </div>
+                <div class="glass-card p-8 rounded-lg hover-scale">
+                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Electronics & Communication</h3>
+                    <p class="text-gray-600">Comprehensive training in analog and digital electronics, communication systems, and signal processing with modern laboratories.</p>
+                </div>
+                <div class="glass-card p-8 rounded-lg hover-scale">
+                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Information Technology</h3>
+                    <p class="text-gray-600">Focus on software development, database management, and network security with industry-aligned curriculum and practical training.</p>
+                </div>
+                <div class="glass-card p-8 rounded-lg hover-scale">
+                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Mechanical Engineering</h3>
+                    <p class="text-gray-600">Comprehensive training in design, manufacturing, and thermal sciences with modern workshops and laboratories.</p>
+                </div>
+                <div class="glass-card p-8 rounded-lg hover-scale">
+                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Electrical Engineering</h3>
+                    <p class="text-gray-600">Advanced training in power systems, control systems, and electrical machines with state-of-the-art power labs.</p>
+                </div>
+                <div class="glass-card p-8 rounded-lg hover-scale">
+                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Civil Engineering</h3>
+                    <p class="text-gray-600">Focus on infrastructure development, structural design, and environmental engineering with practical training facilities.</p>
+                </div>
+                <div class="glass-card p-8 rounded-lg hover-scale">
+                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Artificial Intelligence & Data Science</h3>
+                    <p class="text-gray-600">Cutting-edge education in machine learning, data analytics, and AI applications with modern computing facilities.</p>
+                </div>
+                <div class="glass-card p-8 rounded-lg hover-scale">
+                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Instrumentation & Control</h3>
+                    <p class="text-gray-600">Specialized training in process control, automation, and instrumentation systems with advanced control labs.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Facilities Section -->
+    <section id="facilities" class="py-20 px-4">
+        <div class="container mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-16 gradient-text">Our Facilities</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="glass-card p-8 rounded-lg hover-scale">
+                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Library</h3>
+                    <p class="text-gray-600">Well-stocked library with over 50,000 books, e-resources, and reading rooms. Open 24/7 for students.</p>
+                </div>
+                <div class="glass-card p-8 rounded-lg hover-scale">
+                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Laboratories</h3>
+                    <p class="text-gray-600">Modern laboratories equipped with latest technology and equipment for practical learning and research.</p>
+                </div>
+                <div class="glass-card p-8 rounded-lg hover-scale">
+                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Sports Complex</h3>
+                    <p class="text-gray-600">State-of-the-art sports facilities including cricket ground, basketball court, and indoor games facilities.</p>
+                </div>
+                <div class="glass-card p-8 rounded-lg hover-scale">
+                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Hostel</h3>
+                    <p class="text-gray-600">Comfortable hostel accommodation with 24/7 security, mess facilities, and recreational areas.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 px-4 bg-gray-50">
+        <div class="container mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-16 gradient-text">Contact Us</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="glass-card p-8 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Address</h3>
+                    <p class="text-gray-600">Government Engineering College</p>
+                    <p class="text-gray-600">Rajkot - 360003</p>
+                    <p class="text-gray-600">Gujarat, India</p>
+                </div>
+                <div class="glass-card p-8 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Contact Information</h3>
+                    <p class="text-gray-600">Phone: +91-XXXXXXXXXX</p>
+                    <p class="text-gray-600">Email: info@gecrajkot.ac.in</p>
+                    <p class="text-gray-600">Website: www.gecrajkot.ac.in</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="glass-card mt-20">
+        <div class="container mx-auto px-4 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-semibold mb-4 gradient-text">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#home" class="text-gray-600 hover:text-indigo-600 transition-colors">Home</a></li>
+                        <li><a href="#about" class="text-gray-600 hover:text-indigo-600 transition-colors">About</a></li>
+                        <li><a href="#departments" class="text-gray-600 hover:text-indigo-600 transition-colors">Departments</a></li>
+                        <li><a href="#facilities" class="text-gray-600 hover:text-indigo-600 transition-colors">Facilities</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4 gradient-text">Important Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors">GTU</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors">AICTE</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors">UGC</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4 gradient-text">Follow Us</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors">Facebook</a>
+                        <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors">Twitter</a>
+                        <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors">LinkedIn</a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 text-center text-gray-600">
+                <p>&copy; 2024 Government Engineering College, Rajkot. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- AI Chatbot -->
+    <div class="chatbot-container">
+        <div class="chatbot-window" id="chatbotWindow">
+            <div class="chatbot-header">
+                <h3 class="text-lg font-semibold">GEC Assistant</h3>
+            </div>
+            <div class="chatbot-messages" id="chatbotMessages">
+                <div class="message bot-message">
+                    Hello! I'm your GEC Assistant. How can I help you today?
+                </div>
+            </div>
+            <div class="chatbot-input">
+                <input type="text" id="chatbotInput" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Type your message...">
+            </div>
+        </div>
+        <div class="chatbot-button" id="chatbotButton">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+        </div>
+    </div>
+
+    <script>
+        // 3D Logo Animation
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true });
+        const container = document.getElementById('logo-container');
+        
+        renderer.setSize(64, 64);
+        container.appendChild(renderer.domElement);
+
+        const geometry = new THREE.TorusKnotGeometry(1, 0.3, 100, 16);
+        const material = new THREE.MeshPhongMaterial({
+            color: 0x4F46E5,
+            specular: 0xffffff,
+            shininess: 100
+        });
+        const torusKnot = new THREE.Mesh(geometry, material);
+        scene.add(torusKnot);
+
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(1, 1, 1);
+        scene.add(light);
+
+        camera.position.z = 5;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            torusKnot.rotation.x += 0.01;
+            torusKnot.rotation.y += 0.01;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Chatbot Functionality
+        const chatbotButton = document.getElementById('chatbotButton');
+        const chatbotWindow = document.getElementById('chatbotWindow');
+        const chatbotMessages = document.getElementById('chatbotMessages');
+        const chatbotInput = document.getElementById('chatbotInput');
+
+        chatbotButton.addEventListener('click', () => {
+            chatbotWindow.style.display = chatbotWindow.style.display === 'flex' ? 'none' : 'flex';
+        });
+
+        chatbotInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && chatbotInput.value.trim() !== '') {
+                const message = chatbotInput.value;
+                addMessage(message, 'user');
+                chatbotInput.value = '';
+
+                // Simulate bot response
+                setTimeout(() => {
+                    const responses = [
+                        "I can help you with information about admissions, courses, and facilities.",
+                        "You can find detailed information about our departments in the Departments section.",
+                        "For specific queries, please contact our administration office.",
+                        "Our library is open 24/7 for students with valid ID cards.",
+                        "The sports complex includes facilities for cricket, basketball, and indoor games."
+                    ];
+                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                    addMessage(randomResponse, 'bot');
+                }, 1000);
+            }
+        });
+
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.textContent = text;
+            chatbotMessages.appendChild(messageDiv);
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        }
+    </script>
+</body>
+</html> 

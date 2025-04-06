@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Login - GEC Rajkot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --accent: #3B82F6;
+            --bg: #ffffff;
+            --text: #1f2937;
+            --card-bg: #f9fafb;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg) 0%, #f3f4f6 100%);
+            min-height: 100vh;
+            color: var(--text);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-5px) rotateX(2deg) rotateY(2deg);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+        }
+        .gradient-text {
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .input-field {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .input-field:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+        }
+        .login-button {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            transition: all 0.3s ease;
+        }
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen flex items-center justify-center px-4">
+        <div class="glass-card p-8 rounded-lg w-full max-w-md">
+            <h2 class="text-3xl font-bold text-center mb-8 gradient-text">Student Login</h2>
+            
+            <form class="space-y-6">
+                <div>
+                    <label for="username" class="block text-sm font-medium mb-2 text-gray-600">
+                        Enrollment Number
+                    </label>
+                    <input
+                        type="text"
+                        id="username"
+                        class="w-full px-4 py-2 rounded-md input-field focus:outline-none"
+                        required
+                    >
+                </div>
+                
+                <div>
+                    <label for="password" class="block text-sm font-medium mb-2 text-gray-600">
+                        Password
+                    </label>
+                    <input
+                        type="password"
+                        id="password"
+                        class="w-full px-4 py-2 rounded-md input-field focus:outline-none"
+                        required
+                    >
+                </div>
+                
+                <div class="flex justify-between items-center">
+                    <a href="student-forgot.html" class="text-indigo-600 hover:text-indigo-800">Forgot Password?</a>
+                    <a href="student-register.html" class="text-indigo-600 hover:text-indigo-800">Register</a>
+                </div>
+                
+                <button type="submit" class="w-full py-2 px-4 bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-lg hover:from-indigo-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105">
+                    Login
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center">
+                <a href="../index.html" class="text-indigo-600 hover:text-indigo-700 transition-colors">
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+
+   
+</body>
+</html> 

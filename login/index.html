@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to GEC Rajkot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --accent: #3B82F6;
+            --bg: #ffffff;
+            --text: #1f2937;
+            --card-bg: #f9fafb;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg) 0%, #f3f4f6 100%);
+            min-height: 100vh;
+            color: var(--text);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-5px) rotateX(2deg) rotateY(2deg);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+        }
+        .gradient-text {
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .login-option {
+            transition: all 0.3s ease;
+        }
+        .login-option:hover {
+            transform: translateY(-5px);
+        }
+        .logo-container {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .logo-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .logo-text {
+            color: white;
+            font-weight: bold;
+            font-size: 1.5rem;
+            text-align: center;
+            line-height: 1.2;
+        }
+        .logo-accent {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.2) 0%, transparent 70%);
+        }
+    </style>
+</head>
+<body>
+    <!-- 3D Logo -->
+    <div id="logo-container" class="fixed top-4 left-4 w-16 h-16"></div>
+
+    <div class="min-h-screen flex items-center justify-center px-4">
+        <div class="glass-card p-8 rounded-lg w-full max-w-4xl">
+            <!-- Logo -->
+            <div class="logo-container mb-8">
+                <img src="../logo.png" alt="GEC Rajkot Logo" class="w-full h-full object-contain">
+            </div>
+
+            <h1 class="text-4xl font-bold text-center mb-8 gradient-text">Welcome to GEC Rajkot</h1>
+            <p class="text-center text-gray-600 mb-12">Choose your login type to continue</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Faculty Login Option -->
+                <div class="glass-card p-6 rounded-lg text-center login-option">
+                    <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2 2 0 00-2-2h-2"></path>
+                    </svg>
+                    <h2 class="text-xl font-semibold mb-4">Faculty</h2>
+                    <a href="faculty.html" class="block w-full py-2 px-4 bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-lg hover:from-indigo-600 hover:to-blue-600 mb-2">Login</a>
+                    <a href="faculty-register.html" class="block w-full py-2 px-4 border border-indigo-500 text-indigo-500 rounded-lg hover:bg-indigo-50 mb-2">Register</a>
+                    <a href="faculty-forgot.html" class="text-sm text-indigo-600 hover:text-indigo-800">Forgot Password?</a>
+                </div>
+
+                <!-- Student Login Option -->
+                <div class="glass-card p-6 rounded-lg text-center login-option">
+                    <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    <h2 class="text-xl font-semibold mb-4">Student</h2>
+                    <a href="student.html" class="block w-full py-2 px-4 bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-lg hover:from-indigo-600 hover:to-blue-600 mb-2">Login</a>
+                    <a href="student-register.html" class="block w-full py-2 px-4 border border-indigo-500 text-indigo-500 rounded-lg hover:bg-indigo-50 mb-2">Register</a>
+                    <a href="student-forgot.html" class="text-sm text-indigo-600 hover:text-indigo-800">Forgot Password?</a>
+                </div>
+
+                <!-- Visitor Login Option -->
+                <div class="glass-card p-6 rounded-lg text-center login-option">
+                    <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    <h2 class="text-xl font-semibold mb-4">Visitor</h2>
+                    <a href="visitor.html" class="block w-full py-2 px-4 bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-lg hover:from-indigo-600 hover:to-blue-600 mb-2">Login</a>
+                    <a href="visitor-register.html" class="block w-full py-2 px-4 border border-indigo-500 text-indigo-500 rounded-lg hover:bg-indigo-50 mb-2">Register</a>
+                    <a href="visitor-forgot.html" class="text-sm text-indigo-600 hover:text-indigo-800">Forgot Password?</a>
+                </div>
+            </div>
+
+            
+   
+</body>
+</html> 
