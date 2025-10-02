@@ -7,6 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/3.0.0/css/all.min.css">
     <style>
         :root {
             --primary: #4F46E5;
@@ -16,13 +18,13 @@
             --card-bg: #f9fafb;
         }
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', sans-serif,-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue';
             background: linear-gradient(135deg, var(--bg) 0%, #f3f4f6 100%);
             min-height: 100vh;
             color: var(--text);
         }
         .glass-card {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255,255,255, 0.9);
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             border: 1px solid rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(10px);
@@ -63,68 +65,91 @@
         .portal-card:hover {
             transform: rotateY(5deg) rotateX(5deg);
         }
-        .chatbot-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .chatbot-button {
-            width: 50px;
-            height: 50px;
+
+        placement-section {
+            padding: 50px 0;
+            background-color: rgba(8, 103, 236, 0.863);
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .section-title h3 {
+            color:#4F46E5;
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .swiper {
+            width: 100%;
+            padding: 20px 0;
+        }
+
+        .swiper-slide {
+            text-align: center;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .swiper-slide:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .company-logo {
+            width: 100%;
+            height: 120px;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+
+        .swiper-slide:hover .company-logo {
+            transform: scale(1.05);
+        }
+
+        .swiper-button-next,
+        .swiper-button-prev {
+            color: #3c434a;
+            background: rgba(255, 255, 255, 0.9);
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
-        .chatbot-button:hover {
+
+        .swiper-button-next:after,
+        .swiper-button-prev:after {
+            font-size: 20px;
+        }
+
+        .swiper-button-next:hover,
+        .swiper-button-prev:hover {
+            background: #fff;
             transform: scale(1.1);
         }
-        .chatbot-window {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            width: 300px;
-            height: 400px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            display: none;
-            flex-direction: column;
+
+        @media (max-width: 768px) {
+            .swiper-slide {
+                padding: 15px;
+            }
+            
+            .company-logo {
+                height: 100px;
+            }
         }
-        .chatbot-header {
-            padding: 15px;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white;
-            border-radius: 10px 10px 0 0;
-        }
-        .chatbot-messages {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-        }
-        .chatbot-input {
-            padding: 15px;
-            border-top: 1px solid #e5e7eb;
-        }
-        .message {
-            margin-bottom: 10px;
-            padding: 8px 12px;
-            border-radius: 10px;
-            max-width: 80%;
-        }
-        .user-message {
-            background: #e5e7eb;
-            margin-left: auto;
-        }
-        .bot-message {
-            background: #f3f4f6;
-        }
+          
+   
     </style>
 </head>
 <body>
@@ -136,7 +161,7 @@
         <div class="container mx-auto px-4 py-4">
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-3">
-                    <img src="logo.png" alt="GEC Rajkot Logo" class="w-8 h-8 object-contain">
+                    <img src="logo.png" alt="GEC Rajkot Logo" class="w-11 h-11 object-contain">
                     <div class="text-2xl font-bold gradient-text">GEC Rajkot</div>
                 </div>
                 <div class="hidden md:flex space-x-6">
@@ -144,6 +169,8 @@
                     <a href="#about" class="text-gray-600 hover:text-indigo-600 transition-colors">About</a>
                     <a href="#departments" class="text-gray-600 hover:text-indigo-600 transition-colors">Departments</a>
                     <a href="#facilities" class="text-gray-600 hover:text-indigo-600 transition-colors">Facilities</a>
+                   
+                    <a href="#gallery" class="text-gray-600 hover:text-indigo-600 transition-colors">Gallery</a>
                     <a href="#contact" class="text-gray-600 hover:text-indigo-600 transition-colors">Contact</a>
                 </div>
             </div>
@@ -162,26 +189,24 @@
             
            
             <!-- Login Portals -->
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                <div class="portal-card p-6 rounded-lg hover-scale animate-float" style="animation-delay: 0.4s">
+             
+            <div class="  justify center  grid grid-cols-2 md:grid-cols-2 gap-6 max-w-4xl  mx-auto">
+                <div class="portal-card p-6 rounded-lg hover-scale animate-float" style="animation-delay: 0.6s">
                     <h3 class="text-xl font-semibold mb-4 text-gray-800">Student Portal</h3>
-                    <a href="login/student.html" class="inline-block bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-6 py-2 rounded-md transition-all duration-300">
+                    <a href="login/student.html" class="inline-block bg-gradient-to-r from-indigo-800 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-6 py-2 rounded-md transition-all duration-300">
                         Login
                     </a>
                 </div>
+            
                 <div class="portal-card p-6 rounded-lg hover-scale animate-float" style="animation-delay: 0.6s">
                     <h3 class="text-xl font-semibold mb-4 text-gray-800">Faculty Portal</h3>
-                    <a href="login/faculty.html" class="inline-block bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-6 py-2 rounded-md transition-all duration-300">
+                    <a href="login/faculty.html" class="inline-block bg-gradient-to-r from-indigo-800 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-6 py-2 rounded-md transition-all duration-300">
                         Login
                     </a>
                 </div>
-                <div class="portal-card p-6 rounded-lg hover-scale animate-float" style="animation-delay: 0.8s">
-                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Visitor Portal</h3>
-                    <a href="login/visitor.html" class="inline-block bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-6 py-2 rounded-md transition-all duration-300">
-                        Login
-                    </a>
-                </div>
+
             </div>
+        
         </div>
     </section>
 
@@ -216,8 +241,8 @@
                     <p class="text-gray-600">Comprehensive training in analog and digital electronics, communication systems, and signal processing with modern laboratories.</p>
                 </div>
                 <div class="glass-card p-8 rounded-lg hover-scale">
-                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Information Technology</h3>
-                    <p class="text-gray-600">Focus on software development, database management, and network security with industry-aligned curriculum and practical training.</p>
+                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Robotics & Automation</h3>
+                    <p class="text-gray-600">Focus on Robotics, database management, and network security with industry-aligned curriculum and practical .</p>
                 </div>
                 <div class="glass-card p-8 rounded-lg hover-scale">
                     <h3 class="text-2xl font-semibold mb-4 gradient-text">Mechanical Engineering</h3>
@@ -267,6 +292,101 @@
             </div>
         </div>
     </section>
+
+       
+<!--placement-section-->
+<section class="placement-section">
+    <div class="section-title">
+        <h3>Placement Companies</h3>
+    </div>
+    
+    <div class="swiper placement-swiper">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Bacancy.png.webp" alt="Bacancy" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Blitz-Jobs.jpg.webp" alt="Blitz Jobs" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/bolt-iot.png.webp" alt="Bolt IoT" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/cybercom.jpg.webp" alt="Cybercom" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/cypherox.jpg.webp" alt="Cypherox" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/easy-local-tech.jpg.webp" alt="Easy Local Tech" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/esparkbiz.png.webp" alt="Esparkbiz" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/eTech-Mavens.png.webp" alt="eTech Mavens" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Kevalam.png.webp" alt="Kevalam" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Kevit.png.webp" alt="Kevit" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/La-Net.png.webp" alt="La Net" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Meditab.jpg.webp" alt="Meditab" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/nishtha.png.webp" alt="Nishtha" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/radixweb.png.webp" alt="Radixweb" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Rao.png.webp" alt="Rao" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/RKIT.png.webp" alt="RKIT" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Scanpoint.png.webp" alt="Scanpoint" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/silent-infotech.png.webp" alt="Silent Infotech" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/simform.png.webp" alt="Simform" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/tatvasoft.png.webp" alt="Tatvasoft" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/TCS.png.webp" alt="TCS" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/weboccult.png.webp" alt="Weboccult" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/WeyBee.png.webp" alt="WeyBee" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/valens_datalabs_blue.png.webp" alt="Valens Datalabs" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Unitech-workholding-sys.png.webp" alt="Unitech Workholding" class="company-logo">
+            </div>
+            <div class="swiper-slide">
+                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Hermit-Labs.png.webp" alt="Hermit Labs" class="company-logo">
+            </div>
+        </div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+    </div>
+</section>
+
+    
 
     <!-- Contact Section -->
     <section id="contact" class="py-20 px-4 bg-gray-50">
@@ -325,27 +445,8 @@
         </div>
     </footer>
 
-    <!-- AI Chatbot -->
-    <div class="chatbot-container">
-        <div class="chatbot-window" id="chatbotWindow">
-            <div class="chatbot-header">
-                <h3 class="text-lg font-semibold">GEC Assistant</h3>
-            </div>
-            <div class="chatbot-messages" id="chatbotMessages">
-                <div class="message bot-message">
-                    Hello! I'm your GEC Assistant. How can I help you today?
-                </div>
-            </div>
-            <div class="chatbot-input">
-                <input type="text" id="chatbotInput" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Type your message...">
-            </div>
-        </div>
-        <div class="chatbot-button" id="chatbotButton">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-            </svg>
-        </div>
-    </div>
+   
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
     <script>
         // 3D Logo Animation
@@ -380,44 +481,37 @@
         }
         animate();
 
-        // Chatbot Functionality
-        const chatbotButton = document.getElementById('chatbotButton');
-        const chatbotWindow = document.getElementById('chatbotWindow');
-        const chatbotMessages = document.getElementById('chatbotMessages');
-        const chatbotInput = document.getElementById('chatbotInput');
-
-        chatbotButton.addEventListener('click', () => {
-            chatbotWindow.style.display = chatbotWindow.style.display === 'flex' ? 'none' : 'flex';
-        });
-
-        chatbotInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && chatbotInput.value.trim() !== '') {
-                const message = chatbotInput.value;
-                addMessage(message, 'user');
-                chatbotInput.value = '';
-
-                // Simulate bot response
-                setTimeout(() => {
-                    const responses = [
-                        "I can help you with information about admissions, courses, and facilities.",
-                        "You can find detailed information about our departments in the Departments section.",
-                        "For specific queries, please contact our administration office.",
-                        "Our library is open 24/7 for students with valid ID cards.",
-                        "The sports complex includes facilities for cricket, basketball, and indoor games."
-                    ];
-                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-                    addMessage(randomResponse, 'bot');
-                }, 1000);
+//placement    
+const swiper = new Swiper('.placement-swiper', {
+            slidesPerView: 1,
+            spaceBetween: 20,
+            loop: true,
+            autoplay: {
+                delay: 3000, // Slower autoplay (3 seconds)
+                disableOnInteraction: false,
+            },
+            speed: 1000, // Slower transition speed
+            effect: 'slide',
+            grabCursor: true,
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            breakpoints: {
+                480: {
+                    slidesPerView: 2,
+                },
+                768: {
+                    slidesPerView: 3,
+                },
+                1024: {
+                    slidesPerView: 4,
+                },
+                1200: {
+                    slidesPerView: 5,
+                },
             }
         });
-
-        function addMessage(text, sender) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}-message`;
-            messageDiv.textContent = text;
-            chatbotMessages.appendChild(messageDiv);
-            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
-        }
     </script>
 </body>
 </html> 
