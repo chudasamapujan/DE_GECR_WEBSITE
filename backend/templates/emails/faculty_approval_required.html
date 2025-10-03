@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Approval Required</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .email-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .info-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #28a745;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #495057;
+            flex: 1;
+        }
+        .info-value {
+            flex: 2;
+            color: #212529;
+        }
+        .button {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 10px 20px 0;
+        }
+        .button.danger {
+            background: #dc3545;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .logo {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 10px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .actions {
+            text-align: center;
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="logo">GEC</div>
+            <h1>New Faculty Registration</h1>
+            <p>Approval Required</p>
+        </div>
+        
+        <div class="content">
+            <h2>Dear Administrator,</h2>
+            
+            <p>A new faculty member has registered on the GEC Rajkot portal and requires your approval to access the system.</p>
+            
+            <div class="info-section">
+                <h3 style="margin-top: 0; color: #28a745;">Faculty Details:</h3>
+                
+                <div class="info-row">
+                    <div class="info-label">Full Name:</div>
+                    <div class="info-value">{{ firstName }} {{ lastName }}</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Faculty ID:</div>
+                    <div class="info-value">{{ facultyId }}</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Email:</div>
+                    <div class="info-value">{{ email }}</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Phone:</div>
+                    <div class="info-value">{{ phone }}</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Department:</div>
+                    <div class="info-value">{{ department }}</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Designation:</div>
+                    <div class="info-value">{{ designation }}</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Qualification:</div>
+                    <div class="info-value">{{ qualification }}</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Experience:</div>
+                    <div class="info-value">{{ experience }} years</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Specialization:</div>
+                    <div class="info-value">{{ specialization }}</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Date of Joining:</div>
+                    <div class="info-value">{{ dateOfJoining }}</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Registration Date:</div>
+                    <div class="info-value">{{ createdAt or 'Just now' }}</div>
+                </div>
+            </div>
+            
+            <p>Please review the faculty information above and take appropriate action:</p>
+            
+            <div class="actions">
+                <a href="#" class="button">Approve Faculty</a>
+                <a href="#" class="button danger">Reject Application</a>
+            </div>
+            
+            <p><strong>Next Steps:</strong></p>
+            <ul>
+                <li>Login to the admin panel to review the complete application</li>
+                <li>Verify the faculty credentials and documentation</li>
+                <li>Contact the faculty member if additional information is required</li>
+                <li>Approve or reject the application based on your review</li>
+            </ul>
+            
+            <p><strong>Note:</strong> The faculty member will not be able to access the system until their account is approved by an administrator.</p>
+            
+            <p>Best regards,<br>
+            <strong>GEC Rajkot Portal System</strong></p>
+        </div>
+        
+        <div class="footer">
+            <p>Government Engineering College, Rajkot</p>
+            <p>Rajkot - Morbi Highway, Rajkot, Gujarat 360005</p>
+            <p>This is an automated message from the faculty registration system.</p>
+        </div>
+    </div>
+</body>
+</html>
