@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Login - GEC Rajkot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --accent: #3B82F6;
+            --bg: #ffffff;
+            --text: #1f2937;
+            --card-bg: #f9fafb;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg) 0%, #f3f4f6 100%);
+            min-height: 100vh;
+            color: var(--text);
+        }
+        .login-container {
+            background: linear-gradient(135deg, #4F46E5 0%, #3B82F6 50%, #8B5CF6 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff08" points="0,1000 1000,0 1000,1000"/></svg>');
+            pointer-events: none;
+        }
+        
+        .floating-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        
+        .shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .shape:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+        
+        .shape:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 20%;
+            right: 10%;
+            animation-delay: -2s;
+        }
+        
+        .shape:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            bottom: 20%;
+            left: 20%;
+            animation-delay: -4s;
+        }
+        
+        .shape:nth-child(4) {
+            width: 100px;
+            height: 100px;
+            bottom: 10%;
+            right: 20%;
+            animation-delay: -1s;
+        }
+        
+        .password-strength {
+            margin-top: 8px;
+            padding: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 12px;
+        }
+        
+        .strength-bar {
+            height: 4px;
+            border-radius: 2px;
+            margin: 4px 0;
+            background: rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+        
+        .strength-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+        
+        .glass-card {
+            background: rgba(255,255,255, 0.95);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        .gradient-text {
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        .logo-animation {
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container flex items-center justify-center px-4">
+        <!-- Floating background shapes -->
+        <div class="floating-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+        
+        <div class="glass-card p-8 rounded-lg w-full max-w-md animate-scale-in">
+            <!-- College Logo and Header -->
+            <div class="text-center mb-8">
+                <div class="logo-animation mb-4">
+                    <img src="{{ url_for('serve_logo') }}" alt="GEC Rajkot Logo" class="w-16 h-16 mx-auto object-contain">
+                </div>
+                <h2 class="text-3xl font-bold gradient-text mb-2">Student Portal</h2>
+                <p class="text-gray-600">Government Engineering College, Rajkot</p>
+            </div>
+            
+            <form id="studentLoginForm" class="space-y-6" data-ajax="true">
+                <div class="form-group">
+                    <label for="enrollment" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-id-card mr-2 text-indigo-600"></i>Enrollment Number
+                    </label>
+                    <input
+                        type="text"
+                        id="enrollment"
+                        name="enrollment"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
+                        placeholder="Enter your enrollment number"
+                        required
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-lock mr-2 text-indigo-600"></i>Password
+                    </label>
+                    <div class="relative">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
+                            placeholder="Enter your password"
+                            required
+                        >
+                        <button
+                            type="button"
+                            id="togglePassword"
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                        >
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Remember Me and Forgot Password -->
+                <div class="flex justify-between items-center">
+                    <label class="flex items-center">
+                        <input type="checkbox" name="remember" class="mr-2 rounded">
+                        <span class="text-sm text-gray-600">Remember me</span>
+                    </label>
+                    <a href="{{ url_for('serve_register', user_type='student') }}" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">
+                        Forgot Password?
+                    </a>
+                </div>
+                
+                <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Sign In
+                </button>
+            </form>
+            
+            <!-- Additional Options -->
+            <div class="mt-6 text-center space-y-4">
+                <div class="flex items-center justify-center space-x-4">
+                    <span class="text-gray-400">New student?</span>
+                    <a href="{{ url_for('serve_register', user_type='student') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-all duration-300">
+                        <i class="fas fa-user-plus mr-2"></i>Register Here
+                    </a>
+                </div>
+                
+                <div class="border-t pt-4">
+                    <a href="{{ url_for('index') }}" class="text-indigo-600 hover:text-indigo-700 transition-colors text-sm">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/validations.js"></script>
+    <script src="../js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('studentLoginForm');
+            const validator = new GECUtils.FormValidator(form);
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordField = document.getElementById('password');
+            const enrollmentField = document.getElementById('enrollment');
+            
+            // Password visibility toggle
+            togglePassword.addEventListener('click', function() {
+                const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordField.setAttribute('type', type);
+                
+                const icon = togglePassword.querySelector('i');
+                icon.classList.toggle('fa-eye');
+                icon.classList.toggle('fa-eye-slash');
+            });
+            
+            // Real-time validation
+            enrollmentField.addEventListener('blur', function() {
+                const enrollment = this.value.trim();
+                if (enrollment && !validator.validateEnrollment(enrollment)) {
+                    validator.showError('enrollment', 'Please enter a valid enrollment number (10-12 digits)');
+                } else if (enrollment) {
+                    validator.showSuccess('enrollment');
+                }
+            });
+            
+            passwordField.addEventListener('blur', function() {
+                const password = this.value;
+                if (password && password.length < 6) {
+                    validator.showError('password', 'Password must be at least 6 characters long');
+                } else if (password) {
+                    validator.showSuccess('password');
+                }
+            });
+            
+            // Form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const enrollment = enrollmentField.value.trim();
+                const password = passwordField.value;
+                let isValid = true;
+                
+                validator.clearErrors();
+                
+                // Validate enrollment
+                if (!enrollment) {
+                    validator.showError('enrollment', 'Enrollment number is required');
+                    isValid = false;
+                } else if (!validator.validateEnrollment(enrollment)) {
+                    validator.showError('enrollment', 'Please enter a valid enrollment number');
+                    isValid = false;
+                }
+                
+                // Validate password
+                if (!password) {
+                    validator.showError('password', 'Password is required');
+                    isValid = false;
+                } else if (password.length < 6) {
+                    validator.showError('password', 'Password must be at least 6 characters long');
+                    isValid = false;
+                }
+                
+                if (isValid) {
+                    // Simulate login process
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    GECUtils.LoadingManager.setLoading(submitBtn, true);
+                    
+                    setTimeout(() => {
+                        GECUtils.LoadingManager.setLoading(submitBtn, false);
+                        GECUtils.toast.success('Login successful! Redirecting to dashboard...');
+                        
+                        // Redirect to student dashboard after 1.5 seconds
+                        setTimeout(() => {
+                            window.location.href = '../student/dashboard.html';
+                        }, 1500);
+                    }, 2000);
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

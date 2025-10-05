@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forgot Password - Faculty - GEC Rajkot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --accent: #3B82F6;
+            --bg: #ffffff;
+            --text: #1f2937;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg) 0%, #f3f4f6 100%);
+            min-height: 100vh;
+            color: var(--text);
+        }
+        .forgot-container {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #581c87 100%);
+            min-height: 100vh;
+            padding: 40px 0;
+        }
+        .glass-card {
+            background: rgba(255,255,255, 0.95);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        .gradient-text {
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 0 1rem;
+        }
+        
+        .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 0.5rem;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .step-number.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .step-number.completed {
+            background: var(--success);
+            color: white;
+        }
+        
+        .step-line {
+            width: 60px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.2);
+            margin: 0 1rem;
+        }
+        
+        .step-line.completed {
+            background: var(--success);
+        }
+        
+        .reset-step {
+            display: none;
+        }
+        
+        .reset-step.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .otp-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            margin: 0 4px;
+        }
+        
+        .otp-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="forgot-container flex-center">
+        <div class="container mx-auto px-4">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <img src="{{ url_for('serve_logo') }}" alt="GEC Rajkot Logo" class="w-16 h-16 mx-auto object-contain mb-4">
+                <h1 class="text-4xl font-bold text-white mb-2">Reset Password</h1>
+                <p class="text-blue-100">Faculty Portal - GEC Rajkot</p>
+            </div>
+
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step">
+                    <div class="step-number active" id="step1-indicator">1</div>
+                    <span class="text-white text-sm">Verify Identity</span>
+                </div>
+                <div class="step-line" id="line1"></div>
+                <div class="step">
+                    <div class="step-number" id="step2-indicator">2</div>
+                    <span class="text-white text-sm">Verify OTP</span>
+                </div>
+                <div class="step-line" id="line2"></div>
+                <div class="step">
+                    <div class="step-number" id="step3-indicator">3</div>
+                    <span class="text-white text-sm">New Password</span>
+                </div>
+            </div>
+
+            <!-- Reset Password Form -->
+            <div class="glass-card p-8 rounded-lg max-w-md mx-auto animate-scale-in">
+                <form id="forgotPasswordForm">
+                    <!-- Step 1: Identity Verification -->
+                    <div class="reset-step active" id="step1">
+                        <h3 class="text-2xl font-bold mb-6 gradient-text text-center">Verify Your Identity</h3>
+                        
+                        <div>
+                            <label for="facultyId" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-id-badge mr-2 text-indigo-600"></i>Faculty ID
+                            </label>
+                            <input type="text" id="facultyId" name="facultyId" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300" placeholder="e.g., CS101, ME205" required>
+                        </div>
+                        
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-envelope mr-2 text-indigo-600"></i>Registered Email
+                            </label>
+                            <input type="email" id="email" name="email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300" required>
+                        </div>
+                        
+                        <div>
+                            <label for="department" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-building mr-2 text-indigo-600"></i>Department
+                            </label>
+                            <select id="department" name="department" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300" required>
+                                <option value="">Select your department</option>
+                                <option value="computer">Computer Engineering</option>
+                                <option value="electronics">Electronics & Communication</option>
+                                <option value="mechanical">Mechanical Engineering</option>
+                                <option value="electrical">Electrical Engineering</option>
+                                <option value="civil">Civil Engineering</option>
+                                <option value="robotics">Robotics & Automation</option>
+                                <option value="ai">AI & Data Science</option>
+                                <option value="instrumentation">Instrumentation & Control</option>
+                            </select>
+                        </div>
+                        
+                        <button type="button" class="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 w-full" onclick="sendOTP()">
+                            <i class="fas fa-paper-plane mr-2"></i>Send OTP
+                        </button>
+                    </div>
+
+                    <!-- Step 2: OTP Verification -->
+                    <div class="reset-step" id="step2">
+                        <h3 class="text-2xl font-bold mb-6 gradient-text text-center">Enter OTP</h3>
+                        
+                        <div class="text-center mb-6">
+                            <p class="text-gray-600 mb-4">We've sent a 6-digit code to your email</p>
+                            <p class="text-sm text-gray-500" id="emailDisplay"></p>
+                        </div>
+                        
+                        <div class="flex justify-center mb-6">
+                            <input type="text" class="otp-input" maxlength="1" id="otp1">
+                            <input type="text" class="otp-input" maxlength="1" id="otp2">
+                            <input type="text" class="otp-input" maxlength="1" id="otp3">
+                            <input type="text" class="otp-input" maxlength="1" id="otp4">
+                            <input type="text" class="otp-input" maxlength="1" id="otp5">
+                            <input type="text" class="otp-input" maxlength="1" id="otp6">
+                        </div>
+                        
+                        <div class="text-center mb-6">
+                            <p class="text-sm text-gray-600">Didn't receive the code?</p>
+                            <button type="button" class="text-indigo-600 hover:text-indigo-800 text-sm" onclick="resendOTP()" id="resendBtn">
+                                Resend OTP (<span id="timer">60</span>s)
+                            </button>
+                        </div>
+                        
+                        <div class="flex space-x-4">
+                            <button type="button" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 px-6 rounded-lg transition-all duration-300 flex-1" onclick="goBackToStep1()">
+                                <i class="fas fa-arrow-left mr-2"></i>Back
+                            </button>
+                            <button type="button" class="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 flex-1" onclick="verifyOTP()">
+                                <i class="fas fa-check mr-2"></i>Verify
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: New Password -->
+                    <div class="reset-step" id="step3">
+                        <h3 class="text-2xl font-bold mb-6 gradient-text text-center">Set New Password</h3>
+                        
+                        <div>
+                            <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-lock mr-2 text-indigo-600"></i>New Password
+                            </label>
+                            <div class="relative">
+                                <input type="password" id="newPassword" name="newPassword" class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300" required>
+                                <button type="button" id="toggleNewPassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="confirmNewPassword" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-lock mr-2 text-indigo-600"></i>Confirm New Password
+                            </label>
+                            <input type="password" id="confirmNewPassword" name="confirmNewPassword" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300" required>
+                        </div>
+                        
+                        <button type="submit" class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 w-full">
+                            <i class="fas fa-key mr-2"></i>Reset Password
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Login Link -->
+                <div class="mt-6 text-center border-t pt-6">
+                    <p class="text-gray-600">Remember your password?</p>
+                    <a href="{{ url_for('serve_login', user_type='faculty') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-all duration-300 mt-2 inline-block">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Back to Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/validations.js"></script>
+    <script src="../js/api.js"></script>
+    <script>
+        let currentStep = 1;
+        let otpTimer = 60;
+        let timerInterval;
+
+        function sendOTP() {
+            const facultyId = document.getElementById('facultyId').value.trim().toUpperCase();
+            const email = document.getElementById('email').value.trim();
+            const department = document.getElementById('department').value;
+            const validator = new GECUtils.FormValidator(document.getElementById('forgotPasswordForm'));
+            let isValid = true;
+
+            // Update faculty ID field
+            document.getElementById('facultyId').value = facultyId;
+
+            // Validate faculty ID
+            if (!facultyId) {
+                validator.showError('facultyId', 'Faculty ID is required');
+                isValid = false;
+            } else if (!validator.validateFacultyId(facultyId)) {
+                validator.showError('facultyId', 'Please enter a valid faculty ID');
+                isValid = false;
+            } else {
+                validator.showSuccess('facultyId');
+            }
+
+            // Validate email
+            if (!email) {
+                validator.showError('email', 'Email is required');
+                isValid = false;
+            } else if (!validator.validateEmail(email)) {
+                validator.showError('email', 'Please enter a valid email address');
+                isValid = false;
+            } else {
+                validator.showSuccess('email');
+            }
+
+            // Validate department
+            if (!department) {
+                validator.showError('department', 'Please select your department');
+                isValid = false;
+            } else {
+                validator.showSuccess('department');
+            }
+
+            if (isValid) {
+                const btn = event.target;
+                GECUtils.LoadingManager.setLoading(btn, true);
+                
+                setTimeout(() => {
+                    GECUtils.LoadingManager.setLoading(btn, false);
+                    
+                    // Move to step 2
+                    document.getElementById('step1').classList.remove('active');
+                    document.getElementById('step2').classList.add('active');
+                    document.getElementById('step1-indicator').classList.add('completed');
+                    document.getElementById('step2-indicator').classList.add('active');
+                    document.getElementById('line1').classList.add('completed');
+                    
+                    // Show masked email
+                    const maskedEmail = email.replace(/(.{2})(.*)(@.*)/, '$1***$3');
+                    document.getElementById('emailDisplay').textContent = maskedEmail;
+                    
+                    // Start timer
+                    startResendTimer();
+                    
+                    GECUtils.toast.success('OTP sent successfully to your email!');
+                    currentStep = 2;
+                }, 2000);
+            }
+        }
+
+        function startResendTimer() {
+            otpTimer = 60;
+            const resendBtn = document.getElementById('resendBtn');
+            const timerSpan = document.getElementById('timer');
+            
+            resendBtn.disabled = true;
+            resendBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            timerInterval = setInterval(() => {
+                otpTimer--;
+                timerSpan.textContent = otpTimer;
+                
+                if (otpTimer <= 0) {
+                    clearInterval(timerInterval);
+                    resendBtn.disabled = false;
+                    resendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    resendBtn.innerHTML = 'Resend OTP';
+                }
+            }, 1000);
+        }
+
+        function resendOTP() {
+            if (otpTimer <= 0) {
+                GECUtils.toast.info('OTP resent successfully!');
+                startResendTimer();
+            }
+        }
+
+        function verifyOTP() {
+            const otpInputs = document.querySelectorAll('.otp-input');
+            let otp = '';
+            
+            otpInputs.forEach(input => {
+                otp += input.value;
+            });
+            
+            if (otp.length !== 6) {
+                GECUtils.toast.error('Please enter the complete 6-digit OTP');
+                return;
+            }
+            
+            const btn = event.target;
+            GECUtils.LoadingManager.setLoading(btn, true);
+            
+            setTimeout(() => {
+                GECUtils.LoadingManager.setLoading(btn, false);
+                
+                // Simulate OTP verification (in real implementation, verify with backend)
+                if (otp === '123456' || otp.length === 6) {
+                    // Move to step 3
+                    document.getElementById('step2').classList.remove('active');
+                    document.getElementById('step3').classList.add('active');
+                    document.getElementById('step2-indicator').classList.add('completed');
+                    document.getElementById('step3-indicator').classList.add('active');
+                    document.getElementById('line2').classList.add('completed');
+                    
+                    clearInterval(timerInterval);
+                    GECUtils.toast.success('OTP verified successfully!');
+                    currentStep = 3;
+                } else {
+                    GECUtils.toast.error('Invalid OTP. Please try again.');
+                }
+            }, 1500);
+        }
+
+        function goBackToStep1() {
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step1').classList.add('active');
+            document.getElementById('step1-indicator').classList.remove('completed');
+            document.getElementById('step2-indicator').classList.remove('active');
+            document.getElementById('line1').classList.remove('completed');
+            
+            clearInterval(timerInterval);
+            currentStep = 1;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('forgotPasswordForm');
+            const newPasswordField = document.getElementById('newPassword');
+            const confirmNewPasswordField = document.getElementById('confirmNewPassword');
+            const toggleNewPassword = document.getElementById('toggleNewPassword');
+
+            // Password visibility toggle
+            toggleNewPassword?.addEventListener('click', function() {
+                const type = newPasswordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                newPasswordField.setAttribute('type', type);
+                
+                const icon = toggleNewPassword.querySelector('i');
+                icon.classList.toggle('fa-eye');
+                icon.classList.toggle('fa-eye-slash');
+            });
+
+            // OTP input handling
+            const otpInputs = document.querySelectorAll('.otp-input');
+            otpInputs.forEach((input, index) => {
+                input.addEventListener('input', function() {
+                    if (this.value.length === 1 && index < otpInputs.length - 1) {
+                        otpInputs[index + 1].focus();
+                    }
+                });
+                
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && this.value === '' && index > 0) {
+                        otpInputs[index - 1].focus();
+                    }
+                });
+            });
+
+            // Form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const newPassword = newPasswordField.value;
+                const confirmNewPassword = confirmNewPasswordField.value;
+                const validator = new GECUtils.FormValidator(form);
+                let isValid = true;
+
+                // Validate new password
+                if (!newPassword) {
+                    validator.showError('newPassword', 'New password is required');
+                    isValid = false;
+                } else if (newPassword.length < 6) {
+                    validator.showError('newPassword', 'Password must be at least 6 characters long');
+                    isValid = false;
+                } else {
+                    validator.showSuccess('newPassword');
+                }
+
+                // Validate confirm password
+                if (!confirmNewPassword) {
+                    validator.showError('confirmNewPassword', 'Please confirm your new password');
+                    isValid = false;
+                } else if (newPassword !== confirmNewPassword) {
+                    validator.showError('confirmNewPassword', 'Passwords do not match');
+                    isValid = false;
+                } else {
+                    validator.showSuccess('confirmNewPassword');
+                }
+
+                if (isValid) {
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    GECUtils.LoadingManager.setLoading(submitBtn, true);
+                    
+                    setTimeout(() => {
+                        GECUtils.LoadingManager.setLoading(submitBtn, false);
+                        GECUtils.toast.success('Password reset successfully! You can now login with your new password.');
+                        
+                        setTimeout(() => {
+                            window.location.href = 'faculty.html';
+                        }, 2000);
+                    }, 2000);
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
