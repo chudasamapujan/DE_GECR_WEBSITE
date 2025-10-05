@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Login - GEC Rajkot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .login-container {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #581c87 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff05" points="0,0 1000,1000 0,1000"/></svg>');
+            pointer-events: none;
+        }
+        
+        .floating-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        
+        .shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite;
+        }
+        
+        .shape:nth-child(1) {
+            width: 120px;
+            height: 120px;
+            top: 15%;
+            left: 15%;
+            animation-delay: 0s;
+        }
+        
+        .shape:nth-child(2) {
+            width: 80px;
+            height: 80px;
+            top: 25%;
+            right: 15%;
+            animation-delay: -3s;
+        }
+        
+        .shape:nth-child(3) {
+            width: 100px;
+            height: 100px;
+            bottom: 25%;
+            left: 25%;
+            animation-delay: -6s;
+        }
+        
+        .shape:nth-child(4) {
+            width: 60px;
+            height: 60px;
+            bottom: 15%;
+            right: 25%;
+            animation-delay: -2s;
+        }
+        
+        .logo-animation {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .faculty-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container flex-center">
+        <!-- Floating background shapes -->
+        <div class="floating-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+        
+        <div class="faculty-card p-8 rounded-lg w-full max-w-md animate-scale-in">
+            <!-- College Logo and Header -->
+            <div class="text-center mb-8">
+                <div class="logo-animation mb-4">
+                    <img src="../logo.png" alt="GEC Rajkot Logo" class="w-16 h-16 mx-auto object-contain">
+                </div>
+                <h2 class="text-3xl font-bold gradient-text mb-2">Faculty Portal</h2>
+                <p class="text-gray-600">Government Engineering College, Rajkot</p>
+            </div>
+            
+            <form id="facultyLoginForm" class="space-y-6" data-ajax="true">
+                <div class="form-group">
+                    <label for="facultyId" class="form-label">
+                        <i class="fas fa-user-tie mr-2"></i>Faculty ID
+                    </label>
+                    <input
+                        type="text"
+                        id="facultyId"
+                        name="facultyId"
+                        class="form-input"
+                        placeholder="Enter your faculty ID (e.g., CS101)"
+                        required
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="password" class="form-label">
+                        <i class="fas fa-lock mr-2"></i>Password
+                    </label>
+                    <div class="relative">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            class="form-input pr-12"
+                            placeholder="Enter your password"
+                            required
+                        >
+                        <button
+                            type="button"
+                            id="togglePassword"
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                        >
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Department Selection -->
+                <div class="form-group">
+                    <label for="department" class="form-label">
+                        <i class="fas fa-building mr-2"></i>Department
+                    </label>
+                    <select id="department" name="department" class="form-input" required>
+                        <option value="">Select your department</option>
+                        <option value="computer">Computer Engineering</option>
+                        <option value="electronics">Electronics & Communication</option>
+                        <option value="mechanical">Mechanical Engineering</option>
+                        <option value="electrical">Electrical Engineering</option>
+                        <option value="civil">Civil Engineering</option>
+                        <option value="robotics">Robotics & Automation</option>
+                        <option value="ai">AI & Data Science</option>
+                        <option value="instrumentation">Instrumentation & Control</option>
+                    </select>
+                </div>
+                
+                <!-- Remember Me and Forgot Password -->
+                <div class="flex justify-between items-center">
+                    <label class="flex items-center">
+                        <input type="checkbox" name="remember" class="mr-2 rounded">
+                        <span class="text-sm text-gray-600">Remember me</span>
+                    </label>
+                    <a href="faculty-forgot.html" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">
+                        Forgot Password?
+                    </a>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-lg w-full">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Sign In
+                </button>
+            </form>
+            
+            <!-- Additional Options -->
+            <div class="mt-6 text-center space-y-4">
+                <div class="flex items-center justify-center space-x-4">
+                    <span class="text-gray-400">New faculty?</span>
+                    <a href="faculty-register.html" class="btn btn-secondary">
+                        <i class="fas fa-user-plus mr-2"></i>Register Here
+                    </a>
+                </div>
+                
+                <div class="border-t pt-4">
+                    <a href="../index.html" class="text-indigo-600 hover:text-indigo-700 transition-colors text-sm">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/validations.js"></script>
+    <script src="../js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('facultyLoginForm');
+            const validator = new GECUtils.FormValidator(form);
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordField = document.getElementById('password');
+            const facultyIdField = document.getElementById('facultyId');
+            const departmentField = document.getElementById('department');
+            
+            // Password visibility toggle
+            togglePassword.addEventListener('click', function() {
+                const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordField.setAttribute('type', type);
+                
+                const icon = togglePassword.querySelector('i');
+                icon.classList.toggle('fa-eye');
+                icon.classList.toggle('fa-eye-slash');
+            });
+            
+            // Real-time validation
+            facultyIdField.addEventListener('blur', function() {
+                const facultyId = this.value.trim().toUpperCase();
+                this.value = facultyId; // Convert to uppercase
+                
+                if (facultyId && !validator.validateFacultyId(facultyId)) {
+                    validator.showError('facultyId', 'Please enter a valid faculty ID (e.g., CS101, ME205)');
+                } else if (facultyId) {
+                    validator.showSuccess('facultyId');
+                }
+            });
+            
+            passwordField.addEventListener('blur', function() {
+                const password = this.value;
+                if (password && password.length < 6) {
+                    validator.showError('password', 'Password must be at least 6 characters long');
+                } else if (password) {
+                    validator.showSuccess('password');
+                }
+            });
+            
+            departmentField.addEventListener('change', function() {
+                if (this.value) {
+                    validator.showSuccess('department');
+                }
+            });
+            
+            // Form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const facultyId = facultyIdField.value.trim().toUpperCase();
+                const password = passwordField.value;
+                const department = departmentField.value;
+                let isValid = true;
+                
+                validator.clearErrors();
+                
+                // Validate faculty ID
+                if (!facultyId) {
+                    validator.showError('facultyId', 'Faculty ID is required');
+                    isValid = false;
+                } else if (!validator.validateFacultyId(facultyId)) {
+                    validator.showError('facultyId', 'Please enter a valid faculty ID');
+                    isValid = false;
+                }
+                
+                // Validate password
+                if (!password) {
+                    validator.showError('password', 'Password is required');
+                    isValid = false;
+                } else if (password.length < 6) {
+                    validator.showError('password', 'Password must be at least 6 characters long');
+                    isValid = false;
+                }
+                
+                // Validate department
+                if (!department) {
+                    validator.showError('department', 'Please select your department');
+                    isValid = false;
+                }
+                
+                if (isValid) {
+                    // Simulate login process
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    GECUtils.LoadingManager.setLoading(submitBtn, true);
+                    
+                    setTimeout(() => {
+                        GECUtils.LoadingManager.setLoading(submitBtn, false);
+                        GECUtils.toast.success('Login successful! Redirecting to faculty dashboard...');
+                        
+                        // Redirect to faculty dashboard after 1.5 seconds
+                        setTimeout(() => {
+                            window.location.href = '../faculty/faculty-dashboard.html';
+                        }, 1500);
+                    }, 2000);
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

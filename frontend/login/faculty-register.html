@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Registration - GEC Rajkot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .register-container {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #581c87 100%);
+            min-height: 100vh;
+            padding: 40px 0;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 0 1rem;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .step-number.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .step-number.completed {
+            background: var(--success);
+            color: white;
+        }
+        
+        .step-line {
+            width: 60px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.2);
+            margin: 0 1rem;
+        }
+        
+        .step-line.completed {
+            background: var(--success);
+        }
+        
+        .form-step {
+            display: none;
+        }
+        
+        .form-step.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .password-strength {
+            margin-top: 8px;
+            padding: 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 12px;
+        }
+        
+        .strength-item {
+            display: flex;
+            align-items: center;
+            margin: 4px 0;
+        }
+        
+        .strength-item i {
+            margin-right: 8px;
+            width: 16px;
+        }
+        
+        .strength-item.valid {
+            color: var(--success);
+        }
+        
+        .strength-item.invalid {
+            color: var(--error);
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="container mx-auto px-4">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <img src="../logo.png" alt="GEC Rajkot Logo" class="w-16 h-16 mx-auto object-contain mb-4">
+                <h1 class="text-4xl font-bold text-white mb-2">Faculty Registration</h1>
+                <p class="text-blue-100">Government Engineering College, Rajkot</p>
+            </div>
+
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step">
+                    <div class="step-number active" id="step1-indicator">1</div>
+                    <span class="text-white">Personal Info</span>
+                </div>
+                <div class="step-line" id="line1"></div>
+                <div class="step">
+                    <div class="step-number" id="step2-indicator">2</div>
+                    <span class="text-white">Professional Info</span>
+                </div>
+                <div class="step-line" id="line2"></div>
+                <div class="step">
+                    <div class="step-number" id="step3-indicator">3</div>
+                    <span class="text-white">Account Setup</span>
+                </div>
+            </div>
+
+            <!-- Registration Form -->
+            <div class="glass-card p-8 rounded-lg max-w-2xl mx-auto animate-scale-in">
+                <form id="facultyRegistrationForm" class="space-y-6">
+                    <!-- Step 1: Personal Information -->
+                    <div class="form-step active" id="step1">
+                        <h3 class="text-2xl font-bold mb-6 gradient-text">Personal Information</h3>
+                        
+                        <div class="grid grid-2 gap-6">
+                            <div class="form-group">
+                                <label for="firstName" class="form-label">
+                                    <i class="fas fa-user mr-2"></i>First Name
+                                </label>
+                                <input type="text" id="firstName" name="firstName" class="form-input" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="lastName" class="form-label">
+                                    <i class="fas fa-user mr-2"></i>Last Name
+                                </label>
+                                <input type="text" id="lastName" name="lastName" class="form-input" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope mr-2"></i>Email Address
+                            </label>
+                            <input type="email" id="email" name="email" class="form-input" required>
+                        </div>
+                        
+                        <div class="grid grid-2 gap-6">
+                            <div class="form-group">
+                                <label for="phone" class="form-label">
+                                    <i class="fas fa-phone mr-2"></i>Phone Number
+                                </label>
+                                <input type="tel" id="phone" name="phone" class="form-input" placeholder="10-digit mobile number" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="dob" class="form-label">
+                                    <i class="fas fa-calendar mr-2"></i>Date of Birth
+                                </label>
+                                <input type="date" id="dob" name="dob" class="form-input" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="address" class="form-label">
+                                <i class="fas fa-map-marker-alt mr-2"></i>Address
+                            </label>
+                            <textarea id="address" name="address" class="form-input" rows="3" required></textarea>
+                        </div>
+                        
+                        <div class="flex justify-end">
+                            <button type="button" class="btn btn-primary" onclick="nextStep(1)">
+                                Next <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Professional Information -->
+                    <div class="form-step" id="step2">
+                        <h3 class="text-2xl font-bold mb-6 gradient-text">Professional Information</h3>
+                        
+                        <div class="form-group">
+                            <label for="facultyId" class="form-label">
+                                <i class="fas fa-id-badge mr-2"></i>Faculty ID
+                            </label>
+                            <input type="text" id="facultyId" name="facultyId" class="form-input" placeholder="e.g., CS101, ME205" required>
+                        </div>
+                        
+                        <div class="grid grid-2 gap-6">
+                            <div class="form-group">
+                                <label for="department" class="form-label">
+                                    <i class="fas fa-building mr-2"></i>Department
+                                </label>
+                                <select id="department" name="department" class="form-input" required>
+                                    <option value="">Select Department</option>
+                                    <option value="computer">Computer Engineering</option>
+                                    <option value="electronics">Electronics & Communication</option>
+                                    <option value="mechanical">Mechanical Engineering</option>
+                                    <option value="electrical">Electrical Engineering</option>
+                                    <option value="civil">Civil Engineering</option>
+                                    <option value="robotics">Robotics & Automation</option>
+                                    <option value="ai">AI & Data Science</option>
+                                    <option value="instrumentation">Instrumentation & Control</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="designation" class="form-label">
+                                    <i class="fas fa-user-tie mr-2"></i>Designation
+                                </label>
+                                <select id="designation" name="designation" class="form-input" required>
+                                    <option value="">Select Designation</option>
+                                    <option value="professor">Professor</option>
+                                    <option value="associate-professor">Associate Professor</option>
+                                    <option value="assistant-professor">Assistant Professor</option>
+                                    <option value="lecturer">Lecturer</option>
+                                    <option value="visiting-faculty">Visiting Faculty</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-2 gap-6">
+                            <div class="form-group">
+                                <label for="qualification" class="form-label">
+                                    <i class="fas fa-graduation-cap mr-2"></i>Highest Qualification
+                                </label>
+                                <select id="qualification" name="qualification" class="form-input" required>
+                                    <option value="">Select Qualification</option>
+                                    <option value="phd">Ph.D.</option>
+                                    <option value="mtech">M.Tech</option>
+                                    <option value="me">M.E.</option>
+                                    <option value="msc">M.Sc.</option>
+                                    <option value="btech">B.Tech</option>
+                                    <option value="be">B.E.</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="experience" class="form-label">
+                                    <i class="fas fa-calendar-alt mr-2"></i>Years of Experience
+                                </label>
+                                <input type="number" id="experience" name="experience" class="form-input" min="0" max="50" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="specialization" class="form-label">
+                                <i class="fas fa-star mr-2"></i>Area of Specialization
+                            </label>
+                            <input type="text" id="specialization" name="specialization" class="form-input" placeholder="e.g., Machine Learning, Database Systems" required>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <button type="button" class="btn btn-secondary" onclick="prevStep(2)">
+                                <i class="fas fa-arrow-left mr-2"></i> Previous
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="nextStep(2)">
+                                Next <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Account Setup -->
+                    <div class="form-step" id="step3">
+                        <h3 class="text-2xl font-bold mb-6 gradient-text">Account Setup</h3>
+                        
+                        <div class="form-group">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock mr-2"></i>Password
+                            </label>
+                            <div class="relative">
+                                <input type="password" id="password" name="password" class="form-input pr-12" required>
+                                <button type="button" id="togglePassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="password-strength" id="passwordStrength" style="display: none;">
+                                <div class="strength-item" id="lengthCheck">
+                                    <i class="fas fa-times"></i> At least 8 characters
+                                </div>
+                                <div class="strength-item" id="uppercaseCheck">
+                                    <i class="fas fa-times"></i> One uppercase letter
+                                </div>
+                                <div class="strength-item" id="lowercaseCheck">
+                                    <i class="fas fa-times"></i> One lowercase letter
+                                </div>
+                                <div class="strength-item" id="numberCheck">
+                                    <i class="fas fa-times"></i> One number
+                                </div>
+                                <div class="strength-item" id="specialCheck">
+                                    <i class="fas fa-times"></i> One special character
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="confirmPassword" class="form-label">
+                                <i class="fas fa-lock mr-2"></i>Confirm Password
+                            </label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="terms" name="terms" class="mr-3" required>
+                                <span class="text-sm">
+                                    I agree to the <a href="#" class="text-indigo-600 hover:text-indigo-800">Terms of Service</a> 
+                                    and <a href="#" class="text-indigo-600 hover:text-indigo-800">Faculty Code of Conduct</a>
+                                </span>
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="verification" name="verification" class="mr-3" required>
+                                <span class="text-sm">
+                                    I understand that my application will be reviewed by the administration before activation
+                                </span>
+                            </label>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <button type="button" class="btn btn-secondary" onclick="prevStep(3)">
+                                <i class="fas fa-arrow-left mr-2"></i> Previous
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-user-plus mr-2"></i> Submit Application
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                
+                <!-- Login Link -->
+                <div class="mt-6 text-center border-t pt-6">
+                    <p class="text-gray-600">Already have an account?</p>
+                    <a href="faculty.html" class="btn btn-secondary mt-2">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login Here
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/validations.js"></script>
+    <script src="../js/api.js"></script>
+    <script>
+        let currentStep = 1;
+        const totalSteps = 3;
+
+        function nextStep(step) {
+            if (validateStep(step)) {
+                if (step < totalSteps) {
+                    document.getElementById(`step${step}`).classList.remove('active');
+                    document.getElementById(`step${step + 1}`).classList.add('active');
+                    
+                    // Update step indicators
+                    document.getElementById(`step${step}-indicator`).classList.add('completed');
+                    document.getElementById(`step${step + 1}-indicator`).classList.add('active');
+                    document.getElementById(`line${step}`).classList.add('completed');
+                    
+                    currentStep = step + 1;
+                }
+            }
+        }
+
+        function prevStep(step) {
+            if (step > 1) {
+                document.getElementById(`step${step}`).classList.remove('active');
+                document.getElementById(`step${step - 1}`).classList.add('active');
+                
+                // Update step indicators
+                document.getElementById(`step${step}-indicator`).classList.remove('active');
+                document.getElementById(`step${step - 1}-indicator`).classList.remove('completed');
+                document.getElementById(`line${step - 1}`).classList.remove('completed');
+                
+                currentStep = step - 1;
+            }
+        }
+
+        function validateStep(step) {
+            const validator = new GECUtils.FormValidator(document.getElementById('facultyRegistrationForm'));
+            let isValid = true;
+
+            if (step === 1) {
+                const fields = ['firstName', 'lastName', 'email', 'phone', 'dob', 'address'];
+                fields.forEach(field => {
+                    const element = document.getElementById(field);
+                    if (!element.value.trim()) {
+                        validator.showError(field, 'This field is required');
+                        isValid = false;
+                    } else {
+                        validator.showSuccess(field);
+                    }
+                });
+
+                // Validate email
+                const email = document.getElementById('email').value;
+                if (email && !validator.validateEmail(email)) {
+                    validator.showError('email', 'Please enter a valid email address');
+                    isValid = false;
+                }
+
+                // Validate phone
+                const phone = document.getElementById('phone').value;
+                if (phone && !validator.validatePhone(phone)) {
+                    validator.showError('phone', 'Please enter a valid 10-digit phone number');
+                    isValid = false;
+                }
+            } else if (step === 2) {
+                const fields = ['facultyId', 'department', 'designation', 'qualification', 'experience', 'specialization'];
+                fields.forEach(field => {
+                    const element = document.getElementById(field);
+                    if (!element.value.trim()) {
+                        validator.showError(field, 'This field is required');
+                        isValid = false;
+                    } else {
+                        validator.showSuccess(field);
+                    }
+                });
+
+                // Validate faculty ID
+                const facultyId = document.getElementById('facultyId').value.trim().toUpperCase();
+                document.getElementById('facultyId').value = facultyId;
+                if (facultyId && !validator.validateFacultyId(facultyId)) {
+                    validator.showError('facultyId', 'Please enter a valid faculty ID (e.g., CS101, ME205)');
+                    isValid = false;
+                }
+            }
+
+            return isValid;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('facultyRegistrationForm');
+            const passwordField = document.getElementById('password');
+            const confirmPasswordField = document.getElementById('confirmPassword');
+            const togglePassword = document.getElementById('togglePassword');
+            const strengthIndicator = document.getElementById('passwordStrength');
+
+            // Password visibility toggle
+            togglePassword.addEventListener('click', function() {
+                const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordField.setAttribute('type', type);
+                
+                const icon = togglePassword.querySelector('i');
+                icon.classList.toggle('fa-eye');
+                icon.classList.toggle('fa-eye-slash');
+            });
+
+            // Password strength validation
+            passwordField.addEventListener('input', function() {
+                const password = this.value;
+                if (password) {
+                    strengthIndicator.style.display = 'block';
+                    const validator = new GECUtils.FormValidator(form);
+                    const strength = validator.validatePassword(password);
+
+                    updateStrengthIndicator('lengthCheck', strength.length);
+                    updateStrengthIndicator('uppercaseCheck', strength.uppercase);
+                    updateStrengthIndicator('lowercaseCheck', strength.lowercase);
+                    updateStrengthIndicator('numberCheck', strength.numbers);
+                    updateStrengthIndicator('specialCheck', strength.special);
+                } else {
+                    strengthIndicator.style.display = 'none';
+                }
+            });
+
+            function updateStrengthIndicator(id, isValid) {
+                const element = document.getElementById(id);
+                const icon = element.querySelector('i');
+                
+                if (isValid) {
+                    element.classList.add('valid');
+                    element.classList.remove('invalid');
+                    icon.className = 'fas fa-check';
+                } else {
+                    element.classList.add('invalid');
+                    element.classList.remove('valid');
+                    icon.className = 'fas fa-times';
+                }
+            }
+
+            // Confirm password validation
+            confirmPasswordField.addEventListener('blur', function() {
+                const password = passwordField.value;
+                const confirmPassword = this.value;
+                const validator = new GECUtils.FormValidator(form);
+
+                if (confirmPassword && password !== confirmPassword) {
+                    validator.showError('confirmPassword', 'Passwords do not match');
+                } else if (confirmPassword) {
+                    validator.showSuccess('confirmPassword');
+                }
+            });
+
+            // Form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (validateStep(3)) {
+                    const password = passwordField.value;
+                    const confirmPassword = confirmPasswordField.value;
+                    const terms = document.getElementById('terms').checked;
+                    const verification = document.getElementById('verification').checked;
+                    const validator = new GECUtils.FormValidator(form);
+                    let isValid = true;
+
+                    // Final validation
+                    if (!password) {
+                        validator.showError('password', 'Password is required');
+                        isValid = false;
+                    } else {
+                        const strength = validator.validatePassword(password);
+                        if (!strength.isValid) {
+                            validator.showError('password', 'Password does not meet security requirements');
+                            isValid = false;
+                        }
+                    }
+
+                    if (password !== confirmPassword) {
+                        validator.showError('confirmPassword', 'Passwords do not match');
+                        isValid = false;
+                    }
+
+                    if (!terms) {
+                        GECUtils.toast.error('Please accept the terms and conditions');
+                        isValid = false;
+                    }
+
+                    if (!verification) {
+                        GECUtils.toast.error('Please acknowledge the verification process');
+                        isValid = false;
+                    }
+
+                    if (isValid) {
+                        const submitBtn = form.querySelector('button[type="submit"]');
+                        GECUtils.LoadingManager.setLoading(submitBtn, true);
+                        
+                        setTimeout(() => {
+                            GECUtils.LoadingManager.setLoading(submitBtn, false);
+                            GECUtils.toast.success('Registration submitted successfully! You will be notified once your application is reviewed.');
+                            
+                            setTimeout(() => {
+                                window.location.href = 'faculty.html';
+                            }, 2000);
+                        }, 3000);
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
