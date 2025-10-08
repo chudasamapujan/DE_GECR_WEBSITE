@@ -36,9 +36,10 @@ frontend/
 │   ├── dashboard.html         # Faculty dashboard
 │   ├── assets/               # Faculty-specific assets
 │   └── pages/
-│       ├── assignments.html   # Assignment management
+│       ├── assignments.html   # Assignment management (ARCHIVED)
 │       ├── attendance.html    # Attendance marking
 │       ├── grades.html        # Grade management
+│       ├── grades.html        # Grade management (ARCHIVED)
 │       ├── profile.html       # Profile management
 │       ├── schedule.html      # Teaching schedule
 │       ├── students.html      # Student management

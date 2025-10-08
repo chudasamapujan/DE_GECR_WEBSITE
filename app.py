@@ -4,7 +4,7 @@ Backend API server with authentication and user management
 Author: GEC Rajkot Development Team
 """
 
-from flask import Flask, jsonify, request, send_from_directory, render_template
+from flask import Flask, jsonify, request, send_from_directory, render_template, session, redirect, url_for, flash
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_mail import Mail
@@ -12,6 +12,8 @@ from datetime import datetime, timedelta
 import os
 import logging
 from logging.handlers import RotatingFileHandler
+import glob
+from werkzeug.utils import secure_filename
 
 # Import configurations and routes
 from database import init_database, create_tables
@@ -359,9 +361,540 @@ def register_main_routes(app):
             tpl = 'auth/login/student-register.html'
         return render_template(tpl)
 
+    @app.route('/auth/forgot/<user_type>')
+    def serve_forgot(user_type):
+        """
+        Serve forgot-password pages for student/faculty
+        """
+        user_type = (user_type or '').lower()
+        if user_type == 'faculty':
+            tpl = 'auth/login/faculty-forgot.html'
+        elif user_type == 'student':
+            tpl = 'auth/login/student-forgot.html'
+        else:
+            return "Not found", 404
+        return render_template(tpl)
+
     @app.route('/auth/verify')
     def serve_verify():
         return render_template('otp_verification.html')
+
+    @app.route('/student/dashboard')
+    def serve_student_dashboard():
+        """
+        Serve the student dashboard page with real database data
+        Requires active session authentication
+        """
+        from dashboard_data import get_student_dashboard_data
+        
+        if 'user_id' not in session or session.get('user_type') != 'student':
+            flash('Please log in to access the student dashboard', 'error')
+            return redirect(url_for('serve_login', user_type='student'))
+        
+        # Get dashboard data from database
+        dashboard_data = get_student_dashboard_data(session['user_id'])
+        if not dashboard_data:
+            flash('Error loading dashboard data', 'error')
+            return redirect(url_for('serve_login', user_type='student'))
+        
+        return render_template('student/dashboard.html', **dashboard_data)
+
+    @app.route('/faculty/dashboard')
+    def serve_faculty_dashboard():
+        """
+        Serve the faculty dashboard page with real database data
+        Requires active session authentication
+        """
+        from dashboard_data import get_faculty_dashboard_data
+        
+        if 'user_id' not in session or session.get('user_type') != 'faculty':
+            flash('Please log in to access the faculty dashboard', 'error')
+            return redirect(url_for('serve_login', user_type='faculty'))
+        
+        # Get dashboard data from database
+        dashboard_data = get_faculty_dashboard_data(session['user_id'])
+        if not dashboard_data:
+            flash('Error loading dashboard data', 'error')
+            return redirect(url_for('serve_login', user_type='faculty'))
+        
+        return render_template('faculty/dashboard.html', **dashboard_data)
+
+    # Student pages with database connectivity
+    @app.route('/student/profile')
+    def serve_student_profile():
+        """Serve student profile page with database data"""
+        from flask import session, redirect, url_for, flash
+        
+        if 'user_id' not in session or session.get('user_type') != 'student':
+            flash('Please log in to access this page', 'error')
+            return redirect(url_for('serve_login', user_type='student'))
+        
+        from models.gecr_models import Student
+        student = Student.query.get(session['user_id'])
+
+        # Try to find an uploaded profile photo for this student in UPLOAD_FOLDER
+        upload_dir = os.path.join(app.root_path, app.config.get('UPLOAD_FOLDER', 'uploads'))
+        photo_filename = None
+        try:
+            # Prefer thumbnail if available (student_<id>_thumb.*), fall back to original
+            thumb_pattern = os.path.join(upload_dir, f"student_{student.student_id}_thumb.*")
+            matches = glob.glob(thumb_pattern)
+            if matches:
+                photo_filename = os.path.basename(matches[0])
+            else:
+                pattern = os.path.join(upload_dir, f"student_{student.student_id}.*")
+                matches = glob.glob(pattern)
+                if matches:
+                    photo_filename = os.path.basename(matches[0])
+        except Exception:
+            photo_filename = None
+
+        return render_template('student/student-profile.html', student=student, photo_filename=photo_filename)
+
+    @app.route('/student/attendance')
+    def serve_student_attendance():
+        """Serve student attendance page with database data"""
+        from flask import session, redirect, url_for, flash
+        from dashboard_data import get_student_attendance_data
+        
+        if 'user_id' not in session or session.get('user_type') != 'student':
+            flash('Please log in to access this page', 'error')
+            return redirect(url_for('serve_login', user_type='student'))
+        
+        attendance_data = get_student_attendance_data(session['user_id'])
+        if not attendance_data:
+            flash('Error loading attendance data', 'error')
+            return redirect(url_for('serve_student_dashboard'))
+        
+        return render_template('student/attendance.html', **attendance_data)
+
+    @app.route('/student/schedule')
+    def serve_student_schedule():
+        """Serve student schedule page with database data"""
+        from flask import session, redirect, url_for, flash
+        from models.gecr_models import Student, Subject, Timetable
+        from database import db
+        
+        if 'user_id' not in session or session.get('user_type') != 'student':
+            flash('Please log in to access this page', 'error')
+            return redirect(url_for('serve_login', user_type='student'))
+        
+        student = Student.query.get(session['user_id'])
+        # Get schedule for student's semester
+        schedule = db.session.query(Timetable, Subject).join(
+            Subject, Timetable.subject_id == Subject.subject_id
+        ).filter(Subject.semester == student.semester).all()
+        
+        return render_template('student/schedule.html', student=student, schedule=schedule)
+
+    @app.route('/student/events')
+    def serve_student_events():
+        """Serve student events page"""
+        from flask import session, redirect, url_for, flash
+        from models.gecr_models import Student
+        
+        if 'user_id' not in session or session.get('user_type') != 'student':
+            flash('Please log in to access this page', 'error')
+            return redirect(url_for('serve_login', user_type='student'))
+        
+        student = Student.query.get(session['user_id'])
+        return render_template('student/events.html', student=student)
+
+    # Faculty pages with database connectivity
+    @app.route('/faculty/profile')
+    def serve_faculty_profile():
+        """Serve faculty profile page with database data"""
+        from flask import session, redirect, url_for, flash
+        from models.gecr_models import Faculty
+        
+        if 'user_id' not in session or session.get('user_type') != 'faculty':
+            flash('Please log in to access this page', 'error')
+            return redirect(url_for('serve_login', user_type='faculty'))
+        
+        faculty = Faculty.query.get(session['user_id'])
+        return render_template('faculty/profile.html', faculty=faculty)
+
+    @app.route('/faculty/subjects')
+    def serve_faculty_subjects():
+        """Serve faculty subjects page with database data"""
+        from flask import session, redirect, url_for, flash
+        from models.gecr_models import Faculty, Subject
+        
+        if 'user_id' not in session or session.get('user_type') != 'faculty':
+            flash('Please log in to access this page', 'error')
+            return redirect(url_for('serve_login', user_type='faculty'))
+        
+        faculty = Faculty.query.get(session['user_id'])
+        subjects = Subject.query.filter_by(faculty_id=session['user_id']).all()
+        return render_template('faculty/subjects.html', faculty=faculty, subjects=subjects)
+
+    @app.route('/faculty/students')
+    def serve_faculty_students():
+        """Serve faculty students page with database data"""
+        from flask import session, redirect, url_for, flash
+        from dashboard_data import get_faculty_students_data
+        
+        if 'user_id' not in session or session.get('user_type') != 'faculty':
+            flash('Please log in to access this page', 'error')
+            return redirect(url_for('serve_login', user_type='faculty'))
+        
+        students_data = get_faculty_students_data(session['user_id'])
+        if not students_data:
+            flash('Error loading students data', 'error')
+            return redirect(url_for('serve_faculty_dashboard'))
+        
+        return render_template('faculty/students.html', **students_data)
+
+    @app.route('/faculty/assignments')
+    def serve_faculty_assignments():
+        """Serve faculty assignments page with database data"""
+        from flask import session, redirect, url_for, flash
+        from dashboard_data import get_faculty_assignments_data
+        
+        if 'user_id' not in session or session.get('user_type') != 'faculty':
+            flash('Please log in to access this page', 'error')
+            return redirect(url_for('serve_login', user_type='faculty'))
+        
+        assignments_data = get_faculty_assignments_data(session['user_id'])
+        if not assignments_data:
+            flash('Error loading assignments data', 'error')
+            return redirect(url_for('serve_faculty_dashboard'))
+        
+        return render_template('faculty/assignments.html', **assignments_data)
+
+    @app.route('/faculty/attendance')
+    def serve_faculty_attendance():
+        """Serve faculty attendance page with database data"""
+        from flask import session, redirect, url_for, flash
+        from models.gecr_models import Faculty, Subject, Student, Attendance
+        from database import db
+        
+        if 'user_id' not in session or session.get('user_type') != 'faculty':
+            flash('Please log in to access this page', 'error')
+            return redirect(url_for('serve_login', user_type='faculty'))
+        
+        faculty = Faculty.query.get(session['user_id'])
+        subjects = Subject.query.filter_by(faculty_id=session['user_id']).all()
+        
+        # Get attendance records for faculty's subjects
+        attendance_records = []
+        for subject in subjects:
+            records = db.session.query(Attendance, Student).join(
+                Student, Attendance.student_id == Student.student_id
+            ).filter(Attendance.subject_id == subject.subject_id).all()
+            attendance_records.extend([(record[0], record[1], subject) for record in records])
+        
+        return render_template('faculty/attendance.html', 
+                             faculty=faculty, subjects=subjects, attendance_records=attendance_records)
+
+    @app.route('/faculty/schedule')
+    def serve_faculty_schedule():
+        """Serve faculty schedule page with database data"""
+        from flask import session, redirect, url_for, flash
+        from models.gecr_models import Faculty, Timetable, Subject
+        from database import db
+        
+        if 'user_id' not in session or session.get('user_type') != 'faculty':
+            flash('Please log in to access this page', 'error')
+            return redirect(url_for('serve_login', user_type='faculty'))
+        
+        faculty = Faculty.query.get(session['user_id'])
+        
+        # Get faculty's schedule
+        schedule = db.session.query(Timetable, Subject).join(
+            Subject, Timetable.subject_id == Subject.subject_id
+        ).filter(Timetable.faculty_id == session['user_id']).all()
+        
+        return render_template('faculty/schedule.html', faculty=faculty, schedule=schedule)
+
+    @app.route('/faculty/events')
+    def serve_faculty_events():
+        """Serve faculty events page"""
+        if 'user_id' not in session or session.get('user_type') != 'faculty':
+            flash('Please log in to access this page', 'error')
+            return redirect(url_for('serve_login', user_type='faculty'))
+        
+        from models.gecr_models import Faculty
+        faculty = Faculty.query.get(session['user_id'])
+        
+        # For now, render a basic events page - you can add event data later
+        return render_template('faculty/events.html', faculty=faculty, events=[])
+
+    @app.route('/faculty/settings')
+    def serve_faculty_settings():
+        """Serve faculty settings page"""
+        if 'user_id' not in session or session.get('user_type') != 'faculty':
+            flash('Please log in to access this page', 'error')
+            return redirect(url_for('serve_login', user_type='faculty'))
+        
+        from models.gecr_models import Faculty
+        faculty = Faculty.query.get(session['user_id'])
+        
+        return render_template('faculty/settings.html', faculty=faculty)
+
+    @app.route('/student/settings')
+    def serve_student_settings():
+        """Serve student settings page"""
+        if 'user_id' not in session or session.get('user_type') != 'student':
+            flash('Please log in to access this page', 'error')
+            return redirect(url_for('serve_login', user_type='student'))
+        
+        from models.gecr_models import Student
+        student = Student.query.get(session['user_id'])
+        
+        return render_template('student/settings.html', student=student)
+
+    @app.route('/student/upload-photo', methods=['POST'])
+    def student_upload_photo():
+        """Handle student profile photo upload from settings page"""
+        if 'user_id' not in session or session.get('user_type') != 'student':
+            flash('Please log in to upload a photo', 'error')
+            return redirect(url_for('serve_login', user_type='student'))
+
+        if 'photo' not in request.files:
+            flash('No file provided', 'error')
+            return redirect(url_for('serve_student_settings'))
+
+        file = request.files['photo']
+        if file.filename == '':
+            flash('No file selected', 'error')
+            return redirect(url_for('serve_student_settings'))
+
+        filename = secure_filename(file.filename)
+        _, ext = os.path.splitext(filename)
+        dest_name = f"student_{session['user_id']}{ext}"
+
+        upload_dir = os.path.join(app.root_path, app.config.get('UPLOAD_FOLDER', 'uploads'))
+        os.makedirs(upload_dir, exist_ok=True)
+
+        dest_path = os.path.join(upload_dir, dest_name)
+        try:
+            # Save original
+            file.save(dest_path)
+
+            # Create thumbnail using Pillow if available
+            try:
+                from PIL import Image
+                thumb_size = (300, 300)
+                img = Image.open(dest_path)
+                img = img.convert('RGB')
+                img.thumbnail(thumb_size)
+                base, _ = os.path.splitext(dest_name)
+                thumb_name = f"{base}_thumb.jpg"
+                thumb_path = os.path.join(upload_dir, thumb_name)
+                img.save(thumb_path, format='JPEG', quality=85)
+            except Exception as e:
+                # Pillow may not be installed or image processing failed; continue gracefully
+                app.logger.info(f"Thumbnail creation skipped or failed: {e}")
+
+            flash('Profile photo uploaded successfully', 'success')
+        except Exception as e:
+            app.logger.error(f"Failed to save uploaded photo: {e}")
+            flash('Failed to upload photo', 'error')
+
+        return redirect(url_for('serve_student_settings'))
+
+    @app.route('/uploads/<path:filename>')
+    def uploaded_file(filename):
+        """Serve uploaded files (profile photos) from upload folder"""
+        upload_dir = os.path.join(app.root_path, app.config.get('UPLOAD_FOLDER', 'uploads'))
+        return send_from_directory(upload_dir, filename)
+
+    @app.route('/auth/login/<user_type>', methods=['POST'])
+    def auth_login(user_type):
+        """
+        Handle server-side login authentication
+        """
+        from models.gecr_models import Student, Faculty
+        from flask import session, flash, redirect, url_for
+        
+        user_type = user_type.lower()
+        if user_type not in ['student', 'faculty']:
+            flash('Invalid user type', 'error')
+            return redirect(url_for('serve_login', user_type='student'))
+        
+        if user_type == 'student':
+            enrollment = request.form.get('enrollment', '').strip()
+            password = request.form.get('password', '')
+            
+            if not enrollment or not password:
+                flash('Enrollment number and password are required', 'error')
+                return redirect(url_for('serve_login', user_type='student'))
+            
+            # Try to find student by roll number first, then by email
+            user = Student.find_by_roll_no(enrollment)
+            if not user:
+                user = Student.find_by_email(enrollment)
+            
+            if not user or not user.check_password(password):
+                flash('Invalid enrollment number or password', 'error')
+                return redirect(url_for('serve_login', user_type='student'))
+            
+            # Store user info in session
+            session['user_id'] = user.student_id
+            session['user_type'] = 'student'
+            session['user_email'] = user.email
+            session['user_name'] = user.name
+            
+            flash(f'Welcome {user.name}!', 'success')
+            return redirect(url_for('serve_student_dashboard'))
+            
+        else:  # faculty
+            faculty_email = request.form.get('facultyId', '').strip()
+            password = request.form.get('password', '')
+            
+            if not faculty_email or not password:
+                flash('Email and password are required', 'error')
+                return redirect(url_for('serve_login', user_type='faculty'))
+            
+            # Find faculty by email
+            user = Faculty.find_by_email(faculty_email)
+            
+            if not user or not user.check_password(password):
+                flash('Invalid email or password', 'error')
+                return redirect(url_for('serve_login', user_type='faculty'))
+            
+            # Store user info in session
+            session['user_id'] = user.faculty_id
+            session['user_type'] = 'faculty'
+            session['user_email'] = user.email
+            session['user_name'] = user.name
+            
+            flash(f'Welcome {user.name}!', 'success')
+            return redirect(url_for('serve_faculty_dashboard'))
+
+    @app.route('/auth/logout')
+    def auth_logout():
+        """
+        Handle user logout
+        """
+        from flask import session, flash, redirect, url_for
+        session.clear()
+        flash('You have been logged out successfully', 'info')
+        return redirect(url_for('index'))
+
+    @app.route('/auth/register/<user_type>', methods=['POST'])
+    def auth_register(user_type):
+        """
+        Handle server-side user registration
+        """
+        from models.gecr_models import Student, Faculty
+        from database import db
+        from flask import session, flash, redirect, url_for
+        from datetime import datetime
+        
+        user_type = user_type.lower()
+        if user_type not in ['student', 'faculty']:
+            flash('Invalid user type', 'error')
+            return redirect(url_for('serve_register', user_type='student'))
+        
+        if user_type == 'student':
+            # Get student registration data
+            name = request.form.get('name', '').strip()
+            email = request.form.get('email', '').strip()
+            password = request.form.get('password', '')
+            confirm_password = request.form.get('confirmPassword', '')
+            roll_no = request.form.get('rollNo', '').strip()
+            department = request.form.get('department', '').strip()
+            semester = request.form.get('semester', '')
+            phone = request.form.get('phone', '').strip()
+            
+            # Validation
+            if not all([name, email, password, roll_no, department]):
+                flash('Name, email, password, roll number, and department are required', 'error')
+                return redirect(url_for('serve_register', user_type='student'))
+            
+            if password != confirm_password:
+                flash('Passwords do not match', 'error')
+                return redirect(url_for('serve_register', user_type='student'))
+            
+            if len(password) < 6:
+                flash('Password must be at least 6 characters long', 'error')
+                return redirect(url_for('serve_register', user_type='student'))
+            
+            # Check if user already exists
+            if Student.find_by_email(email):
+                flash('Email already registered', 'error')
+                return redirect(url_for('serve_register', user_type='student'))
+            
+            if Student.find_by_roll_no(roll_no):
+                flash('Roll number already registered', 'error')
+                return redirect(url_for('serve_register', user_type='student'))
+            
+            # Create new student
+            try:
+                new_student = Student(
+                    roll_no=roll_no,
+                    name=name,
+                    email=email,
+                    department=department,
+                    semester=int(semester) if semester else 1,
+                    phone=phone,
+                    fees_paid=False
+                )
+                new_student.set_password(password)
+                
+                db.session.add(new_student)
+                db.session.commit()
+                
+                flash('Registration successful! You can now log in.', 'success')
+                return redirect(url_for('serve_login', user_type='student'))
+                
+            except Exception as e:
+                db.session.rollback()
+                flash('Registration failed. Please try again.', 'error')
+                return redirect(url_for('serve_register', user_type='student'))
+            
+        else:  # faculty
+            # Get faculty registration data
+            name = request.form.get('name', '').strip()
+            email = request.form.get('email', '').strip()
+            password = request.form.get('password', '')
+            confirm_password = request.form.get('confirmPassword', '')
+            department = request.form.get('department', '').strip()
+            designation = request.form.get('designation', '').strip()
+            phone = request.form.get('phone', '').strip()
+            
+            # Validation
+            if not all([name, email, password, department, designation]):
+                flash('Name, email, password, department, and designation are required', 'error')
+                return redirect(url_for('serve_register', user_type='faculty'))
+            
+            if password != confirm_password:
+                flash('Passwords do not match', 'error')
+                return redirect(url_for('serve_register', user_type='faculty'))
+            
+            if len(password) < 6:
+                flash('Password must be at least 6 characters long', 'error')
+                return redirect(url_for('serve_register', user_type='faculty'))
+            
+            # Check if user already exists
+            if Faculty.find_by_email(email):
+                flash('Email already registered', 'error')
+                return redirect(url_for('serve_register', user_type='faculty'))
+            
+            # Create new faculty
+            try:
+                new_faculty = Faculty(
+                    name=name,
+                    email=email,
+                    department=department,
+                    designation=designation,
+                    phone=phone,
+                    salary=0  # Default salary
+                )
+                new_faculty.set_password(password)
+                
+                db.session.add(new_faculty)
+                db.session.commit()
+                
+                flash('Registration successful! You can now log in.', 'success')
+                return redirect(url_for('serve_login', user_type='faculty'))
+                
+            except Exception as e:
+                db.session.rollback()
+                flash('Registration failed. Please try again.', 'error')
+                return redirect(url_for('serve_register', user_type='faculty'))
 
     # Serve logo from static if available, otherwise fallback to templates folder
     @app.route('/logo.png')
@@ -385,6 +918,35 @@ def register_main_routes(app):
         if os.path.exists(fav):
             return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico')
         return ('', 204)
+
+    # Context processor to inject current avatar URLs into all templates
+    @app.context_processor
+    def inject_current_avatar():
+        from flask import session, url_for
+        avatar_url = None
+        avatar_thumb = None
+        try:
+            if 'user_id' in session and session.get('user_type') == 'student':
+                uid = session['user_id']
+                upload_dir = os.path.join(app.root_path, app.config.get('UPLOAD_FOLDER', 'uploads'))
+                # prefer thumb
+                pattern = os.path.join(upload_dir, f"student_{uid}_thumb.*")
+                matches = glob.glob(pattern)
+                if matches:
+                    avatar_thumb = url_for('uploaded_file', filename=os.path.basename(matches[0]))
+                else:
+                    pattern2 = os.path.join(upload_dir, f"student_{uid}.*")
+                    matches2 = glob.glob(pattern2)
+                    if matches2:
+                        avatar_url = url_for('uploaded_file', filename=os.path.basename(matches2[0]))
+            elif 'user_id' in session and session.get('user_type') == 'faculty':
+                # you can add faculty-specific avatar logic here if implemented
+                pass
+        except Exception:
+            avatar_url = None
+            avatar_thumb = None
+
+        return dict(current_avatar_url=avatar_url, current_avatar_thumb_url=avatar_thumb)
 
     # File upload endpoint
     @app.route('/api/upload', methods=['POST'])

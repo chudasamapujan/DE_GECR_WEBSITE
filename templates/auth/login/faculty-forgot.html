@@ -110,6 +110,7 @@
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
     </style>
+    </style>
 </head>
 <body>
     <div class="forgot-container flex-center">
@@ -150,7 +151,7 @@
                             <label for="facultyId" class="block text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-id-badge mr-2 text-indigo-600"></i>Faculty ID
                             </label>
-                            <input type="text" id="facultyId" name="facultyId" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300" placeholder="e.g., CS101, ME205" required>
+                            <input type="text" id="facultyId" name="facultyId" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300" placeholder="e.g., F123" required>
                         </div>
                         
                         <div>
@@ -171,9 +172,7 @@
                                 <option value="mechanical">Mechanical Engineering</option>
                                 <option value="electrical">Electrical Engineering</option>
                                 <option value="civil">Civil Engineering</option>
-                                <option value="robotics">Robotics & Automation</option>
                                 <option value="ai">AI & Data Science</option>
-                                <option value="instrumentation">Instrumentation & Control</option>
                             </select>
                         </div>
                         
@@ -258,29 +257,23 @@
     </div>
 
     <!-- Scripts -->
-    <script src="../js/validations.js"></script>
-    <script src="../js/api.js"></script>
+    <script src="{{ url_for('static', filename='js/validations.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/api.js') }}"></script>
     <script>
         let currentStep = 1;
         let otpTimer = 60;
         let timerInterval;
 
         function sendOTP() {
-            const facultyId = document.getElementById('facultyId').value.trim().toUpperCase();
+            const facultyId = document.getElementById('facultyId').value.trim();
             const email = document.getElementById('email').value.trim();
             const department = document.getElementById('department').value;
             const validator = new GECUtils.FormValidator(document.getElementById('forgotPasswordForm'));
             let isValid = true;
 
-            // Update faculty ID field
-            document.getElementById('facultyId').value = facultyId;
-
             // Validate faculty ID
             if (!facultyId) {
                 validator.showError('facultyId', 'Faculty ID is required');
-                isValid = false;
-            } else if (!validator.validateFacultyId(facultyId)) {
-                validator.showError('facultyId', 'Please enter a valid faculty ID');
                 isValid = false;
             } else {
                 validator.showSuccess('facultyId');
@@ -308,27 +301,40 @@
             if (isValid) {
                 const btn = event.target;
                 GECUtils.LoadingManager.setLoading(btn, true);
-                
-                setTimeout(() => {
+
+                fetch('/api/auth/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, user_type: 'faculty' })
+                }).then(r => r.json().then(j => ({ ok: r.ok, status: r.status, body: j })))
+                .then(resp => {
                     GECUtils.LoadingManager.setLoading(btn, false);
-                    
+                    if (!resp.ok) {
+                        GECUtils.toast.error(resp.body.error || 'Failed to send OTP');
+                        return;
+                    }
+
                     // Move to step 2
                     document.getElementById('step1').classList.remove('active');
                     document.getElementById('step2').classList.add('active');
                     document.getElementById('step1-indicator').classList.add('completed');
                     document.getElementById('step2-indicator').classList.add('active');
                     document.getElementById('line1').classList.add('completed');
-                    
+
                     // Show masked email
                     const maskedEmail = email.replace(/(.{2})(.*)(@.*)/, '$1***$3');
                     document.getElementById('emailDisplay').textContent = maskedEmail;
-                    
+
                     // Start timer
                     startResendTimer();
-                    
-                    GECUtils.toast.success('OTP sent successfully to your email!');
+
+                    GECUtils.toast.success(resp.body.message || 'OTP sent successfully to your email!');
                     currentStep = 2;
-                }, 2000);
+                }).catch(err => {
+                    GECUtils.LoadingManager.setLoading(btn, false);
+                    console.error(err);
+                    GECUtils.toast.error('Network error sending OTP');
+                });
             }
         }
 
@@ -336,14 +342,14 @@
             otpTimer = 60;
             const resendBtn = document.getElementById('resendBtn');
             const timerSpan = document.getElementById('timer');
-            
+
             resendBtn.disabled = true;
             resendBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            
+
             timerInterval = setInterval(() => {
                 otpTimer--;
                 timerSpan.textContent = otpTimer;
-                
+
                 if (otpTimer <= 0) {
                     clearInterval(timerInterval);
                     resendBtn.disabled = false;
@@ -355,8 +361,28 @@
 
         function resendOTP() {
             if (otpTimer <= 0) {
-                GECUtils.toast.info('OTP resent successfully!');
-                startResendTimer();
+                const email = document.getElementById('email').value.trim();
+                const btn = document.getElementById('resendBtn');
+                GECUtils.LoadingManager.setLoading(btn, true);
+
+                fetch('/api/auth/resend-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, purpose: 'forgot_password', user_type: 'faculty' })
+                }).then(r => r.json().then(j => ({ ok: r.ok, body: j })))
+                .then(resp => {
+                    GECUtils.LoadingManager.setLoading(btn, false);
+                    if (!resp.ok) {
+                        GECUtils.toast.error(resp.body.error || 'Failed to resend OTP');
+                        return;
+                    }
+                    GECUtils.toast.info(resp.body.message || 'OTP resent successfully');
+                    startResendTimer();
+                }).catch(err => {
+                    GECUtils.LoadingManager.setLoading(btn, false);
+                    console.error(err);
+                    GECUtils.toast.error('Network error while resending OTP');
+                });
             }
         }
 
@@ -372,29 +398,37 @@
                 GECUtils.toast.error('Please enter the complete 6-digit OTP');
                 return;
             }
-            
+            const email = document.getElementById('email').value.trim();
             const btn = event.target;
             GECUtils.LoadingManager.setLoading(btn, true);
-            
-            setTimeout(() => {
+
+            fetch('/api/auth/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, otp, purpose: 'forgot_password', user_type: 'faculty' })
+            }).then(r => r.json().then(j => ({ ok: r.ok, status: r.status, body: j })))
+            .then(resp => {
                 GECUtils.LoadingManager.setLoading(btn, false);
-                
-                // Simulate OTP verification (in real implementation, verify with backend)
-                if (otp === '123456' || otp.length === 6) {
-                    // Move to step 3
-                    document.getElementById('step2').classList.remove('active');
-                    document.getElementById('step3').classList.add('active');
-                    document.getElementById('step2-indicator').classList.add('completed');
-                    document.getElementById('step3-indicator').classList.add('active');
-                    document.getElementById('line2').classList.add('completed');
-                    
-                    clearInterval(timerInterval);
-                    GECUtils.toast.success('OTP verified successfully!');
-                    currentStep = 3;
-                } else {
-                    GECUtils.toast.error('Invalid OTP. Please try again.');
+                if (!resp.ok) {
+                    GECUtils.toast.error(resp.body.error || 'OTP verification failed');
+                    return;
                 }
-            }, 1500);
+
+                // Move to step 3
+                document.getElementById('step2').classList.remove('active');
+                document.getElementById('step3').classList.add('active');
+                document.getElementById('step2-indicator').classList.add('completed');
+                document.getElementById('step3-indicator').classList.add('active');
+                document.getElementById('line2').classList.add('completed');
+
+                clearInterval(timerInterval);
+                GECUtils.toast.success(resp.body.message || 'OTP verified successfully!');
+                currentStep = 3;
+            }).catch(err => {
+                GECUtils.LoadingManager.setLoading(btn, false);
+                console.error(err);
+                GECUtils.toast.error('Network error verifying OTP');
+            });
         }
 
         function goBackToStep1() {
@@ -475,17 +509,30 @@
                     const submitBtn = form.querySelector('button[type="submit"]');
                     GECUtils.LoadingManager.setLoading(submitBtn, true);
                     
-                    setTimeout(() => {
+                    // Call reset-password endpoint with the OTP code as reset_token
+                    const otp = Array.from(document.querySelectorAll('.otp-input')).map(i => i.value).join('');
+                    fetch('/api/auth/reset-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: document.getElementById('email').value.trim(), new_password: newPassword, reset_token: otp, user_type: 'faculty' })
+                    }).then(r => r.json().then(j => ({ ok: r.ok, body: j })))
+                    .then(resp => {
                         GECUtils.LoadingManager.setLoading(submitBtn, false);
-                        GECUtils.toast.success('Password reset successfully! You can now login with your new password.');
-                        
-                        setTimeout(() => {
-                            window.location.href = 'faculty.html';
-                        }, 2000);
-                    }, 2000);
+                        if (!resp.ok) {
+                            GECUtils.toast.error(resp.body.error || 'Failed to reset password');
+                            return;
+                        }
+
+                        GECUtils.toast.success(resp.body.message || 'Password reset successfully!');
+                        setTimeout(() => { window.location.href = '{{ url_for("serve_login", user_type="faculty") }}'; }, 1500);
+                    }).catch(err => {
+                        GECUtils.LoadingManager.setLoading(submitBtn, false);
+                        console.error(err);
+                        GECUtils.toast.error('Network error while resetting password');
+                    });
                 }
             });
         });
     </script>
 </body>
-</html> 
+</html>

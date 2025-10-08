@@ -1,6 +1,6 @@
 """
 Database Configuration for GEC Rajkot Website
-SQLite database setup with SQLAlchemy
+SQLite database setup with SQLAlchemy - GECR Schema
 Author: GEC Rajkot Development Team
 """
 
@@ -24,6 +24,13 @@ def init_database(app):
     db.init_app(app)
     migrate.init_app(app, db)
     
+    # Import all models to ensure they are registered
+    from models.gecr_models import (
+        Student, Faculty, Subject, Timetable, 
+        Attendance, Assignment, Submission, 
+        Message, Fee, Salary
+    )
+    
     return db
 
 def create_tables(app):
@@ -31,6 +38,13 @@ def create_tables(app):
     Create all database tables
     """
     with app.app_context():
+        # Import models
+        from models.gecr_models import (
+            Student, Faculty, Subject, Timetable, 
+            Attendance, Assignment, Submission, 
+            Message, Fee, Salary
+        )
+        
         db.create_all()
         print("Database tables created successfully!")
 
@@ -47,6 +61,13 @@ def reset_database(app):
     Reset database by dropping and recreating all tables
     """
     with app.app_context():
+        # Import models
+        from models.gecr_models import (
+            Student, Faculty, Subject, Timetable, 
+            Attendance, Assignment, Submission, 
+            Message, Fee, Salary
+        )
+        
         db.drop_all()
         db.create_all()
         print("Database reset completed!")
@@ -58,28 +79,14 @@ def get_db_stats():
     """
     try:
         # Import models here to avoid circular imports
-        from models import Student, Faculty, OTP
+        from models.gecr_models import Student, Faculty
         
         stats = {
             'students': Student.query.count(),
             'faculty': Faculty.query.count(),
-            'active_otps': OTP.query.filter_by(is_used=False, is_expired=False).count(),
-            'total_otps': OTP.query.count()
+            'total_users': Student.query.count() + Faculty.query.count()
         }
         return stats
     except Exception as e:
         print(f"Error getting database stats: {e}")
         return None
-
-def cleanup_expired_data():
-    """
-    Cleanup expired data from database
-    """
-    try:
-        from models import OTP
-        cleaned_otps = OTP.cleanup_expired_otps()
-        print(f"Cleaned up {cleaned_otps} expired OTP records")
-        return cleaned_otps
-    except Exception as e:
-        print(f"Error during cleanup: {e}")
-        return 0

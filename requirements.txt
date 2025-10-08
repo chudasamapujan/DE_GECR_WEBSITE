@@ -31,3 +31,4 @@ coverage==7.3.2
 gunicorn==21.2.0
 psycopg2-binary==2.9.7  # For PostgreSQL in production
 sendgrid==6.11.0
+Pillow==10.1.0

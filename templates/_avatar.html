@@ -1,0 +1,11 @@
+{# Reusable avatar partial. Usage: {% include '_avatar.html' with context %} #}
+{# Expects: user_id (optional), size (px) optional. Uses session user if available. #}
+{% set _size = size if size is defined else 40 %}
+{% set _cls = 'w-' + (_size|string) + ' h-' + (_size|string) + ' rounded-full object-cover' %}
+{% if current_avatar_thumb_url %}
+  <img src="{{ current_avatar_thumb_url }}" alt="avatar" class="rounded-full" style="width:{{_size}}px;height:{{_size}}px;object-fit:cover;">
+{% elif current_avatar_url %}
+  <img src="{{ current_avatar_url }}" alt="avatar" class="rounded-full" style="width:{{_size}}px;height:{{_size}}px;object-fit:cover;">
+{% else %}
+  <img src="{{ url_for('static', filename='images/avatar-placeholder.svg') }}" alt="avatar" class="rounded-full" style="width:{{_size}}px;height:{{_size}}px;object-fit:cover;">
+{% endif %}

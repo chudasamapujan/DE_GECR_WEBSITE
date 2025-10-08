@@ -47,7 +47,7 @@ DE_GECR/
 │   │   └── pages/
 │   │       ├── academics.html         # Academic information
 │   │       ├── events.html            # College events
-│   │       ├── resources.html         # Learning resources
+│   │       ├── resources.html         # Learning resources (ARCHIVED)
 │   │       ├── schedule.html          # Class schedule
 │   │       └── student-profile.html   # Student profile management
 │   │
@@ -57,7 +57,7 @@ DE_GECR/
 │   │   └── pages/
 │   │       ├── assignments.html       # Assignment management
 │   │       ├── attendance.html        # Attendance marking
-│   │       ├── grades.html            # Grade management
+│   │       ├── grades.html            # Grade management (ARCHIVED)
 │   │       ├── profile.html           # Faculty profile
 │   │       ├── schedule.html          # Teaching schedule
 │   │       ├── students.html          # Student management
