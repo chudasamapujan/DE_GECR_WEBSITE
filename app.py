@@ -14,6 +14,10 @@ import logging
 from logging.handlers import RotatingFileHandler
 import glob
 from werkzeug.utils import secure_filename
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Import configurations and routes
 from database import init_database, create_tables
@@ -619,6 +623,15 @@ def register_main_routes(app):
         
         # For now, render a basic events page - you can add event data later
         return render_template('faculty/events.html', faculty=faculty, events=[])
+
+    @app.route('/faculty/manage-announcements')
+    def serve_faculty_manage_announcements():
+        """Serve faculty announcements & events management page"""
+        if 'user_id' not in session or session.get('user_type') != 'faculty':
+            flash('Please log in to access this page', 'error')
+            return redirect(url_for('serve_login', user_type='faculty'))
+        
+        return render_template('faculty/manage-announcements.html')
 
     @app.route('/faculty/settings')
     def serve_faculty_settings():

@@ -3,8 +3,356 @@
 {% block title %}Attendance - Student{% endblock %}
 
 {% block content %}
-<div class="glass-card p-6">
-    <h2 class="text-2xl font-semibold mb-4">Attendance</h2>
-    <p class="text-gray-600">Attendance details will be shown here. This is a placeholder page to avoid TemplateNotFound errors.</p>
+<style>
+    .progress-bar {
+        height: 8px;
+        background-color: #e5e7eb;
+        border-radius: 9999px;
+        overflow: hidden;
+    }
+    .progress-bar-fill {
+        height: 100%;
+        border-radius: 9999px;
+        transition: width 0.3s ease;
+    }
+</style>
+
+<!-- Overall Attendance Summary -->
+<div class="glass-card p-6 mb-6">
+    <h2 class="text-2xl font-semibold mb-4 gradient-text">Overall Attendance</h2>
+    <div id="overallStats" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="text-center p-4 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-lg">
+            <p class="text-gray-600 text-sm">Overall Percentage</p>
+            <h3 id="overallPercentage" class="text-3xl font-bold gradient-text">--</h3>
+        </div>
+        <div class="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg">
+            <p class="text-gray-600 text-sm">Total Classes</p>
+            <h3 id="totalClasses" class="text-3xl font-bold text-green-600">--</h3>
+        </div>
+        <div class="text-center p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg">
+            <p class="text-gray-600 text-sm">Present</p>
+            <h3 id="presentCount" class="text-3xl font-bold text-blue-600">--</h3>
+        </div>
+        <div class="text-center p-4 bg-gradient-to-br from-red-50 to-orange-50 rounded-lg">
+            <p class="text-gray-600 text-sm">Absent</p>
+            <h3 id="absentCount" class="text-3xl font-bold text-red-600">--</h3>
+        </div>
+    </div>
 </div>
+
+<!-- Filters -->
+<div class="glass-card p-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+            <label class="text-sm text-gray-600">Filter by Subject</label>
+            <select id="subjectFilter" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <option value="">All Subjects</option>
+            </select>
+        </div>
+        <div>
+            <label class="text-sm text-gray-600">From Date</label>
+            <input type="date" id="startDate" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+            <label class="text-sm text-gray-600">To Date</label>
+            <input type="date" id="endDate" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+    </div>
+</div>
+
+<!-- Subject-wise Attendance -->
+<div class="glass-card p-6 mb-6">
+    <h2 class="text-xl font-semibold mb-4 gradient-text">Subject-wise Attendance</h2>
+    <div id="loadingSubjects" class="text-center py-8">
+        <svg class="animate-spin h-8 w-8 text-indigo-600 mx-auto" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="mt-2 text-gray-600">Loading subjects...</p>
+    </div>
+    <div id="subjectWiseTable" class="hidden overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Faculty</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Classes</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Present</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Absent</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Late</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Percentage</th>
+                </tr>
+            </thead>
+            <tbody id="subjectWiseBody" class="bg-white divide-y divide-gray-200">
+                <!-- Dynamic content -->
+            </tbody>
+        </table>
+    </div>
+    <div id="noSubjects" class="hidden text-center py-8 text-gray-500">
+        No subjects found. Please contact faculty to enroll in subjects.
+    </div>
+</div>
+
+<!-- Recent Attendance Records -->
+<div class="glass-card p-6">
+    <h2 class="text-xl font-semibold mb-4 gradient-text">Recent Attendance Records</h2>
+    <div id="loadingRecords" class="text-center py-8">
+        <svg class="animate-spin h-8 w-8 text-indigo-600 mx-auto" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="mt-2 text-gray-600">Loading records...</p>
+    </div>
+    <div id="recentRecordsTable" class="hidden overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remarks</th>
+                </tr>
+            </thead>
+            <tbody id="recentRecordsBody" class="bg-white divide-y divide-gray-200">
+                <!-- Dynamic content -->
+            </tbody>
+        </table>
+    </div>
+    <div id="noRecords" class="hidden text-center py-8 text-gray-500">
+        No attendance records found
+    </div>
+</div>
+
+<script>
+let allSubjects = [];
+let attendanceData = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadAttendanceData();
+    
+    // Setup filters
+    document.getElementById('subjectFilter').addEventListener('change', filterAttendance);
+    document.getElementById('startDate').addEventListener('change', filterAttendance);
+    document.getElementById('endDate').addEventListener('change', filterAttendance);
+});
+
+async function loadAttendanceData() {
+    try {
+        const response = await fetch('/api/student/attendance', {
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            attendanceData = await response.json();
+            displayAttendanceData(attendanceData);
+            loadSubjectsFilter();
+        } else {
+            showError('Failed to load attendance data');
+        }
+    } catch (error) {
+        console.error('Error loading attendance:', error);
+        showError('Error loading attendance data');
+    }
+}
+
+async function filterAttendance() {
+    const subjectId = document.getElementById('subjectFilter').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    const params = new URLSearchParams();
+    if (subjectId) params.append('subject_id', subjectId);
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+    
+    try {
+        const response = await fetch(`/api/student/attendance?${params}`, {
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            attendanceData = await response.json();
+            displayAttendanceData(attendanceData);
+        }
+    } catch (error) {
+        console.error('Error filtering attendance:', error);
+    }
+}
+
+async function loadSubjectsFilter() {
+    try {
+        const response = await fetch('/api/student/subjects', {
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            allSubjects = await response.json();
+            const select = document.getElementById('subjectFilter');
+            
+            allSubjects.forEach(subject => {
+                const option = document.createElement('option');
+                option.value = subject.id;
+                option.textContent = `${subject.subject_code} - ${subject.subject_name}`;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading subjects:', error);
+    }
+}
+
+function displayAttendanceData(data) {
+    // Update overall stats
+    document.getElementById('overallPercentage').textContent = 
+        (data.overall_attendance_percentage || 0).toFixed(1) + '%';
+    
+    let totalClasses = 0, present = 0, absent = 0;
+    
+    if (data.by_subject && data.by_subject.length > 0) {
+        data.by_subject.forEach(subject => {
+            totalClasses += subject.total_classes || 0;
+            present += subject.present_count || 0;
+            absent += subject.absent_count || 0;
+        });
+    }
+    
+    document.getElementById('totalClasses').textContent = totalClasses;
+    document.getElementById('presentCount').textContent = present;
+    document.getElementById('absentCount').textContent = absent;
+    
+    // Display subject-wise attendance
+    displaySubjectWise(data.by_subject || []);
+    
+    // Display recent records
+    displayRecentRecords(data.recent_records || []);
+}
+
+function displaySubjectWise(subjects) {
+    const loading = document.getElementById('loadingSubjects');
+    const table = document.getElementById('subjectWiseTable');
+    const tbody = document.getElementById('subjectWiseBody');
+    const noSubjects = document.getElementById('noSubjects');
+    
+    loading.classList.add('hidden');
+    
+    if (subjects.length === 0) {
+        table.classList.add('hidden');
+        noSubjects.classList.remove('hidden');
+        return;
+    }
+    
+    noSubjects.classList.add('hidden');
+    table.classList.remove('hidden');
+    
+    tbody.innerHTML = subjects.map(subject => {
+        const percentage = subject.attendance_percentage || 0;
+        let percentageColor = 'red';
+        let bgColor = 'bg-red-100';
+        let textColor = 'text-red-800';
+        
+        if (percentage >= 85) {
+            percentageColor = 'green';
+            bgColor = 'bg-green-100';
+            textColor = 'text-green-800';
+        } else if (percentage >= 75) {
+            percentageColor = 'yellow';
+            bgColor = 'bg-yellow-100';
+            textColor = 'text-yellow-800';
+        }
+        
+        return `
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">${subject.subject_code || 'N/A'}</div>
+                    <div class="text-sm text-gray-500">${subject.subject_name || 'N/A'}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    ${subject.faculty_name || 'N/A'}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    ${subject.total_classes || 0}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">
+                    ${subject.present_count || 0}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-medium">
+                    ${subject.absent_count || 0}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-yellow-600 font-medium">
+                    ${subject.late_count || 0}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center space-x-2">
+                        <span class="px-3 py-1 text-xs font-semibold rounded-full ${bgColor} ${textColor}">
+                            ${percentage.toFixed(1)}%
+                        </span>
+                    </div>
+                    <div class="progress-bar mt-2" style="width: 100px;">
+                        <div class="progress-bar-fill bg-${percentageColor}-500" style="width: ${percentage}%"></div>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function displayRecentRecords(records) {
+    const loading = document.getElementById('loadingRecords');
+    const table = document.getElementById('recentRecordsTable');
+    const tbody = document.getElementById('recentRecordsBody');
+    const noRecords = document.getElementById('noRecords');
+    
+    loading.classList.add('hidden');
+    
+    if (records.length === 0) {
+        table.classList.add('hidden');
+        noRecords.classList.remove('hidden');
+        return;
+    }
+    
+    noRecords.classList.add('hidden');
+    table.classList.remove('hidden');
+    
+    tbody.innerHTML = records.map(record => {
+        const statusColors = {
+            'present': { bg: 'bg-green-100', text: 'text-green-800', icon: '✓' },
+            'absent': { bg: 'bg-red-100', text: 'text-red-800', icon: '✗' },
+            'late': { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: '⚠' }
+        };
+        
+        const status = record.status || 'absent';
+        const colors = statusColors[status] || statusColors['absent'];
+        
+        return `
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    ${new Date(record.date).toLocaleDateString('en-IN', { 
+                        year: 'numeric', 
+                        month: 'short', 
+                        day: 'numeric' 
+                    })}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    ${record.subject_name || 'N/A'}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-3 py-1 text-xs font-semibold rounded-full ${colors.bg} ${colors.text}">
+                        ${colors.icon} ${status.toUpperCase()}
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-500">
+                    ${record.remarks || '-'}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function showError(message) {
+    document.getElementById('loadingSubjects').innerHTML = 
+        `<div class="text-center py-8 text-red-600">${message}</div>`;
+    document.getElementById('loadingRecords').innerHTML = 
+        `<div class="text-center py-8 text-red-600">${message}</div>`;
+}
+</script>
 {% endblock %}

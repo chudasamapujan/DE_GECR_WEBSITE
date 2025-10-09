@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Announcements - Faculty Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        .gradient-text {
+            background: linear-gradient(45deg, #4F46E5, #3B82F6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <a href="/faculty/dashboard" class="text-indigo-600 hover:text-indigo-800 mb-2 inline-block">
+                    ← Back to Dashboard
+                </a>
+                <h1 class="text-3xl font-bold gradient-text">Manage Announcements & Events</h1>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Create Announcement -->
+            <div class="glass-card rounded-xl p-6 shadow-lg">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                    </svg>
+                    Create Announcement
+                </h2>
+
+                <form id="announcementForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+                        <input type="text" id="annTitle" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                               placeholder="e.g., Mid-term Exam Schedule">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Message *</label>
+                        <textarea id="annMessage" rows="4" required
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                  placeholder="Enter announcement details..."></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Expires At (Optional)</label>
+                        <input type="datetime-local" id="annExpires"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    </div>
+
+                    <button type="submit"
+                            class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-3 rounded-lg font-semibold hover:from-indigo-700 hover:to-blue-700 transition duration-200 flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Create Announcement
+                    </button>
+                </form>
+
+                <div id="annSuccess" class="hidden mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p class="text-green-800 text-sm">✓ Announcement created successfully!</p>
+                </div>
+                <div id="annError" class="hidden mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p class="text-red-800 text-sm"></p>
+                </div>
+            </div>
+
+            <!-- Create Event -->
+            <div class="glass-card rounded-xl p-6 shadow-lg">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Create Event
+                </h2>
+
+                <form id="eventForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Event Title *</label>
+                        <input type="text" id="evTitle" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="e.g., Guest Lecture on AI">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                        <textarea id="evDescription" rows="3"
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="Event details..."></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Start Time *</label>
+                            <input type="datetime-local" id="evStartTime" required
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">End Time</label>
+                            <input type="datetime-local" id="evEndTime"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                        <input type="text" id="evLocation"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="e.g., Auditorium A">
+                    </div>
+
+                    <button type="submit"
+                            class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition duration-200 flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Create Event
+                    </button>
+                </form>
+
+                <div id="evSuccess" class="hidden mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p class="text-green-800 text-sm">✓ Event created successfully!</p>
+                </div>
+                <div id="evError" class="hidden mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p class="text-red-800 text-sm"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Announcements -->
+        <div class="mt-8 glass-card rounded-xl p-6 shadow-lg">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">Recent Announcements</h2>
+                <button onclick="loadAnnouncements()" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                    Refresh
+                </button>
+            </div>
+            
+            <!-- Filters -->
+            <div class="mb-6 flex flex-wrap gap-4 items-center bg-gray-50 p-4 rounded-lg">
+                <div class="flex items-center gap-2">
+                    <label class="text-sm font-medium text-gray-700">Filter:</label>
+                    <select id="annFilter" onchange="filterAnnouncements()" 
+                            class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                        <option value="all">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="active">Active Only</option>
+                        <option value="expired">Expired</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="text-sm font-medium text-gray-700">Search:</label>
+                    <input type="text" id="annSearch" oninput="filterAnnouncements()" 
+                           placeholder="Search by title or message..."
+                           class="px-3 py-2 border border-gray-300 rounded-lg text-sm w-64 focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="text-sm font-medium text-gray-700">Sort:</label>
+                    <select id="annSort" onchange="filterAnnouncements()" 
+                            class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="expiring">Expiring Soon</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="announcementsList" class="space-y-4">
+                <div class="text-center text-gray-500 py-8">Loading announcements...</div>
+            </div>
+        </div>
+
+        <!-- Upcoming Events -->
+        <div class="mt-8 glass-card rounded-xl p-6 shadow-lg">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">Upcoming Events</h2>
+                <button onclick="loadEvents()" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                    Refresh
+                </button>
+            </div>
+            
+            <!-- Filters -->
+            <div class="mb-6 flex flex-wrap gap-4 items-center bg-blue-50 p-4 rounded-lg">
+                <div class="flex items-center gap-2">
+                    <label class="text-sm font-medium text-gray-700">Filter:</label>
+                    <select id="eventFilter" onchange="filterEvents()" 
+                            class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                        <option value="all">All Events</option>
+                        <option value="upcoming">Upcoming Only</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="past">Past Events</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="text-sm font-medium text-gray-700">Search:</label>
+                    <input type="text" id="eventSearch" oninput="filterEvents()" 
+                           placeholder="Search by title or location..."
+                           class="px-3 py-2 border border-gray-300 rounded-lg text-sm w-64 focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="text-sm font-medium text-gray-700">Sort:</label>
+                    <select id="eventSort" onchange="filterEvents()" 
+                            class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                        <option value="date-asc">Date (Earliest)</option>
+                        <option value="date-desc">Date (Latest)</option>
+                        <option value="title">Title (A-Z)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="eventsList" class="space-y-4">
+                <div class="text-center text-gray-500 py-8">Loading events...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create Announcement
+        document.getElementById('announcementForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                title: document.getElementById('annTitle').value,
+                message: document.getElementById('annMessage').value,
+                expires_at: document.getElementById('annExpires').value || null
+            };
+
+            try {
+                const response = await fetch('/api/faculty/announcements', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('annSuccess').classList.remove('hidden');
+                    document.getElementById('annError').classList.add('hidden');
+                    document.getElementById('announcementForm').reset();
+                    setTimeout(() => {
+                        document.getElementById('annSuccess').classList.add('hidden');
+                    }, 3000);
+                    loadAnnouncements();
+                } else {
+                    document.getElementById('annError').classList.remove('hidden');
+                    document.getElementById('annError').querySelector('p').textContent = '✗ ' + (result.error || 'Failed to create announcement');
+                    document.getElementById('annSuccess').classList.add('hidden');
+                }
+            } catch (error) {
+                document.getElementById('annError').classList.remove('hidden');
+                document.getElementById('annError').querySelector('p').textContent = '✗ Error: ' + error.message;
+                document.getElementById('annSuccess').classList.add('hidden');
+            }
+        });
+
+        // Create Event
+        document.getElementById('eventForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                title: document.getElementById('evTitle').value,
+                description: document.getElementById('evDescription').value || null,
+                start_time: document.getElementById('evStartTime').value,
+                end_time: document.getElementById('evEndTime').value || null,
+                location: document.getElementById('evLocation').value || null
+            };
+
+            try {
+                const response = await fetch('/api/faculty/events', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('evSuccess').classList.remove('hidden');
+                    document.getElementById('evError').classList.add('hidden');
+                    document.getElementById('eventForm').reset();
+                    setTimeout(() => {
+                        document.getElementById('evSuccess').classList.add('hidden');
+                    }, 3000);
+                    loadEvents();
+                } else {
+                    document.getElementById('evError').classList.remove('hidden');
+                    document.getElementById('evError').querySelector('p').textContent = '✗ ' + (result.error || 'Failed to create event');
+                    document.getElementById('evSuccess').classList.add('hidden');
+                }
+            } catch (error) {
+                document.getElementById('evError').classList.remove('hidden');
+                document.getElementById('evError').querySelector('p').textContent = '✗ Error: ' + error.message;
+                document.getElementById('evSuccess').classList.add('hidden');
+            }
+        });
+
+        // Store all data for filtering
+        let allAnnouncements = [];
+        let allEvents = [];
+
+        // Enhanced Load Announcements (store data)
+        async function loadAnnouncements() {
+            try {
+                const response = await fetch('/api/faculty/announcements');
+                const data = await response.json();
+                
+                if (data.announcements && data.announcements.length > 0) {
+                    allAnnouncements = data.announcements;
+                    filterAnnouncements(); // Apply current filters
+                } else {
+                    document.getElementById('announcementsList').innerHTML = 
+                        '<div class="text-center text-gray-500 py-8">No announcements yet</div>';
+                }
+            } catch (error) {
+                document.getElementById('announcementsList').innerHTML = 
+                    '<div class="text-center text-red-500 py-8">Error loading announcements</div>';
+            }
+        }
+
+        // Enhanced Load Events (store data)
+        async function loadEvents() {
+            try {
+                const response = await fetch('/api/faculty/events');
+                const data = await response.json();
+                
+                if (data.events && data.events.length > 0) {
+                    allEvents = data.events;
+                    filterEvents(); // Apply current filters
+                } else {
+                    document.getElementById('eventsList').innerHTML = 
+                        '<div class="text-center text-gray-500 py-8">No upcoming events</div>';
+                }
+            } catch (error) {
+                document.getElementById('eventsList').innerHTML = 
+                    '<div class="text-center text-red-500 py-8">Error loading events</div>';
+            }
+        }
+
+        // Load data on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadAnnouncements();
+            loadEvents();
+        });
+
+        // Filter Announcements
+        function filterAnnouncements() {
+            const filter = document.getElementById('annFilter').value;
+            const search = document.getElementById('annSearch').value.toLowerCase();
+            const sort = document.getElementById('annSort').value;
+            
+            let filtered = [...allAnnouncements];
+            const now = new Date();
+            
+            // Apply time filter
+            if (filter === 'today') {
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                filtered = filtered.filter(ann => new Date(ann.created_at) >= today);
+            } else if (filter === 'week') {
+                const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                filtered = filtered.filter(ann => new Date(ann.created_at) >= weekAgo);
+            } else if (filter === 'month') {
+                const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                filtered = filtered.filter(ann => new Date(ann.created_at) >= monthAgo);
+            } else if (filter === 'active') {
+                filtered = filtered.filter(ann => !ann.expires_at || new Date(ann.expires_at) > now);
+            } else if (filter === 'expired') {
+                filtered = filtered.filter(ann => ann.expires_at && new Date(ann.expires_at) <= now);
+            }
+            
+            // Apply search filter
+            if (search) {
+                filtered = filtered.filter(ann => 
+                    ann.title.toLowerCase().includes(search) || 
+                    ann.message.toLowerCase().includes(search)
+                );
+            }
+            
+            // Apply sort
+            if (sort === 'newest') {
+                filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            } else if (sort === 'oldest') {
+                filtered.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+            } else if (sort === 'expiring') {
+                filtered.sort((a, b) => {
+                    if (!a.expires_at) return 1;
+                    if (!b.expires_at) return -1;
+                    return new Date(a.expires_at) - new Date(b.expires_at);
+                });
+            }
+            
+            // Display results
+            const container = document.getElementById('announcementsList');
+            if (filtered.length > 0) {
+                container.innerHTML = filtered.map(ann => {
+                    const isExpired = ann.expires_at && new Date(ann.expires_at) <= now;
+                    return `
+                        <div class="border-l-4 ${isExpired ? 'border-gray-400' : 'border-indigo-500'} pl-4 py-3 bg-gray-50 rounded-r-lg ${isExpired ? 'opacity-60' : ''}">
+                            <h3 class="font-semibold text-gray-800">${ann.title} ${isExpired ? '<span class="text-xs text-red-500">(Expired)</span>' : ''}</h3>
+                            <p class="text-gray-600 text-sm mt-1">${ann.message}</p>
+                            <p class="text-xs text-gray-500 mt-2">Posted: ${new Date(ann.created_at).toLocaleString()}</p>
+                            ${ann.expires_at ? `<p class="text-xs ${isExpired ? 'text-red-600' : 'text-orange-500'}">Expires: ${new Date(ann.expires_at).toLocaleString()}</p>` : ''}
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                container.innerHTML = '<div class="text-center text-gray-500 py-8">No announcements match your filters</div>';
+            }
+        }
+
+        // Filter Events
+        function filterEvents() {
+            const filter = document.getElementById('eventFilter').value;
+            const search = document.getElementById('eventSearch').value.toLowerCase();
+            const sort = document.getElementById('eventSort').value;
+            
+            let filtered = [...allEvents];
+            const now = new Date();
+            
+            // Apply time filter
+            if (filter === 'upcoming') {
+                filtered = filtered.filter(ev => new Date(ev.start_time) >= now);
+            } else if (filter === 'today') {
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+                filtered = filtered.filter(ev => {
+                    const start = new Date(ev.start_time);
+                    return start >= today && start < tomorrow;
+                });
+            } else if (filter === 'week') {
+                const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+                filtered = filtered.filter(ev => {
+                    const start = new Date(ev.start_time);
+                    return start >= now && start <= weekFromNow;
+                });
+            } else if (filter === 'month') {
+                const monthFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+                filtered = filtered.filter(ev => {
+                    const start = new Date(ev.start_time);
+                    return start >= now && start <= monthFromNow;
+                });
+            } else if (filter === 'past') {
+                filtered = filtered.filter(ev => new Date(ev.start_time) < now);
+            }
+            
+            // Apply search filter
+            if (search) {
+                filtered = filtered.filter(ev => 
+                    ev.title.toLowerCase().includes(search) || 
+                    (ev.description && ev.description.toLowerCase().includes(search)) ||
+                    (ev.location && ev.location.toLowerCase().includes(search))
+                );
+            }
+            
+            // Apply sort
+            if (sort === 'date-asc') {
+                filtered.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+            } else if (sort === 'date-desc') {
+                filtered.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+            } else if (sort === 'title') {
+                filtered.sort((a, b) => a.title.localeCompare(b.title));
+            }
+            
+            // Display results
+            const container = document.getElementById('eventsList');
+            if (filtered.length > 0) {
+                container.innerHTML = filtered.map(ev => {
+                    const isPast = new Date(ev.start_time) < now;
+                    return `
+                        <div class="border-l-4 ${isPast ? 'border-gray-400' : 'border-blue-500'} pl-4 py-3 bg-gray-50 rounded-r-lg ${isPast ? 'opacity-60' : ''}">
+                            <h3 class="font-semibold text-gray-800">${ev.title} ${isPast ? '<span class="text-xs text-gray-500">(Past)</span>' : ''}</h3>
+                            ${ev.description ? `<p class="text-gray-600 text-sm mt-1">${ev.description}</p>` : ''}
+                            <div class="flex items-center space-x-4 mt-2 text-sm text-gray-600">
+                                <span>📅 ${new Date(ev.start_time).toLocaleDateString()}</span>
+                                <span>🕐 ${new Date(ev.start_time).toLocaleTimeString()}</span>
+                                ${ev.location ? `<span>📍 ${ev.location}</span>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                container.innerHTML = '<div class="text-center text-gray-500 py-8">No events match your filters</div>';
+            }
+        }
+    </script>
+</body>
+</html>

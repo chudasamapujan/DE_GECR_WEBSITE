@@ -292,6 +292,14 @@
 
             <div class="menu-divider"></div>
 
+            <!-- Manage Announcements -->
+            <a href="/faculty/manage-announcements" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                </svg>
+                <span class="ml-3">Manage Announcements</span>
+            </a>
+
             <!-- Events -->
             <a href="/faculty/events" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -326,12 +334,27 @@
         <div class="flex justify-between items-center mb-8">
             <h1 class="text-3xl font-bold gradient-text">Faculty Dashboard</h1>
             <div class="flex items-center space-x-4">
+                <!-- Notifications Bell (faculty) -->
                 <div class="relative">
-                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                    <div class="notification-badge absolute -top-2 -right-2">8</div>
+                    <button id="facultyNotificationBell" class="relative hover:bg-gray-100 p-2 rounded-full transition">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        <div id="facultyNotificationBadge" class="notification-badge absolute -top-2 -right-2 hidden">0</div>
+                    </button>
+
+                    <!-- Notifications Dropdown -->
+                    <div id="facultyNotificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+                        <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                            <h3 class="font-semibold text-gray-800">Notifications</h3>
+                            <button id="facultyMarkAllRead" class="text-xs text-indigo-600 hover:text-indigo-800">Mark all read</button>
+                        </div>
+                        <div id="facultyNotificationsList" class="divide-y divide-gray-100">
+                            <div class="text-center py-8 text-gray-500">Loading notifications...</div>
+                        </div>
+                    </div>
                 </div>
+
                 <div class="w-10 h-10 rounded-full overflow-hidden">
                     {% include '_avatar.html' %}
                 </div>
@@ -565,32 +588,12 @@
 
         <!-- Announcements -->
         <div class="glass-card p-6 rounded-lg">
-            <h2 class="text-xl font-semibold mb-4 gradient-text">Announcements</h2>
-            <div class="space-y-4">
-                <div class="flex items-start space-x-4">
-                    <div class="w-2 h-2 rounded-full bg-red-500 mt-2 flex-shrink-0"></div>
-                    <div>
-                        <p class="text-gray-700 font-medium">Mid-term Exam Schedule Released</p>
-                        <p class="text-gray-600 text-sm">Exam schedule for 5th and 7th semester students has been published. Check the notice board for details.</p>
-                        <span class="text-xs text-gray-500">Posted: 2 hours ago</span>
-                    </div>
-                </div>
-                <div class="flex items-start space-x-4">
-                    <div class="w-2 h-2 rounded-full bg-yellow-500 mt-2 flex-shrink-0"></div>
-                    <div>
-                        <p class="text-gray-700 font-medium">Faculty Meeting Tomorrow</p>
-                        <p class="text-gray-600 text-sm">Department meeting scheduled for tomorrow at 3:00 PM in Conference Room A.</p>
-                        <span class="text-xs text-gray-500">Posted: 1 day ago</span>
-                    </div>
-                </div>
-                <div class="flex items-start space-x-4">
-                    <div class="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
-                    <div>
-                        <p class="text-gray-700 font-medium">New LMS Features Available</p>
-                        <p class="text-gray-600 text-sm">Enhanced assignment submission and grading features are now available in the learning management system.</p>
-                        <span class="text-xs text-gray-500">Posted: 3 days ago</span>
-                    </div>
-                </div>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold gradient-text">Recent Announcements</h2>
+                <a href="/faculty/manage-announcements" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">Manage</a>
+            </div>
+            <div id="faculty-announcements-widget" class="space-y-4">
+                <div class="text-center text-gray-500 py-4">Loading announcements...</div>
             </div>
         </div>
     </main>
@@ -613,7 +616,180 @@
                     }
                 }
             });
+
+            // Load faculty announcements
+            loadFacultyAnnouncements();
         });
+
+        async function loadFacultyAnnouncements() {
+            try {
+                const response = await fetch('/api/faculty/announcements');
+                const data = await response.json();
+                
+                const container = document.getElementById('faculty-announcements-widget');
+                
+                if (data.announcements && data.announcements.length > 0) {
+                    container.innerHTML = data.announcements.slice(0, 3).map((ann, index) => {
+                        const colors = ['red', 'yellow', 'blue', 'green'];
+                        const color = colors[index % colors.length];
+                        const timeAgo = getTimeAgo(new Date(ann.created_at));
+                        
+                        return `
+                            <div class="flex items-start space-x-4">
+                                <div class="w-2 h-2 rounded-full bg-${color}-500 mt-2 flex-shrink-0"></div>
+                                <div>
+                                    <p class="text-gray-700 font-medium">${ann.title}</p>
+                                    <p class="text-gray-600 text-sm">${ann.message}</p>
+                                    <span class="text-xs text-gray-500">Posted: ${timeAgo}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    container.innerHTML = '<div class="text-center text-gray-500 py-4">No announcements yet. <a href="/faculty/manage-announcements" class="text-indigo-600 hover:underline">Create one</a></div>';
+                }
+            } catch (error) {
+                console.error('Error loading announcements:', error);
+                document.getElementById('faculty-announcements-widget').innerHTML = '<div class="text-center text-red-500 py-4">Error loading announcements</div>';
+            }
+        }
+
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            if (seconds < 60) return 'just now';
+            if (seconds < 3600) return Math.floor(seconds / 60) + ' minutes ago';
+            if (seconds < 86400) return Math.floor(seconds / 3600) + ' hours ago';
+            if (seconds < 604800) return Math.floor(seconds / 86400) + ' days ago';
+            return Math.floor(seconds / 604800) + ' weeks ago';
+        }
+    </script>
+    <!-- Lightweight badge updater only (no toast popups) -->
+    <script>
+        (function() {
+            const POLL_INTERVAL_MS = 15000; // 15 seconds
+
+            async function fetchUnreadCount() {
+                try {
+                    const res = await fetch('/api/faculty/notifications/unread-count');
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    updateBadges(data.unread_count || 0);
+                } catch (e) {
+                    // ignore in dev when unauthenticated
+                }
+            }
+
+            function updateBadges(count) {
+                document.querySelectorAll('.notification-badge').forEach(el => {
+                    if (count > 0) {
+                        el.textContent = count;
+                        el.classList.remove('hidden');
+                    } else {
+                        el.classList.add('hidden');
+                    }
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                // Run once immediately, then at interval
+                fetchUnreadCount();
+                setInterval(fetchUnreadCount, POLL_INTERVAL_MS);
+
+                // Keep dropdown toggle and load notifications on open (existing loader will fetch all)
+                const bell = document.getElementById('facultyNotificationBell');
+                const dropdown = document.getElementById('facultyNotificationDropdown');
+
+                if (bell && dropdown) {
+                    bell.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        dropdown.classList.toggle('hidden');
+                        if (!dropdown.classList.contains('hidden')) {
+                            loadFacultyNotifications();
+                        }
+                    });
+
+                    document.addEventListener('click', (ev) => {
+                        if (!dropdown.contains(ev.target) && !bell.contains(ev.target)) {
+                            dropdown.classList.add('hidden');
+                        }
+                    });
+
+                    // Mark all read button handled in existing code
+                }
+            });
+        })();
+    </script>
+
+    <script>
+        async function loadFacultyNotifications() {
+            try {
+                const res = await fetch('/api/faculty/notifications?limit=50&unread_only=false');
+                if (!res.ok) return;
+                const data = await res.json();
+
+                const list = document.getElementById('facultyNotificationsList');
+                const badge = document.getElementById('facultyNotificationBadge');
+                if (!list) return;
+
+                // Update badge (use unread-count endpoint for accuracy)
+                try {
+                    const c = await fetch('/api/faculty/notifications/unread-count');
+                    if (c.ok) {
+                        const j = await c.json();
+                        if (j.unread_count && j.unread_count > 0) {
+                            badge.textContent = j.unread_count;
+                            badge.classList.remove('hidden');
+                        } else {
+                            badge.classList.add('hidden');
+                        }
+                    }
+                } catch (e) {}
+
+                if (data.notifications && data.notifications.length > 0) {
+                    list.innerHTML = data.notifications.map(notif => {
+                        const icons = {
+                            'announcement': '📢',
+                            'event': '📅',
+                            'attendance': '✓',
+                            'assignment': '📝',
+                            'general': '📌'
+                        };
+                        const icon = icons[notif.notification_type] || '📌';
+
+                        return `
+                            <div class="p-4 hover:bg-gray-50 cursor-pointer ${notif.read ? 'opacity-60' : 'bg-blue-50'}" data-notification-id="${notif.notification_id}">
+                                <div class="flex items-start space-x-3">
+                                    <span class="text-2xl">${icon}</span>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-gray-800">${escapeHtml(notif.title)}</p>
+                                        <p class="text-sm text-gray-600 mt-1">${escapeHtml(notif.message)}</p>
+                                        <p class="text-xs text-gray-500 mt-2">${getTimeAgo(new Date(notif.created_at))}</p>
+                                    </div>
+                                    ${!notif.read ? '<div class="w-2 h-2 rounded-full bg-blue-500"></div>' : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    // Attach click handlers to mark read
+                    document.querySelectorAll('#facultyNotificationsList [data-notification-id]').forEach(item => {
+                        item.addEventListener('click', async () => {
+                            const id = item.dataset.notificationId;
+                            try {
+                                await fetch(`/api/faculty/notifications/${id}/mark-read`, { method: 'POST' });
+                            } catch (e) {}
+                            loadFacultyNotifications();
+                            fetch('/api/faculty/notifications/unread-count').then(() => {});
+                        });
+                    });
+                } else {
+                    list.innerHTML = '<div class="text-center py-8 text-gray-500">No notifications</div>';
+                }
+            } catch (error) {
+                console.error('Error loading faculty notifications:', error);
+            }
+        }
     </script>
 </body>
 </html>

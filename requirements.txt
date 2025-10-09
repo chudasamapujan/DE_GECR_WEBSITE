@@ -18,6 +18,12 @@ bcrypt==4.0.1
 # Email and OTP
 email-validator==2.0.0
 
+# Google API for Email Notifications
+google-auth==2.23.3
+google-auth-oauthlib==1.1.0
+google-auth-httplib2==0.1.1
+google-api-python-client==2.103.0
+
 # Utilities
 python-dateutil==2.8.2
 python-dotenv==1.0.0
@@ -32,3 +38,7 @@ gunicorn==21.2.0
 psycopg2-binary==2.9.7  # For PostgreSQL in production
 sendgrid==6.11.0
 Pillow==10.1.0
+
+# Excel file processing
+openpyxl==3.1.2
+pandas==2.1.1

@@ -24,11 +24,29 @@ class Student(db.Model):
     address = db.Column(db.String(100))
     phone = db.Column(db.String(15))
     fees_paid = db.Column(db.Boolean, default=False)
+    email_notifications_enabled = db.Column(db.Boolean, default=True)  # Email notification preference
     
     # Relationships
     attendance_records = db.relationship('Attendance', backref='student', lazy=True)
     submissions = db.relationship('Submission', backref='student', lazy=True)
     fees_records = db.relationship('Fee', backref='student', lazy=True)
+    enrollments = db.relationship('StudentEnrollment', backref='student', lazy=True)
+    
+    def get_enrolled_subjects(self):
+        """Get all subjects this student is enrolled in"""
+        from models.gecr_models import StudentEnrollment
+        enrollments = StudentEnrollment.query.filter_by(student_id=self.student_id, status='active').all()
+        return [enrollment.subject for enrollment in enrollments]
+    
+    def is_enrolled_in_subject(self, subject_id):
+        """Check if student is enrolled in a specific subject"""
+        from models.gecr_models import StudentEnrollment
+        enrollment = StudentEnrollment.query.filter_by(
+            student_id=self.student_id,
+            subject_id=subject_id,
+            status='active'
+        ).first()
+        return enrollment is not None
     
     def set_password(self, password):
         """Set password hash"""
@@ -123,6 +141,27 @@ class Subject(db.Model):
     timetable_slots = db.relationship('Timetable', backref='subject', lazy=True)
     attendance_records = db.relationship('Attendance', backref='subject', lazy=True)
     assignments = db.relationship('Assignment', backref='subject', lazy=True)
+    enrollments = db.relationship('StudentEnrollment', backref='subject', lazy=True)
+    
+    def get_enrolled_students(self):
+        """Get all students enrolled in this subject"""
+        from models.gecr_models import StudentEnrollment, Student
+        enrollments = StudentEnrollment.query.filter_by(subject_id=self.subject_id).all()
+        return [enrollment.student for enrollment in enrollments]
+    
+    def get_enrollment_count(self):
+        """Get count of enrolled students"""
+        from models.gecr_models import StudentEnrollment
+        return StudentEnrollment.query.filter_by(subject_id=self.subject_id).count()
+    
+    def is_student_enrolled(self, student_id):
+        """Check if a student is enrolled in this subject"""
+        from models.gecr_models import StudentEnrollment
+        enrollment = StudentEnrollment.query.filter_by(
+            subject_id=self.subject_id,
+            student_id=student_id
+        ).first()
+        return enrollment is not None
     
     def to_dict(self):
         """Convert to dictionary"""
@@ -132,7 +171,39 @@ class Subject(db.Model):
             'department': self.department,
             'semester': self.semester,
             'faculty_id': self.faculty_id,
-            'faculty_name': self.faculty.name if self.faculty else None
+            'faculty_name': self.faculty.name if self.faculty else None,
+            'enrollment_count': self.get_enrollment_count()
+        }
+
+
+class StudentEnrollment(db.Model):
+    """Student-Subject Enrollment table - links students to subjects they are enrolled in"""
+    __tablename__ = 'student_enrollments'
+    
+    enrollment_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('students.student_id'), nullable=False)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subjects.subject_id'), nullable=False)
+    enrollment_date = db.Column(db.DateTime, default=datetime.utcnow)
+    academic_year = db.Column(db.String(20))  # e.g., "2024-2025"
+    status = db.Column(db.String(20), default='active')  # active, dropped, completed
+    
+    # Unique constraint to prevent duplicate enrollments
+    __table_args__ = (
+        db.UniqueConstraint('student_id', 'subject_id', name='unique_student_subject'),
+    )
+    
+    def to_dict(self):
+        """Convert to dictionary"""
+        return {
+            'enrollment_id': self.enrollment_id,
+            'student_id': self.student_id,
+            'student_name': self.student.name if self.student else None,
+            'student_roll_no': self.student.roll_no if self.student else None,
+            'subject_id': self.subject_id,
+            'subject_name': self.subject.subject_name if self.subject else None,
+            'enrollment_date': self.enrollment_date.strftime('%Y-%m-%d') if self.enrollment_date else None,
+            'academic_year': self.academic_year,
+            'status': self.status
         }
 
 
@@ -183,6 +254,98 @@ class Attendance(db.Model):
             'status': self.status,
             'student_name': self.student.name if self.student else None,
             'subject_name': self.subject.subject_name if self.subject else None
+        }
+
+
+class Announcement(db.Model):
+    """Announcements for dashboard and site-wide notices"""
+    __tablename__ = 'announcements'
+
+    announcement_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    title = db.Column(db.String(200), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('faculty.faculty_id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    expires_at = db.Column(db.DateTime, nullable=True)
+
+    def to_dict(self):
+        return {
+            'announcement_id': self.announcement_id,
+            'title': self.title,
+            'message': self.message,
+            'author_id': self.author_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'expires_at': self.expires_at.isoformat() if self.expires_at else None
+        }
+
+
+class Event(db.Model):
+    """Upcoming events for the dashboard"""
+    __tablename__ = 'events'
+
+    event_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    start_time = db.Column(db.DateTime)
+    end_time = db.Column(db.DateTime)
+    location = db.Column(db.String(200))
+    created_by = db.Column(db.Integer, db.ForeignKey('faculty.faculty_id'), nullable=True)
+
+    def to_dict(self):
+        return {
+            'event_id': self.event_id,
+            'title': self.title,
+            'description': self.description,
+            'start_time': self.start_time.isoformat() if self.start_time else None,
+            'end_time': self.end_time.isoformat() if self.end_time else None,
+            'location': self.location,
+            'created_by': self.created_by
+        }
+
+
+class EventRegistration(db.Model):
+    """Registrations for events by students"""
+    __tablename__ = 'event_registrations'
+
+    registration_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    event_id = db.Column(db.Integer, db.ForeignKey('events.event_id'), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('students.student_id'), nullable=False)
+    registered_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationships
+    event = db.relationship('Event', backref='registrations', lazy=True)
+    student = db.relationship('Student', backref='event_registrations', lazy=True)
+
+    def to_dict(self):
+        return {
+            'registration_id': self.registration_id,
+            'event_id': self.event_id,
+            'student_id': self.student_id,
+            'registered_at': self.registered_at.isoformat() if self.registered_at else None,
+            'student_name': self.student.name if self.student else None,
+            'event_title': self.event.title if self.event else None
+        }
+
+
+class Activity(db.Model):
+    """Recent activities (audit-like) for dashboards"""
+    __tablename__ = 'activities'
+
+    activity_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    type = db.Column(db.String(50))
+    title = db.Column(db.String(200))
+    details = db.Column(db.Text)
+    created_by = db.Column(db.Integer, db.ForeignKey('faculty.faculty_id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'activity_id': self.activity_id,
+            'type': self.type,
+            'title': self.title,
+            'details': self.details,
+            'created_by': self.created_by,
+            'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
 
@@ -305,4 +468,33 @@ class Salary(db.Model):
             'amount': self.amount,
             'status': self.status,
             'faculty_name': self.faculty.name if self.faculty else None
+        }
+
+
+class Notification(db.Model):
+    """Notifications for students - announcements, events, updates"""
+    __tablename__ = 'notifications'
+    
+    notification_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, nullable=False)  # Student or Faculty ID
+    user_type = db.Column(db.String(20), nullable=False)  # 'student' or 'faculty'
+    title = db.Column(db.String(200), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    notification_type = db.Column(db.String(50))  # 'announcement', 'event', 'attendance', 'assignment', 'general'
+    link = db.Column(db.String(200))  # Optional link to related content
+    read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def to_dict(self):
+        """Convert to dictionary"""
+        return {
+            'notification_id': self.notification_id,
+            'user_id': self.user_id,
+            'user_type': self.user_type,
+            'title': self.title,
+            'message': self.message,
+            'notification_type': self.notification_type,
+            'link': self.link,
+            'read': self.read,
+            'created_at': self.created_at.isoformat() if self.created_at else None
         }

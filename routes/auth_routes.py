@@ -4,13 +4,13 @@ Handles login, registration, OTP verification, and password reset
 Author: GEC Rajkot Development Team
 """
 
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, session
 from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity, get_jwt
 from datetime import timedelta, datetime
 import re
 
 # Import models and db
-from models import Student, Faculty, OTP
+from models import Student, Faculty
 from database import db
 from utils.send_email import send_email
 
@@ -136,6 +136,121 @@ def login():
         current_app.logger.error(f"Login error: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
+
+@auth_bp.route('/faculty/login', methods=['POST'])
+def faculty_login():
+    """Convenience endpoint for faculty login that sets user_type to 'faculty' and delegates to login logic."""
+    try:
+        data = request.get_json() or {}
+        # Ensure user_type is faculty and reuse validation/login logic
+        data['user_type'] = 'faculty'
+        # Inject back into request context by calling the shared login() logic
+        # Since login() reads request.get_json(), we call it directly after temporarily
+        # setting request._cached_json. Simpler approach: call the login function after
+        # replacing request.get_json via monkeypatch is fragile; instead re-run the core
+        # logic here to avoid duplication issues.
+
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+
+        if not all([email, password]):
+            return jsonify({'error': 'Email and password are required'}), 400
+
+        # Find faculty user
+        user = Faculty.find_by_email(email)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        if not getattr(user, 'is_active', True):
+            return jsonify({'error': 'Account is deactivated'}), 403
+        if not user.check_password(password):
+            return jsonify({'error': 'Invalid password'}), 401
+
+        user_id_val = getattr(user, 'faculty_id', getattr(user, 'student_id', None))
+        additional_claims = {
+            'user_type': 'faculty',
+            'user_id': user_id_val,
+            'full_name': getattr(user, 'name', None)
+        }
+
+        access_token = create_access_token(
+            identity=user.email,
+            additional_claims=additional_claims,
+            expires_delta=timedelta(hours=24)
+        )
+
+        # Also set session for session-based auth fallbacks used in templates/tests
+        try:
+            session['user_email'] = user.email
+            session['user_id'] = user.faculty_id
+            session['user_type'] = 'faculty'
+        except Exception:
+            # If session can't be set (e.g., testing config), ignore
+            pass
+
+        return jsonify({
+            'message': 'Login successful',
+            'access_token': access_token,
+            'user': user.to_dict(),
+            'user_type': 'faculty'
+        }), 200
+
+    except Exception as e:
+        current_app.logger.error(f"Faculty login error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+@auth_bp.route('/student/login', methods=['POST'])
+def student_login():
+    """Convenience endpoint for student login that sets user_type to 'student' and delegates to login logic."""
+    try:
+        data = request.get_json() or {}
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+
+        if not all([email, password]):
+            return jsonify({'error': 'Email and password are required'}), 400
+
+        # Find student user
+        user = Student.find_by_email(email)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        if not getattr(user, 'is_active', True):
+            return jsonify({'error': 'Account is deactivated'}), 403
+        if not user.check_password(password):
+            return jsonify({'error': 'Invalid password'}), 401
+
+        user_id_val = getattr(user, 'student_id', getattr(user, 'faculty_id', None))
+        additional_claims = {
+            'user_type': 'student',
+            'user_id': user_id_val,
+            'full_name': getattr(user, 'name', None)
+        }
+
+        access_token = create_access_token(
+            identity=user.email,
+            additional_claims=additional_claims,
+            expires_delta=timedelta(hours=24)
+        )
+
+        # Also set session for session-based auth fallbacks used in templates/tests
+        try:
+            session['user_email'] = user.email
+            session['user_id'] = user.student_id
+            session['user_type'] = 'student'
+        except Exception:
+            pass
+
+        return jsonify({
+            'message': 'Login successful',
+            'access_token': access_token,
+            'user': user.to_dict(),
+            'user_type': 'student'
+        }), 200
+
+    except Exception as e:
+        current_app.logger.error(f"Student login error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
 @auth_bp.route('/register', methods=['POST'])
 def register():
     """
@@ -184,7 +299,8 @@ def register():
         if existing_user:
             return jsonify({'error': 'User with this email already exists'}), 409
 
-        # Create OTP
+        # Create OTP (imported lazily to avoid circular import if OTP model missing)
+        from models import OTP
         otp = OTP.create_otp(email, 'registration', user_type, expiry_minutes=10)
 
         # Send OTP via SendGrid/Flask-Mail/logger via helper
@@ -265,6 +381,7 @@ def verify_otp():
             return jsonify({'error': 'Invalid purpose'}), 400
         
         # Find valid OTP
+        from models import OTP
         otp = OTP.find_valid_otp(email, purpose, user_type)
         if not otp:
             return jsonify({'error': 'No valid OTP found'}), 404
@@ -404,8 +521,8 @@ def resend_otp():
         
         if purpose not in ['registration', 'forgot_password']:
             return jsonify({'error': 'Invalid purpose'}), 400
-        
-        otp = OTP.create_otp(email, purpose, user_type, expiry_minutes=10)
+            from models import OTP
+            otp = OTP.create_otp(email, purpose, user_type, expiry_minutes=10)
 
         try:
             subject = 'GEC Rajkot - OTP Verification (resend)'
@@ -468,7 +585,8 @@ def forgot_password():
             return jsonify({'error': 'Invalid email format'}), 400
         
         # Generate and send OTP for password reset (do not reveal whether user exists)
-        otp = OTP.create_otp(email, 'forgot_password', user_type, expiry_minutes=10)
+            from models import OTP
+            otp = OTP.create_otp(email, 'forgot_password', user_type, expiry_minutes=10)
 
         try:
             subject = 'GEC Rajkot - Password Reset OTP'
@@ -546,7 +664,8 @@ def reset_password():
             }), 400
         
         # Verify the reset token via OTP
-        otp = OTP.find_valid_otp(email, 'forgot_password', user_type)
+            from models import OTP
+            otp = OTP.find_valid_otp(email, 'forgot_password', user_type)
         if not otp:
             return jsonify({'error': 'No valid reset token found'}), 404
 

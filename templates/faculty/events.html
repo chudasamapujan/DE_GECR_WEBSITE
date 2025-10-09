@@ -2,45 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                // Fetch events created by this faculty (includes registration_count)
+                const resp = await fetch('/api/faculty/events');
     <title>Faculty Events - GEC Rajkot</title>
     <script src="https://cdn.tailwindcss.com"></script>
-   <style>
-        :root {
-            --primary: #4F46E5;
-            --accent: #3B82F6;
-            --bg: #ffffff;
-            --text: #1f2937;
-            --card-bg: #f9fafb;
-            --sidebar-bg: rgba(255, 255, 255, 0.98);
-            --sidebar-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.1);
-            --hover-bg: rgba(79, 70, 229, 0.08);
-            --active-bg: rgba(79, 70, 229, 0.12);
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(--bg) 0%, #f3f4f6 100%);
-            min-height: 100vh;
-            color: var(--text);
-        }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-            transform-style: preserve-3d;
-            perspective: 1000px;
-            transition: all 0.3s ease;
-        }
-        .glass-card:hover {
-            transform: translateY(-5px) rotateX(2deg) rotateY(2deg);
-            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
-        }
-        .gradient-text {
-            background: linear-gradient(45deg, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
         .sidebar {
             background: var(--sidebar-bg);
             backdrop-filter: blur(10px);
@@ -317,5 +282,142 @@
             </a>
         </nav>
     </aside>
+ <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Events</h1>
+                <p class="text-gray-600 mt-1">Stay updated with campus events and activities</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <input type="text" placeholder="Search events..." class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <button class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors duration-200 flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    <span>Create Event</span>
+                </button>
+            </div>
+        </div>
 
+        <!-- Featured Events (loaded dynamically) -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Featured Events</h2>
+            <div class="flex items-center justify-between mb-2">
+                <div></div>
+                <div class="text-sm text-gray-600">You created <span id="eventsCount">0</span> events</div>
+            </div>
+            <div id="eventsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="text-center text-gray-500 py-8">Loading events...</div>
+            </div>
+        </div>
+
+        <!-- Upcoming Events (loaded dynamically) -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Upcoming Events</h2>
+            <div class="glass-card rounded-xl overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="upcomingEventsTable" class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">Loading events...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+            <script>
+                async function fetchAndRenderEvents() {
+                    try {
+                        const resp = await fetch('/api/faculty/events');
+                        if (!resp.ok) throw new Error('Failed to load events');
+                        const data = await resp.json();
+
+                        // Update events count
+                        const countEl = document.getElementById('eventsCount');
+                        if (countEl) countEl.textContent = data.events_count || (data.events ? data.events.length : 0);
+
+                        // Render grid (cards)
+                        const grid = document.getElementById('eventsGrid');
+                        if (grid) {
+                            grid.innerHTML = '';
+                            if (!data.events || data.events.length === 0) {
+                                grid.innerHTML = '<div class="text-center text-gray-500 py-8">No events</div>';
+                            } else {
+                                data.events.forEach(ev => {
+                                    const start = ev.start_time ? new Date(ev.start_time) : null;
+                                    const month = start ? start.toLocaleString('default', { month: 'short' }).toUpperCase() : '';
+                                    const day = start ? start.getDate() : '';
+
+                                    const card = document.createElement('div');
+                                    card.className = 'glass-card rounded-xl p-6 event-card';
+                                    card.innerHTML = `
+                                        <div class="flex items-start justify-between mb-4">
+                                            <div class="event-date text-center mr-4">
+                                                <div class="text-2xl font-bold">${day}</div>
+                                                <div class="text-sm text-gray-500">${month}</div>
+                                            </div>
+                                            <div class="flex-1 text-left">
+                                                <h3 class="text-lg font-semibold">${ev.title}</h3>
+                                                <p class="text-sm text-gray-600 mt-2">${ev.description || ''}</p>
+                                                <div class="mt-3 text-sm text-gray-500">${ev.location || ''}</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <div class="text-sm text-gray-600">${ev.start_time ? new Date(ev.start_time).toLocaleString() : ''}</div>
+                                            <div class="text-sm font-medium text-indigo-600">${ev.registration_count || 0} registered</div>
+                                        </div>
+                                    `;
+                                    grid.appendChild(card);
+                                });
+                            }
+                        }
+
+                        // Render table
+                        const tableBody = document.getElementById('upcomingEventsTable');
+                        if (tableBody) {
+                            tableBody.innerHTML = '';
+                            if (!data.events || data.events.length === 0) {
+                                tableBody.innerHTML = '<tr><td class="px-6 py-4">No events</td></tr>';
+                            } else {
+                                data.events.forEach(ev => {
+                                    const row = document.createElement('tr');
+                                    row.innerHTML = `
+                                        <td class="px-6 py-4 whitespace-nowrap">${ev.title}<div class="text-sm text-gray-500">${ev.description || ''}</div></td>
+                                        <td class="px-6 py-4 whitespace-nowrap">${ev.start_time ? new Date(ev.start_time).toLocaleDateString() : ''}<div class="text-sm text-gray-500">${ev.start_time ? new Date(ev.start_time).toLocaleTimeString() : ''}</div></td>
+                                        <td class="px-6 py-4 whitespace-nowrap">${ev.location || ''}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">${ev.registration_count || 0}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap"><a href="/faculty/events/${ev.event_id}/registrations" class="text-indigo-600 hover:underline">View Registrations</a></td>
+                                    `;
+                                    tableBody.appendChild(row);
+                                });
+                            }
+                        }
+
+                    } catch (err) {
+                        console.error('Error loading events', err);
+                    }
+                }
+
+                window.addEventListener('DOMContentLoaded', fetchAndRenderEvents);
+            </script>
         
+</body>
+</html>

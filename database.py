@@ -28,7 +28,7 @@ def init_database(app):
     from models.gecr_models import (
         Student, Faculty, Subject, Timetable, 
         Attendance, Assignment, Submission, 
-        Message, Fee, Salary
+        Message, Fee, Salary, Announcement, Event, Activity, Notification
     )
     
     return db
@@ -42,7 +42,7 @@ def create_tables(app):
         from models.gecr_models import (
             Student, Faculty, Subject, Timetable, 
             Attendance, Assignment, Submission, 
-            Message, Fee, Salary
+            Message, Fee, Salary, Announcement, Event, Activity, Notification
         )
         
         db.create_all()
@@ -65,7 +65,7 @@ def reset_database(app):
         from models.gecr_models import (
             Student, Faculty, Subject, Timetable, 
             Attendance, Assignment, Submission, 
-            Message, Fee, Salary
+            Message, Fee, Salary, Announcement, Event, Activity, Notification
         )
         
         db.drop_all()
