@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Schedule - GEC Rajkot</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -26,17 +25,11 @@
             color: var(--text);
         }
         .glass-card {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             border: 1px solid rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(10px);
-            transform-style: preserve-3d;
-            perspective: 1000px;
             transition: all 0.3s ease;
-        }
-        .glass-card:hover {
-            transform: translateY(-5px) rotateX(2deg) rotateY(2deg);
-            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
         }
         .gradient-text {
             background: linear-gradient(45deg, var(--primary), var(--accent));
@@ -80,9 +73,6 @@
             background: rgba(0, 0, 0, 0.1);
             border-radius: 3px;
         }
-        .sidebar-nav::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 0, 0, 0.2);
-        }
         .sidebar-item {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             border-radius: 0.75rem;
@@ -121,77 +111,8 @@
             background: linear-gradient(to bottom, var(--primary), var(--accent));
             border-radius: 0 4px 4px 0;
         }
-        .submenu-item {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 0.75rem;
-            margin: 0.25rem 0;
-            padding-left: 2.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-        .submenu-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, var(--hover-bg), transparent);
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-        .submenu-item:hover::before {
-            opacity: 1;
-        }
-        .submenu-item:hover {
-            transform: translateX(3px);
-        }
-        .submenu-item.active {
-            color: var(--primary);
-            background: var(--active-bg);
-        }
-        .notification-badge {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white;
-            font-size: 0.75rem;
-            padding: 2px 6px;
-            border-radius: 9999px;
-            min-width: 1.5rem;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .menu-divider {
-            height: 1px;
-            background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.1), transparent);
-            margin: 1rem;
-        }
-        .schedule-cell {
-            transition: all 0.3s ease;
-        }
-        .schedule-cell:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
-        }
-        .time-slot {
-            background: linear-gradient(90deg, rgba(79, 70, 229, 0.1), transparent);
-            border-left: 4px solid var(--primary);
-        }
-        .subject-tag {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-                color: white;
-                padding: 2px 8px;
-                border-radius: 9999px;
-                font-size: 0.75rem;
-            }
-            .event-badge {
-                background: linear-gradient(135deg, var(--primary), var(--accent));
-                color: white;
-                padding: 4px 8px;
-                border-radius: 6px;
-                font-size: 0.75rem;
-            }
         .main-content {
-            margin-left: 300px;
+            margin-left: 310px;
             padding: 2rem;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -205,12 +126,147 @@
             background: white;
             border-radius: 0.75rem;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Day Tabs */
+        .day-tabs {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+        .day-tab {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
             transition: all 0.2s ease;
+            white-space: nowrap;
+            background: white;
+            border: 1px solid #e5e7eb;
+            color: #6b7280;
         }
-        .mobile-menu-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        .day-tab:hover {
+            border-color: var(--primary);
+            color: var(--primary);
         }
+        .day-tab.active {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        .day-tab.today {
+            position: relative;
+        }
+        .day-tab.today::after {
+            content: 'Today';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #10b981;
+            color: white;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 9999px;
+            font-weight: 600;
+        }
+        
+        /* Schedule Card */
+        .schedule-item {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.25rem;
+            border-left: 4px solid var(--primary);
+            transition: all 0.2s ease;
+            margin-bottom: 1rem;
+        }
+        .schedule-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .schedule-item.current {
+            border-left-color: #10b981;
+            background: linear-gradient(to right, rgba(16, 185, 129, 0.05), white);
+        }
+        .schedule-item.past {
+            opacity: 0.6;
+            border-left-color: #9ca3af;
+        }
+        
+        /* Time Badge */
+        .time-badge {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .time-badge.current {
+            background: linear-gradient(135deg, #10b981, #059669);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        /* Status Indicator */
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .status-dot.live {
+            background: #10b981;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-radius: 1rem;
+        }
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1rem;
+            color: #9ca3af;
+        }
+        
+        /* Info Cards */
+        .info-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        .info-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .info-card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -226,13 +282,13 @@
             .mobile-menu-button {
                 display: block;
             }
+            .day-tabs {
+                padding: 0.5rem;
             }
-        </style>
-    </head>
-    <body>
-        <!-- 3D Logo -->
-        <div id="logo-container" class="fixed top-4 left-4 w-16 h-16"></div>
-
+        }
+    </style>
+</head>
+<body>
     <!-- Mobile Menu Button -->
     <button id="mobileMenuButton" class="mobile-menu-button">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -240,11 +296,11 @@
         </svg>
     </button>
 
-        <!-- Sidebar -->
+    <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
             <div class="flex items-center space-x-3">
-                <img src="logo.png" alt="GEC Rajkot Logo" class="w-12 h-12 object-contain">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="GEC Rajkot Logo" class="w-12 h-12 object-contain">
                 <div class="text-2xl font-bold gradient-text">GEC Rajkot</div>
             </div>
         </div>
@@ -265,22 +321,39 @@
                 <span class="ml-3">Profile</span>
             </a>
 
-            <!-- Academics -->            <!-- Schedule -->
+            <!-- Subject Enrollment -->
+            <a href="/api/enrollment/student/enroll-page" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <span class="ml-3">Enroll in Subjects</span>
+            </a>
+
+            <!-- Attendance -->
+            <a href="/student/attendance" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+                <span class="ml-3">My Attendance</span>
+            </a>
+
+            <!-- Schedule -->
             <a href="/student/schedule" class="sidebar-item active flex items-center p-3 text-indigo-600 hover:text-indigo-600">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <span class="ml-3">Schedule</span>
-            </a>            <!-- Events -->
+            </a>
+            
+            <!-- Events -->
             <a href="/student/events" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <span class="ml-3">Events</span>
-                <div class="notification-badge ml-auto">2</div>
             </a>
 
-            <div class="menu-divider"></div>
+            <div style="height: 1px; background: rgba(0,0,0,0.05); margin: 1rem;"></div>
 
             <!-- Settings -->
             <a href="/student/settings" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
@@ -292,339 +365,495 @@
             </a>
 
             <!-- Logout -->
-            <a href="/" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600 mt-4">
+            <a href="/" class="sidebar-item flex items-center p-3 text-red-500 hover:text-red-600 mt-4">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
                 <span class="ml-3">Logout</span>
             </a>
-            </nav>
+        </nav>
     </aside>
 
     <!-- Main Content -->
     <main class="main-content">
-        <!-- Top Bar -->
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold gradient-text">Schedule</h1>
-            <div class="flex items-center space-x-4">
-                <div class="relative">
-                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                    <div class="notification-badge absolute -top-2 -right-2">5</div>
-                </div>
-                <div class="w-10 h-10 rounded-full overflow-hidden">
-                    {% include '_avatar.html' %}
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <div>
+                <h1 class="text-3xl font-bold gradient-text">My Schedule</h1>
+                <p class="text-gray-500 mt-1" id="currentDateDisplay">Loading...</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="info-card py-2 px-4">
+                    <div class="flex items-center gap-2">
+                        <span class="status-dot live"></span>
+                        <span class="text-sm font-medium" id="currentTime">--:--</span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Weekly Schedule -->
-        <div class="glass-card p-6 rounded-lg mb-8">
-            <h2 class="text-xl font-semibold mb-4 gradient-text">Weekly Schedule</h2>
-            <div class="grid grid-cols-1 md:grid-cols-7 gap-4">
-                <!-- Time Slots -->
-                <div class="col-span-1">
-                    <div class="h-16"></div>
-                    <div class="time-slot h-24 p-2">9:00 AM</div>
-                    <div class="time-slot h-24 p-2">10:00 AM</div>
-                    <div class="time-slot h-24 p-2">11:00 AM</div>
-                    <div class="time-slot h-24 p-2">12:00 PM</div>
-                    <div class="time-slot h-24 p-2">1:00 PM</div>
-                    <div class="time-slot h-24 p-2">2:00 PM</div>
-                    <div class="time-slot h-24 p-2">3:00 PM</div>
+        <!-- Today's Highlight Card -->
+        <div class="glass-card p-6 rounded-xl mb-6" id="todayHighlight">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="info-card-icon bg-gradient-to-br from-indigo-500 to-blue-500">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-semibold" id="todayDayName">Today</h2>
+                    <p class="text-gray-500 text-sm" id="todayFullDate">Loading...</p>
+                </div>
+            </div>
+            <div id="todaySummary" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center p-3 bg-indigo-50 rounded-lg">
+                    <p class="text-2xl font-bold text-indigo-600" id="totalLectures">0</p>
+                    <p class="text-sm text-gray-600">Total Lectures</p>
+                </div>
+                <div class="text-center p-3 bg-green-50 rounded-lg">
+                    <p class="text-2xl font-bold text-green-600" id="completedLectures">0</p>
+                    <p class="text-sm text-gray-600">Completed</p>
+                </div>
+                <div class="text-center p-3 bg-blue-50 rounded-lg">
+                    <p class="text-2xl font-bold text-blue-600" id="upcomingLectures">0</p>
+                    <p class="text-sm text-gray-600">Upcoming</p>
+                </div>
+                <div class="text-center p-3 bg-purple-50 rounded-lg">
+                    <p class="text-2xl font-bold text-purple-600" id="currentLecture">-</p>
+                    <p class="text-sm text-gray-600">Current</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Day Tabs -->
+        <div class="day-tabs mb-6" id="dayTabs">
+            <!-- Generated by JavaScript -->
+        </div>
+
+        <!-- Schedule Content -->
+        <div class="glass-card p-6 rounded-xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold" id="selectedDayTitle">Today's Schedule</h3>
+                <span class="text-sm text-gray-500" id="lectureCount">0 lectures</span>
+            </div>
+            
+            <div id="scheduleContent">
+                <!-- Loading State -->
+                <div class="text-center py-8" id="loadingState">
+                    <svg class="animate-spin h-8 w-8 text-indigo-600 mx-auto" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="mt-2 text-gray-600">Loading schedule...</p>
                 </div>
                 
-                <!-- Monday -->
-                <div class="col-span-1">
-                    <div class="h-16 text-center font-semibold">Monday</div>
-                    <div class="schedule-cell h-24 p-2 bg-indigo-50 rounded-lg">
-                        <span class="subject-tag">DS</span>
-                        <p class="text-sm mt-1">Data Structures</p>
-                        <p class="text-xs text-gray-500">Room: A-101</p>
-                    </div>
-                    <div class="schedule-cell h-24 p-2 bg-blue-50 rounded-lg">
-                        <span class="subject-tag">DBMS</span>
-                        <p class="text-sm mt-1">Database Systems</p>
-                        <p class="text-xs text-gray-500">Room: B-203</p>
-                    </div>
-                    <div class="h-24"></div>
-                    <div class="schedule-cell h-24 p-2 bg-indigo-50 rounded-lg">
-                        <span class="subject-tag">OS</span>
-                        <p class="text-sm mt-1">Operating Systems</p>
-                        <p class="text-xs text-gray-500">Room: C-105</p>
-                    </div>
-                    <div class="h-24"></div>
-                    <div class="schedule-cell h-24 p-2 bg-blue-50 rounded-lg">
-                        <span class="subject-tag">CN</span>
-                        <p class="text-sm mt-1">Computer Networks</p>
-                        <p class="text-xs text-gray-500">Room: A-102</p>
-                    </div>
-                    <div class="h-24"></div>
+                <!-- Schedule List -->
+                <div id="scheduleList" class="space-y-4 hidden">
+                    <!-- Populated by JavaScript -->
                 </div>
-
-                <!-- Tuesday -->
-                <div class="col-span-1">
-                    <div class="h-16 text-center font-semibold">Tuesday</div>
-                    <div class="h-24"></div>
-                    <div class="schedule-cell h-24 p-2 bg-indigo-50 rounded-lg">
-                        <span class="subject-tag">DS</span>
-                        <p class="text-sm mt-1">Data Structures</p>
-                        <p class="text-xs text-gray-500">Room: A-101</p>
-                    </div>
-                    <div class="schedule-cell h-24 p-2 bg-blue-50 rounded-lg">
-                        <span class="subject-tag">DBMS</span>
-                        <p class="text-sm mt-1">Database Systems</p>
-                        <p class="text-xs text-gray-500">Room: B-203</p>
-                    </div>
-                    <div class="h-24"></div>
-                    <div class="schedule-cell h-24 p-2 bg-indigo-50 rounded-lg">
-                        <span class="subject-tag">OS</span>
-                        <p class="text-sm mt-1">Operating Systems</p>
-                        <p class="text-xs text-gray-500">Room: C-105</p>
-                    </div>
-                    <div class="h-24"></div>
-                </div>
-
-                <!-- Wednesday -->
-                <div class="col-span-1">
-                    <div class="h-16 text-center font-semibold">Wednesday</div>
-                    <div class="schedule-cell h-24 p-2 bg-blue-50 rounded-lg">
-                        <span class="subject-tag">CN</span>
-                        <p class="text-sm mt-1">Computer Networks</p>
-                        <p class="text-xs text-gray-500">Room: A-102</p>
-                    </div>
-                    <div class="h-24"></div>
-                    <div class="schedule-cell h-24 p-2 bg-indigo-50 rounded-lg">
-                        <span class="subject-tag">DS</span>
-                        <p class="text-sm mt-1">Data Structures</p>
-                        <p class="text-xs text-gray-500">Room: A-101</p>
-                    </div>
-                    <div class="schedule-cell h-24 p-2 bg-blue-50 rounded-lg">
-                        <span class="subject-tag">DBMS</span>
-                        <p class="text-sm mt-1">Database Systems</p>
-                        <p class="text-xs text-gray-500">Room: B-203</p>
-                    </div>
-                    <div class="h-24"></div>
-                    <div class="schedule-cell h-24 p-2 bg-indigo-50 rounded-lg">
-                        <span class="subject-tag">OS</span>
-                        <p class="text-sm mt-1">Operating Systems</p>
-                        <p class="text-xs text-gray-500">Room: C-105</p>
-                    </div>
-                </div>
-
-                <!-- Thursday -->
-                <div class="col-span-1">
-                    <div class="h-16 text-center font-semibold">Thursday</div>
-                    <div class="h-24"></div>
-                    <div class="schedule-cell h-24 p-2 bg-indigo-50 rounded-lg">
-                        <span class="subject-tag">DS</span>
-                        <p class="text-sm mt-1">Data Structures</p>
-                        <p class="text-xs text-gray-500">Room: A-101</p>
-                    </div>
-                    <div class="schedule-cell h-24 p-2 bg-blue-50 rounded-lg">
-                        <span class="subject-tag">DBMS</span>
-                        <p class="text-sm mt-1">Database Systems</p>
-                        <p class="text-xs text-gray-500">Room: B-203</p>
-                    </div>
-                    <div class="h-24"></div>
-                    <div class="schedule-cell h-24 p-2 bg-indigo-50 rounded-lg">
-                        <span class="subject-tag">OS</span>
-                        <p class="text-sm mt-1">Operating Systems</p>
-                        <p class="text-xs text-gray-500">Room: C-105</p>
-                    </div>
-                    <div class="h-24"></div>
-                </div>
-
-                <!-- Friday -->
-                <div class="col-span-1">
-                    <div class="h-16 text-center font-semibold">Friday</div>
-                    <div class="schedule-cell h-24 p-2 bg-blue-50 rounded-lg">
-                        <span class="subject-tag">CN</span>
-                        <p class="text-sm mt-1">Computer Networks</p>
-                        <p class="text-xs text-gray-500">Room: A-102</p>
-                    </div>
-                    <div class="h-24"></div>
-                    <div class="schedule-cell h-24 p-2 bg-indigo-50 rounded-lg">
-                        <span class="subject-tag">DS</span>
-                        <p class="text-sm mt-1">Data Structures</p>
-                        <p class="text-xs text-gray-500">Room: A-101</p>
-                    </div>
-                    <div class="schedule-cell h-24 p-2 bg-blue-50 rounded-lg">
-                        <span class="subject-tag">DBMS</span>
-                        <p class="text-sm mt-1">Database Systems</p>
-                        <p class="text-xs text-gray-500">Room: B-203</p>
-                    </div>
-                    <div class="h-24"></div>
-                    <div class="schedule-cell h-24 p-2 bg-indigo-50 rounded-lg">
-                        <span class="subject-tag">OS</span>
-                        <p class="text-sm mt-1">Operating Systems</p>
-                        <p class="text-xs text-gray-500">Room: C-105</p>
-                    </div>
-                </div>
-
-                <!-- Saturday -->
-                <div class="col-span-1">
-                    <div class="h-16 text-center font-semibold">Saturday</div>
-                    <div class="h-24"></div>
-                    <div class="schedule-cell h-24 p-2 bg-indigo-50 rounded-lg">
-                        <span class="subject-tag">DS</span>
-                        <p class="text-sm mt-1">Data Structures</p>
-                        <p class="text-xs text-gray-500">Room: A-101</p>
-                    </div>
-                    <div class="schedule-cell h-24 p-2 bg-blue-50 rounded-lg">
-                        <span class="subject-tag">DBMS</span>
-                        <p class="text-sm mt-1">Database Systems</p>
-                        <p class="text-xs text-gray-500">Room: B-203</p>
-                    </div>
-                    <div class="h-24"></div>
-                    <div class="schedule-cell h-24 p-2 bg-indigo-50 rounded-lg">
-                        <span class="subject-tag">OS</span>
-                        <p class="text-sm mt-1">Operating Systems</p>
-                        <p class="text-xs text-gray-500">Room: C-105</p>
-                    </div>
-                    <div class="h-24"></div>
+                
+                <!-- Empty State -->
+                <div id="emptyState" class="empty-state hidden">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <h3 class="text-lg font-semibold text-gray-700">No Classes Scheduled</h3>
+                    <p class="text-gray-500 mt-2" id="emptyMessage">No lectures scheduled for this day. Enjoy your free time!</p>
                 </div>
             </div>
         </div>
 
-        <!-- Upcoming Events and Academic Calendar -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Upcoming Events Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <!-- This Week Summary -->
+            <div class="glass-card p-6 rounded-xl">
+                <h3 class="text-lg font-semibold mb-4 gradient-text">This Week</h3>
+                <div id="weekSummary" class="space-y-3">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+            
             <!-- Upcoming Events -->
-            <div class="glass-card p-6 rounded-lg">
-                <h2 class="text-xl font-semibold mb-4 gradient-text">Upcoming Events</h2>
-                <div class="space-y-4">
-                    <div class="flex items-start space-x-4">
-                        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center">
-                            <span class="text-white text-sm">15<br>Mar</span>
-                        </div>
-                        <div>
-                            <p class="text-gray-600">Mid-term Examination</p>
-                            <span class="text-sm text-gray-500">9:00 AM - 12:00 PM</span>
-                            <div class="mt-2">
-                                <span class="event-badge">Exam</span>
-                                <span class="event-badge ml-2">Mandatory</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex items-start space-x-4">
-                        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center">
-                            <span class="text-white text-sm">20<br>Mar</span>
-                        </div>
-                        <div>
-                            <p class="text-gray-600">Project Presentation</p>
-                            <span class="text-sm text-gray-500">2:00 PM - 5:00 PM</span>
-                            <div class="mt-2">
-                                <span class="event-badge">Presentation</span>
-                                <span class="event-badge ml-2">Group</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex items-start space-x-4">
-                        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center">
-                            <span class="text-white text-sm">25<br>Mar</span>
-                        </div>
-                        <div>
-                            <p class="text-gray-600">Seminar on AI Applications</p>
-                            <span class="text-sm text-gray-500">10:00 AM - 1:00 PM</span>
-                            <div class="mt-2">
-                                <span class="event-badge">Seminar</span>
-                                <span class="event-badge ml-2">Optional</span>
-                            </div>
-                        </div>
-                    </div>
+            <div class="glass-card p-6 rounded-xl">
+                <h3 class="text-lg font-semibold mb-4 gradient-text">Upcoming Events</h3>
+                <div id="upcomingEvents" class="space-y-3">
+                    <div class="text-center text-gray-500 py-4">Loading events...</div>
                 </div>
             </div>
-
-            <!-- Academic Calendar -->
-            <div class="glass-card p-6 rounded-lg">
-                <h2 class="text-xl font-semibold mb-4 gradient-text">Academic Calendar</h2>
-                <div class="space-y-4">
-                    <div class="flex items-start space-x-4">
-                        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center">
-                            <span class="text-white text-sm">1<br>Apr</span>
-                        </div>
-                        <div>
-                            <p class="text-gray-600">Semester Registration</p>
-                            <span class="text-sm text-gray-500">Last Date</span>
-                            <div class="mt-2">
-                                <span class="event-badge">Registration</span>
-                                <span class="event-badge ml-2">Important</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex items-start space-x-4">
-                        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center">
-                            <span class="text-white text-sm">15<br>Apr</span>
-                        </div>
-                        <div>
-                            <p class="text-gray-600">Final Examinations Begin</p>
-                            <span class="text-sm text-gray-500">9:00 AM</span>
-                            <div class="mt-2">
-                                <span class="event-badge">Exam</span>
-                                <span class="event-badge ml-2">Mandatory</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex items-start space-x-4">
-                        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center">
-                            <span class="text-white text-sm">30<br>Apr</span>
-                        </div>
-                        <div>
-                            <p class="text-gray-600">Semester End</p>
-                            <span class="text-sm text-gray-500">Results Declaration</span>
-                            <div class="mt-2">
-                                <span class="event-badge">Results</span>
-                                <span class="event-badge ml-2">Important</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Exam Schedule -->
-        <div class="glass-card p-6 rounded-lg mt-6">
-            <h2 class="text-xl font-semibold mb-4 gradient-text">Upcoming Exam Schedule</h2>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Mar 15, 2024</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">9:00 AM - 12:00 PM</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Mid-term: Data Structures</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Exam Hall 1</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Mar 16, 2024</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">9:00 AM - 12:00 PM</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Mid-term: Database Systems</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Exam Hall 1</td>
-                        </tr>
-                        <!-- Add more exam rows as needed -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Holiday Calendar -->
-        <div class="glass-card p-6 rounded-lg mt-6">
-            <h2 class="text-xl font-semibold mb-4 gradient-text">Upcoming Holidays</h2>
-            <ul class="space-y-3 list-disc list-inside text-gray-600">
-                <li><span class="font-medium">March 25, 2024:</span> Holi Festival</li>
-                <li><span class="font-medium">April 14, 2024:</span> Ambedkar Jayanti</li>
-                <li><span class="font-medium">May 1, 2024:</span> Gujarat Day / Labour Day</li>
-                <!-- Add more holidays as needed -->
-            </ul>
         </div>
     </main>
+
+    <script>
+        // Days of the week
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const shortDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        
+        // Current state
+        let selectedDay = new Date().getDay();
+        let scheduleData = {};
+        let enrolledSubjects = [];
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000);
+            
+            initializeDayTabs();
+            loadEnrolledSubjects();
+            loadUpcomingEvents();
+            
+            // Mobile menu toggle
+            document.getElementById('mobileMenuButton').addEventListener('click', () => {
+                document.querySelector('.sidebar').classList.toggle('open');
+            });
+        });
+        
+        // Update current time display
+        function updateCurrentTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            document.getElementById('currentTime').textContent = timeStr;
+            
+            const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('currentDateDisplay').textContent = dateStr;
+            
+            document.getElementById('todayDayName').textContent = days[now.getDay()];
+            document.getElementById('todayFullDate').textContent = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        }
+        
+        // Initialize day tabs
+        function initializeDayTabs() {
+            const tabsContainer = document.getElementById('dayTabs');
+            const today = new Date().getDay();
+            
+            // Start from Monday (1) to Saturday (6), then Sunday (0)
+            const orderedDays = [1, 2, 3, 4, 5, 6, 0];
+            
+            tabsContainer.innerHTML = orderedDays.map(dayIndex => {
+                const isToday = dayIndex === today;
+                const isActive = dayIndex === selectedDay;
+                const date = getDateForDay(dayIndex);
+                
+                return `
+                    <button class="day-tab ${isActive ? 'active' : ''} ${isToday ? 'today' : ''}" 
+                            data-day="${dayIndex}"
+                            onclick="selectDay(${dayIndex})">
+                        <div class="text-center">
+                            <div class="font-semibold">${shortDays[dayIndex]}</div>
+                            <div class="text-xs opacity-75">${date.getDate()}</div>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+        }
+        
+        // Get date for a specific day of the week
+        function getDateForDay(targetDay) {
+            const today = new Date();
+            const currentDay = today.getDay();
+            const diff = targetDay - currentDay;
+            const targetDate = new Date(today);
+            targetDate.setDate(today.getDate() + diff);
+            return targetDate;
+        }
+        
+        // Select a day
+        function selectDay(dayIndex) {
+            selectedDay = dayIndex;
+            
+            // Update tab states
+            document.querySelectorAll('.day-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (parseInt(tab.dataset.day) === dayIndex) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            // Update title
+            const today = new Date().getDay();
+            if (dayIndex === today) {
+                document.getElementById('selectedDayTitle').textContent = "Today's Schedule";
+            } else {
+                document.getElementById('selectedDayTitle').textContent = `${days[dayIndex]}'s Schedule`;
+            }
+            
+            // Load schedule for selected day
+            displayScheduleForDay(dayIndex);
+        }
+        
+        // Load enrolled subjects
+        async function loadEnrolledSubjects() {
+            try {
+                const response = await fetch('/api/student/subjects', { credentials: 'include' });
+                
+                if (response.ok) {
+                    enrolledSubjects = await response.json();
+                    generateScheduleFromSubjects();
+                } else {
+                    showEmptyState("Unable to load your enrolled subjects. Please try again later.");
+                }
+            } catch (error) {
+                console.error('Error loading subjects:', error);
+                showEmptyState("Unable to load schedule. Please check your connection.");
+            }
+        }
+        
+        // Generate schedule from enrolled subjects
+        function generateScheduleFromSubjects() {
+            // Since we don't have actual schedule data, we'll generate a sample based on enrolled subjects
+            // In a real implementation, this would come from a Schedule model/API
+            
+            if (!enrolledSubjects || enrolledSubjects.length === 0) {
+                showEmptyState("You haven't enrolled in any subjects yet. Enroll in subjects to see your schedule.");
+                document.getElementById('loadingState').classList.add('hidden');
+                return;
+            }
+            
+            // Create a sample schedule based on enrolled subjects
+            // Each subject gets assigned to certain days/times
+            const timeSlots = [
+                { start: '09:00', end: '10:00' },
+                { start: '10:15', end: '11:15' },
+                { start: '11:30', end: '12:30' },
+                { start: '14:00', end: '15:00' },
+                { start: '15:15', end: '16:15' },
+                { start: '16:30', end: '17:30' }
+            ];
+            
+            // Initialize schedule for all days
+            for (let i = 0; i < 7; i++) {
+                scheduleData[i] = [];
+            }
+            
+            // Distribute subjects across days (Monday to Saturday)
+            enrolledSubjects.forEach((subject, index) => {
+                // Each subject appears 2-3 times a week
+                const daysForSubject = [(index % 6) + 1, ((index + 2) % 6) + 1]; // Monday=1 to Saturday=6
+                const timeSlot = timeSlots[index % timeSlots.length];
+                
+                daysForSubject.forEach(day => {
+                    if (day > 0 && day < 7) { // Not Sunday
+                        scheduleData[day].push({
+                            subject_code: subject.subject_code || `SUB${index + 1}`,
+                            subject_name: subject.subject_name,
+                            faculty_name: subject.faculty_name || 'Faculty TBA',
+                            start_time: timeSlot.start,
+                            end_time: timeSlot.end,
+                            room: `Room ${101 + (index % 5)}`,
+                            type: index % 3 === 0 ? 'Lab' : 'Lecture'
+                        });
+                    }
+                });
+            });
+            
+            // Sort each day's schedule by time
+            for (let day in scheduleData) {
+                scheduleData[day].sort((a, b) => a.start_time.localeCompare(b.start_time));
+            }
+            
+            // Display schedule for selected day
+            displayScheduleForDay(selectedDay);
+            updateTodaySummary();
+            updateWeekSummary();
+        }
+        
+        // Display schedule for a specific day
+        function displayScheduleForDay(dayIndex) {
+            const loadingState = document.getElementById('loadingState');
+            const scheduleList = document.getElementById('scheduleList');
+            const emptyState = document.getElementById('emptyState');
+            
+            loadingState.classList.add('hidden');
+            
+            const daySchedule = scheduleData[dayIndex] || [];
+            
+            if (daySchedule.length === 0) {
+                scheduleList.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                
+                if (dayIndex === 0) { // Sunday
+                    document.getElementById('emptyMessage').textContent = "It's Sunday! No classes scheduled. Enjoy your weekend!";
+                } else {
+                    document.getElementById('emptyMessage').textContent = "No lectures scheduled for this day.";
+                }
+                
+                document.getElementById('lectureCount').textContent = '0 lectures';
+                return;
+            }
+            
+            emptyState.classList.add('hidden');
+            scheduleList.classList.remove('hidden');
+            
+            const now = new Date();
+            const currentTimeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            const isToday = dayIndex === now.getDay();
+            
+            scheduleList.innerHTML = daySchedule.map((item, index) => {
+                let statusClass = '';
+                let statusBadge = '';
+                
+                if (isToday) {
+                    if (currentTimeStr >= item.start_time && currentTimeStr < item.end_time) {
+                        statusClass = 'current';
+                        statusBadge = '<span class="ml-2 px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">🔴 LIVE NOW</span>';
+                    } else if (currentTimeStr >= item.end_time) {
+                        statusClass = 'past';
+                        statusBadge = '<span class="ml-2 px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded-full font-medium">Completed</span>';
+                    } else {
+                        statusBadge = '<span class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">Upcoming</span>';
+                    }
+                }
+                
+                const colors = ['indigo', 'blue', 'purple', 'pink', 'teal'];
+                const color = colors[index % colors.length];
+                
+                return `
+                    <div class="schedule-item ${statusClass}">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div class="flex items-start gap-4">
+                                <div class="time-badge ${statusClass === 'current' ? 'current' : ''}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    ${formatTime(item.start_time)} - ${formatTime(item.end_time)}
+                                </div>
+                                <div>
+                                    <div class="flex items-center flex-wrap gap-2">
+                                        <span class="px-2 py-1 bg-${color}-100 text-${color}-700 text-xs font-semibold rounded">${item.subject_code}</span>
+                                        <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">${item.type}</span>
+                                        ${statusBadge}
+                                    </div>
+                                    <h4 class="font-semibold text-gray-800 mt-2">${item.subject_name}</h4>
+                                    <div class="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                            </svg>
+                                            ${item.faculty_name}
+                                        </span>
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                            ${item.room}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('lectureCount').textContent = `${daySchedule.length} lecture${daySchedule.length !== 1 ? 's' : ''}`;
+        }
+        
+        // Format time from 24h to 12h format
+        function formatTime(time24) {
+            const [hours, minutes] = time24.split(':');
+            const h = parseInt(hours);
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            const h12 = h % 12 || 12;
+            return `${h12}:${minutes} ${ampm}`;
+        }
+        
+        // Update today's summary
+        function updateTodaySummary() {
+            const today = new Date().getDay();
+            const todaySchedule = scheduleData[today] || [];
+            
+            const now = new Date();
+            const currentTimeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            
+            let completed = 0;
+            let upcoming = 0;
+            let currentClass = '-';
+            
+            todaySchedule.forEach(item => {
+                if (currentTimeStr >= item.end_time) {
+                    completed++;
+                } else if (currentTimeStr >= item.start_time && currentTimeStr < item.end_time) {
+                    currentClass = item.subject_code;
+                } else {
+                    upcoming++;
+                }
+            });
+            
+            document.getElementById('totalLectures').textContent = todaySchedule.length;
+            document.getElementById('completedLectures').textContent = completed;
+            document.getElementById('upcomingLectures').textContent = upcoming;
+            document.getElementById('currentLecture').textContent = currentClass;
+        }
+        
+        // Update week summary
+        function updateWeekSummary() {
+            const summaryContainer = document.getElementById('weekSummary');
+            const orderedDays = [1, 2, 3, 4, 5, 6]; // Monday to Saturday
+            const today = new Date().getDay();
+            
+            summaryContainer.innerHTML = orderedDays.map(dayIndex => {
+                const count = (scheduleData[dayIndex] || []).length;
+                const isToday = dayIndex === today;
+                
+                return `
+                    <div class="flex items-center justify-between p-3 rounded-lg ${isToday ? 'bg-indigo-50 border border-indigo-200' : 'bg-gray-50'} cursor-pointer hover:shadow-sm transition"
+                         onclick="selectDay(${dayIndex})">
+                        <div class="flex items-center gap-3">
+                            ${isToday ? '<span class="w-2 h-2 bg-indigo-500 rounded-full"></span>' : ''}
+                            <span class="font-medium ${isToday ? 'text-indigo-700' : 'text-gray-700'}">${days[dayIndex]}</span>
+                        </div>
+                        <span class="text-sm ${isToday ? 'text-indigo-600' : 'text-gray-500'}">${count} lecture${count !== 1 ? 's' : ''}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Show empty state
+        function showEmptyState(message) {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('scheduleList').classList.add('hidden');
+            document.getElementById('emptyState').classList.remove('hidden');
+            document.getElementById('emptyMessage').textContent = message;
+        }
+        
+        // Load upcoming events
+        async function loadUpcomingEvents() {
+            try {
+                const response = await fetch('/api/student/upcoming-events', { credentials: 'include' });
+                const data = await response.json();
+                
+                const container = document.getElementById('upcomingEvents');
+                
+                if (data.events && data.events.length > 0) {
+                    container.innerHTML = data.events.slice(0, 3).map(event => {
+                        const date = new Date(event.start_time);
+                        const day = date.getDate();
+                        const month = date.toLocaleString('en-US', { month: 'short' });
+                        
+                        return `
+                            <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                                <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center flex-shrink-0">
+                                    <div class="text-white text-center text-xs">
+                                        <div class="font-bold">${day}</div>
+                                        <div>${month}</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-800">${event.title}</p>
+                                    <p class="text-sm text-gray-500">${event.description || ''}</p>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    container.innerHTML = '<div class="text-center text-gray-500 py-4">No upcoming events</div>';
+                }
+            } catch (error) {
+                console.error('Error loading events:', error);
+                document.getElementById('upcomingEvents').innerHTML = '<div class="text-center text-gray-500 py-4">Unable to load events</div>';
+            }
+        }
+    </script>
 </body>
-</html> 
+</html>

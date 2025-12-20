@@ -228,7 +228,7 @@
     <aside class="sidebar">
         <div class="sidebar-header">
             <div class="flex items-center space-x-3">
-                <img src="logo.png" alt="GEC Rajkot Logo" class="w-12 h-12 object-contain">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="GEC Rajkot Logo" class="w-12 h-12 object-contain">
                 <div class="text-2xl font-bold gradient-text">GEC Rajkot</div>
             </div>
         </div>
@@ -257,21 +257,12 @@
                 <span class="ml-3">Enroll in Subjects</span>
             </a>
 
-            <!-- Attendance (Old - Redirects to QR) -->
-            <a href="/student/mark-attendance" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+            <!-- Attendance -->
+            <a href="/student/attendance" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
                 <span class="ml-3">My Attendance</span>
-            </a>
-
-            <!-- Mark Attendance (QR) - NEW -->
-            <a href="/student/mark-attendance" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                </svg>
-                <span class="ml-3">Mark Attendance</span>
-                <span class="ml-auto text-xs bg-green-500 text-white px-2 py-1 rounded-full">QR</span>
             </a>
 
             <!-- Schedule -->
@@ -280,7 +271,9 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <span class="ml-3">Schedule</span>
-            </a>            <!-- Events -->
+            </a>           
+            
+            <!-- Events -->
             <a href="/student/events" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -416,28 +409,8 @@
             <!-- Recent Activities -->
             <div class="glass-card p-6 rounded-lg">
                 <h2 class="text-xl font-semibold mb-4 gradient-text">Recent Activities</h2>
-                <div class="space-y-4">
-                    <div class="flex items-start space-x-4">
-                        <div class="w-2 h-2 rounded-full bg-indigo-500 mt-2"></div>
-                        <div>
-                            <p class="text-gray-600">Submitted Data Structures project</p>
-                            <span class="text-sm text-gray-500">2 days ago</span>
-                        </div>
-                    </div>
-                    <div class="flex items-start space-x-4">
-                        <div class="w-2 h-2 rounded-full bg-indigo-500 mt-2"></div>
-                        <div>
-                            <p class="text-gray-600">Attended workshop on Machine Learning</p>
-                            <span class="text-sm text-gray-500">1 week ago</span>
-                        </div>
-                    </div>
-                    <div class="flex items-start space-x-4">
-                        <div class="w-2 h-2 rounded-full bg-indigo-500 mt-2"></div>
-                        <div>
-                            <p class="text-gray-600">Completed Database Systems assignment</p>
-                            <span class="text-sm text-gray-500">3 days ago</span>
-                        </div>
-                    </div>
+                <div id="activities-widget" class="space-y-4">
+                    <div class="text-center text-gray-500 py-4">Loading activities...</div>
                 </div>
             </div>
 
@@ -483,6 +456,63 @@
         document.getElementById('mobileMenuButton').addEventListener('click', function() {
             document.querySelector('.sidebar').classList.toggle('open');
         });
+
+        // Load recent activities (attendance records)
+        async function loadRecentActivities() {
+            const container = document.getElementById('activities-widget');
+            try {
+                // Load from attendance records as recent activities
+                const response = await fetch('/api/student/attendance', { credentials: 'include' });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    let activities = [];
+                    
+                    // Collect all attendance records from all subjects
+                    if (data.by_subject && data.by_subject.length > 0) {
+                        data.by_subject.forEach(subject => {
+                            if (subject.records && subject.records.length > 0) {
+                                subject.records.forEach(record => {
+                                    const status = record.status === 'Present' ? 'Attended' : 'Missed';
+                                    const color = record.status === 'Present' ? 'green' : 'red';
+                                    activities.push({
+                                        text: `${status} ${subject.subject_name} class`,
+                                        type: record.status.toLowerCase(),
+                                        date: new Date(record.date),
+                                        color: color
+                                    });
+                                });
+                            }
+                        });
+                    }
+                    
+                    // Sort by date descending (most recent first)
+                    activities.sort((a, b) => b.date - a.date);
+                    
+                    if (activities.length > 0) {
+                        container.innerHTML = activities.slice(0, 5).map(activity => {
+                            const timeAgo = getTimeAgo(activity.date);
+                            return `
+                                <div class="flex items-start space-x-4">
+                                    <div class="w-2 h-2 rounded-full bg-${activity.color}-500 mt-2 flex-shrink-0"></div>
+                                    <div>
+                                        <p class="text-gray-600">${activity.text}</p>
+                                        <span class="text-sm text-gray-500">${timeAgo}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    } else {
+                        container.innerHTML = '<div class="text-center text-gray-500 py-4">No recent activities</div>';
+                    }
+                } else {
+                    container.innerHTML = '<div class="text-center text-gray-500 py-4">No recent activities</div>';
+                }
+            } catch (error) {
+                console.error('Error loading activities:', error);
+                container.innerHTML = '<div class="text-center text-gray-500 py-4">No recent activities</div>';
+            }
+        }
 
         // Load announcements
         async function loadAnnouncements() {
@@ -694,6 +724,7 @@
             loadEnrolledSubjects();
             loadAnnouncements();
             loadEvents();
+            loadRecentActivities();
             loadNotifications(); // Load notifications on page load
             
             // Poll for new notifications every 30 seconds

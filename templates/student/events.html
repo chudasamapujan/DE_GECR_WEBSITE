@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Events - GEC Rajkot</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -30,13 +29,11 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             border: 1px solid rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(10px);
-            transform-style: preserve-3d;
-            perspective: 1000px;
             transition: all 0.3s ease;
         }
         .glass-card:hover {
-            transform: translateY(-5px) rotateX(2deg) rotateY(2deg);
-            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.15);
         }
         .gradient-text {
             background: linear-gradient(45deg, var(--primary), var(--accent));
@@ -70,19 +67,6 @@
             overflow-y: auto;
             padding: 1rem 0;
         }
-        .sidebar-nav::-webkit-scrollbar {
-            width: 6px;
-        }
-        .sidebar-nav::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .sidebar-nav::-webkit-scrollbar-thumb {
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 3px;
-        }
-        .sidebar-nav::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 0, 0, 0.2);
-        }
         .sidebar-item {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             border-radius: 0.75rem;
@@ -90,22 +74,9 @@
             position: relative;
             overflow: hidden;
         }
-        .sidebar-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, var(--hover-bg), transparent);
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-        .sidebar-item:hover::before {
-            opacity: 1;
-        }
         .sidebar-item:hover {
             transform: translateX(5px);
+            background: var(--hover-bg);
         }
         .sidebar-item.active {
             background: var(--active-bg);
@@ -121,34 +92,10 @@
             background: linear-gradient(to bottom, var(--primary), var(--accent));
             border-radius: 0 4px 4px 0;
         }
-        .submenu-item {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 0.75rem;
-            margin: 0.25rem 0;
-            padding-left: 2.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-        .submenu-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, var(--hover-bg), transparent);
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-        .submenu-item:hover::before {
-            opacity: 1;
-        }
-        .submenu-item:hover {
-            transform: translateX(3px);
-        }
-        .submenu-item.active {
-            color: var(--primary);
-            background: var(--active-bg);
+        .main-content {
+            margin-left: 300px;
+            padding: 2rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .notification-badge {
             background: linear-gradient(135deg, var(--primary), var(--accent));
@@ -158,17 +105,11 @@
             border-radius: 9999px;
             min-width: 1.5rem;
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .menu-divider {
             height: 1px;
             background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.1), transparent);
             margin: 1rem;
-        }
-        .main-content {
-            margin-left: 300px;
-            padding: 2rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .mobile-menu-button {
             display: none;
@@ -180,11 +121,6 @@
             background: white;
             border-radius: 0.75rem;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: all 0.2s ease;
-        }
-        .mobile-menu-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
         /* Event specific styles */
         .event-card {
@@ -192,46 +128,32 @@
         }
         .event-card:hover {
             transform: scale(1.02);
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
         }
         .event-date {
             background: linear-gradient(135deg, var(--primary), var(--accent));
             color: white;
-            padding: 0.5rem;
-            border-radius: 0.5rem;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
             text-align: center;
             min-width: 80px;
         }
         .event-tag {
-            background: rgba(79, 70, 229, 0.1);
-            color: var(--primary);
             padding: 0.25rem 0.75rem;
             border-radius: 9999px;
             font-size: 0.75rem;
             font-weight: 500;
         }
-        .event-location {
-            color: var(--text);
-            font-size: 0.875rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+        .event-tag.student {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
         }
-        .event-time {
-            color: var(--text);
-            font-size: 0.875rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+        .event-tag.faculty {
+            background: rgba(79, 70, 229, 0.1);
+            color: #4F46E5;
         }
-        .event-description {
+        .event-tag.general {
+            background: rgba(107, 114, 128, 0.1);
             color: #6B7280;
-            font-size: 0.875rem;
-            line-height: 1.5;
-        }
-        .event-actions {
-            display: flex;
-            gap: 0.5rem;
         }
         .event-button {
             padding: 0.5rem 1rem;
@@ -250,9 +172,187 @@
             background: rgba(79, 70, 229, 0.1);
             color: var(--primary);
         }
+        .event-button.danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #EF4444;
+        }
         .event-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(79, 70, 229, 0.2);
+        }
+        /* Tabs */
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            background: white;
+            border: 1px solid #E5E7EB;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border-color: transparent;
+        }
+        .tab-btn:hover:not(.active) {
+            background: var(--hover-bg);
+        }
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 0;
+            width: 100%;
+            max-width: 480px;
+            max-height: calc(100vh - 2rem);
+            overflow: hidden;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s ease;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 1.5rem;
+            position: relative;
+        }
+        .modal-header h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        .modal-header p {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            margin-top: 0.25rem;
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            max-height: calc(100vh - 15rem);
+        }
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #E5E7EB;
+            border-radius: 0.75rem;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            background: #F9FAFB;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+        .form-input::placeholder {
+            color: #9CA3AF;
+        }
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #374151;
+            font-size: 0.875rem;
+        }
+        .form-label .required {
+            color: #EF4444;
+        }
+        .modal-footer {
+            padding: 1rem 1.5rem 1.5rem;
+            display: flex;
+            gap: 0.75rem;
+            border-top: 1px solid #E5E7EB;
+            background: #F9FAFB;
+        }
+        .btn-cancel {
+            flex: 1;
+            padding: 0.875rem 1rem;
+            border: 2px solid #E5E7EB;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            color: #6B7280;
+            background: white;
+            transition: all 0.2s ease;
+        }
+        .btn-cancel:hover {
+            border-color: #D1D5DB;
+            background: #F3F4F6;
+        }
+        .btn-submit {
+            flex: 1;
+            padding: 0.875rem 1rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+        }
+        .btn-submit:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6B7280;
+        }
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1rem;
+            opacity: 0.5;
         }
         @media (max-width: 768px) {
             .sidebar {
@@ -284,7 +384,7 @@
     <aside class="sidebar">
         <div class="sidebar-header">
             <div class="flex items-center space-x-3">
-                <img src="logo.png" alt="GEC Rajkot Logo" class="w-12 h-12 object-contain">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="GEC Rajkot Logo" class="w-12 h-12 object-contain">
                 <div class="text-2xl font-bold gradient-text">GEC Rajkot</div>
             </div>
         </div>
@@ -305,19 +405,36 @@
                 <span class="ml-3">Profile</span>
             </a>
 
-            <!-- Academics -->            <!-- Schedule -->
+            <!-- Subject Enrollment -->
+            <a href="/api/enrollment/student/enroll-page" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <span class="ml-3">Enroll in Subjects</span>
+            </a>
+
+            <!-- Attendance -->
+            <a href="/student/attendance" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+                <span class="ml-3">My Attendance</span>
+            </a>
+
+            <!-- Schedule -->
             <a href="/student/schedule" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <span class="ml-3">Schedule</span>
-            </a>            <!-- Events -->
-            <a href="/student/events" class="sidebar-item active flex items-center p-3 text-indigo-600 hover:text-indigo-600">
+            </a>           
+            
+            <!-- Events -->
+            <a href="/student/events" class="sidebar-item active flex items-center p-3 text-indigo-600">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <span class="ml-3">Events</span>
-                <div class="notification-badge ml-auto">2</div>
             </a>
 
             <div class="menu-divider"></div>
@@ -334,29 +451,153 @@
             <!-- Logout -->
             <a href="/" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600 mt-4">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
                 <span class="ml-3">Logout</span>
             </a>
         </nav>
     </aside>
 
+    <!-- Create Event Modal -->
+    <div id="createEventModal" class="modal-overlay">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h2>Create New Event</h2>
+                <p>Organize study groups, activities & more</p>
+                <button id="closeModalBtn" class="modal-close">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <form id="createEventForm">
+                <div class="modal-body">
+                    <!-- Event Title -->
+                    <div class="form-group">
+                        <label class="form-label">Event Title <span class="required">*</span></label>
+                        <input type="text" id="eventTitle" class="form-input" placeholder="e.g., Study Group Session" required>
+                    </div>
+                    
+                    <!-- Category -->
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select id="eventCategory" class="form-input">
+                            <option value="Study Group">Study Group</option>
+                            <option value="Club Activity">Club Activity</option>
+                            <option value="Sports">Sports</option>
+                            <option value="Cultural">Cultural</option>
+                            <option value="Workshop">Workshop</option>
+                            <option value="Meetup"> Meetup</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea id="eventDescription" class="form-input" rows="3" placeholder="Describe what your event is about..."></textarea>
+                    </div>
+                    
+                    <!-- Date and Time -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 form-group">
+                        <div>
+                            <label class="form-label">Start Date & Time <span class="required">*</span></label>
+                            <input type="datetime-local" id="eventStartTime" class="form-input" required>
+                        </div>
+                        <div>
+                            <label class="form-label">End Date & Time</label>
+                            <input type="datetime-local" id="eventEndTime" class="form-input">
+                        </div>
+                    </div>
+                    
+                    <!-- Location -->
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Location</label>
+                        <input type="text" id="eventLocation" class="form-input" placeholder="e.g., Library Room 102, College Ground">
+                    </div>
+                </div>
+                
+                <!-- Modal Footer -->
+                <div class="modal-footer">
+                    <button type="button" id="cancelEventBtn" class="btn-cancel">Cancel</button>
+                    <button type="submit" id="submitEventBtn" class="btn-submit">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Create Event
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Registrations Modal -->
+    <div id="registrationsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-indigo-600 to-blue-500 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Event Registrations</h3>
+                        <p id="registrationsEventTitle" class="text-indigo-100 text-sm mt-1">Event Title</p>
+                    </div>
+                    <button id="closeRegistrationsModal" class="text-white/80 hover:text-white transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <span id="registrationsCount" class="text-sm font-medium text-gray-600">Loading...</span>
+                    <button id="downloadRegistrationsBtn" class="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm" disabled>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Download Excel
+                    </button>
+                </div>
+                <div class="overflow-auto max-h-[50vh] border rounded-lg">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 sticky top-0">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">#</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Name</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Email</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Registered At</th>
+                            </tr>
+                        </thead>
+                        <tbody id="registrationsTableBody">
+                            <tr><td colspan="4" class="text-center py-8 text-gray-500">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main class="main-content">
         <!-- Top Bar -->
-        <div class="flex justify-between items-center mb-8">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div>
                 <h1 class="text-3xl font-bold text-gray-800">Events</h1>
-                <p class="text-gray-600 mt-1">Stay updated with campus events and activities</p>
+                <p class="text-gray-600 mt-1">Discover and create campus events</p>
             </div>
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center gap-3">
                 <div class="relative">
-                    <input type="text" placeholder="Search events..." class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    <input type="text" id="searchInput" placeholder="Search events..." class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
                     <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                 </div>
-                <button class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors duration-200 flex items-center space-x-2">
+                <button id="createEventBtn" class="bg-gradient-to-r from-indigo-600 to-blue-500 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
@@ -365,139 +606,634 @@
             </div>
         </div>
 
-        <!-- Featured Events (loaded dynamically) -->
-        <div class="mb-8">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">Featured Events</h2>
-            <div id="eventsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="text-center text-gray-500 py-8">Loading events...</div>
+        <!-- Tabs -->
+        <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
+            <button class="tab-btn active" data-tab="all">All Events</button>
+            <button class="tab-btn" data-tab="my-events">My Events</button>
+            <button class="tab-btn" data-tab="registered">Registered</button>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="glass-card rounded-xl p-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Total Events</p>
+                        <p id="totalEventsCount" class="text-xl font-bold text-gray-800">-</p>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl p-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">My Events</p>
+                        <p id="myEventsCount" class="text-xl font-bold text-gray-800">-</p>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl p-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Registered</p>
+                        <p id="registeredCount" class="text-xl font-bold text-gray-800">-</p>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl p-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Upcoming</p>
+                        <p id="upcomingCount" class="text-xl font-bold text-gray-800">-</p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Upcoming Events (loaded dynamically) -->
-        <div class="mb-8">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">Upcoming Events</h2>
-            <div class="glass-card rounded-xl overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="upcomingEventsTable" class="bg-white divide-y divide-gray-200">
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">Loading events...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+        <!-- Events Grid -->
+        <div id="eventsContainer">
+            <!-- All Events Tab -->
+            <div id="tab-all" class="tab-content">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">All Upcoming Events</h2>
+                <div id="allEventsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="text-center text-gray-500 py-8 col-span-full">Loading events...</div>
+                </div>
+            </div>
+            
+            <!-- My Events Tab -->
+            <div id="tab-my-events" class="tab-content hidden">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Events I Created</h2>
+                <div id="myEventsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="text-center text-gray-500 py-8 col-span-full">Loading your events...</div>
+                </div>
+            </div>
+            
+            <!-- Registered Events Tab -->
+            <div id="tab-registered" class="tab-content hidden">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Events I'm Registered For</h2>
+                <div id="registeredEventsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="text-center text-gray-500 py-8 col-span-full">Loading registered events...</div>
                 </div>
             </div>
         </div>
     </main>
+
     <script>
-        async function fetchAndRenderEvents() {
-            try {
-                const resp = await fetch('/api/student/upcoming-events');
-                if (!resp.ok) throw new Error('Failed to load events');
-                const data = await resp.json();
-
-                // Render grid
-                const grid = document.getElementById('eventsGrid');
-                if (grid) {
-                    grid.innerHTML = '';
-                    if (!data.events || data.events.length === 0) {
-                        grid.innerHTML = '<div class="text-center text-gray-500 py-8">No events</div>';
-                    } else {
-                        data.events.forEach(ev => {
-                            const start = ev.start_time ? new Date(ev.start_time) : null;
-                            const month = start ? start.toLocaleString('default', { month: 'short' }).toUpperCase() : '';
-                            const day = start ? start.getDate() : '';
-
-                            const card = document.createElement('div');
-                            card.className = 'glass-card rounded-xl p-6 event-card';
-                            card.innerHTML = `
-                                <div class="flex items-start justify-between mb-4">
-                                    <div class="event-date">
-                                        <div class="text-2xl font-bold">${day}</div>
-                                        <div class="text-sm">${month}</div>
-                                    </div>
-                                    <span class="event-tag">${ev.category || 'Event'}</span>
-                                </div>
-                                <h3 class="text-lg font-semibold text-gray-800 mb-2">${ev.title}</h3>
-                                <p class="event-description mb-4">${ev.description || ''}</p>
-                                <div class="flex items-center space-x-4 mb-4">
-                                    <div class="event-location">📍 ${ev.location || ''}</div>
-                                    <div class="event-time">⏰ ${start ? start.toLocaleString() : ''}${ev.end_time ? ' - ' + new Date(ev.end_time).toLocaleTimeString() : ''}</div>
-                                </div>
-                                <div class="event-actions">
-                                    <button class="event-button primary flex-1 register-btn" data-event-id="${ev.event_id}">Register Now</button>
-                                    <a href="#" class="event-button secondary">Details</a>
-                                </div>
-                            `;
-                            grid.appendChild(card);
-                        });
-                    }
-                }
-
-                // Render table
-                const tableBody = document.getElementById('upcomingEventsTable');
-                if (tableBody) {
-                    tableBody.innerHTML = '';
-                    if (!data.events || data.events.length === 0) {
-                        tableBody.innerHTML = '<tr><td class="px-6 py-4">No events</td></tr>';
-                    } else {
-                        data.events.forEach(ev => {
-                            const row = document.createElement('tr');
-                            row.innerHTML = `
-                                <td class="px-6 py-4 whitespace-nowrap">${ev.title}<div class="text-sm text-gray-500">${ev.description || ''}</div></td>
-                                <td class="px-6 py-4 whitespace-nowrap">${ev.start_time ? new Date(ev.start_time).toLocaleDateString() : ''}<div class="text-sm text-gray-500">${ev.start_time ? new Date(ev.start_time).toLocaleTimeString() : ''}</div></td>
-                                <td class="px-6 py-4 whitespace-nowrap">${ev.location || ''}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">${ev.category || ''}</td>
-                                <td class="px-6 py-4 whitespace-nowrap"><button class="event-button primary register-btn" data-event-id="${ev.event_id}">Register</button></td>
-                            `;
-                            tableBody.appendChild(row);
-                        });
-                    }
-                }
-
-                // Wire register buttons
-                document.querySelectorAll('.register-btn').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        const id = btn.getAttribute('data-event-id');
-                        if (!id) return;
-                        btn.disabled = true;
-                        const original = btn.textContent;
-                        btn.textContent = 'Registering...';
-                        try {
-                            const r = await fetch(`/api/student/events/${id}/register`, { method: 'POST' });
-                            const res = await r.json().catch(() => ({}));
-                            if (r.ok) {
-                                btn.textContent = 'Registered';
-                                btn.classList.remove('primary');
-                                btn.classList.add('secondary');
-                            } else {
-                                alert(res.error || res.message || 'Registration failed');
-                                btn.disabled = false;
-                                btn.textContent = original;
-                            }
-                        } catch (err) {
-                            alert('Registration failed');
-                            btn.disabled = false;
-                            btn.textContent = original;
-                        }
-                    });
+        // State
+        let allEvents = [];
+        let myEvents = [];
+        let registeredEvents = [];
+        
+        // DOM Elements
+        const modal = document.getElementById('createEventModal');
+        const createEventBtn = document.getElementById('createEventBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelEventBtn = document.getElementById('cancelEventBtn');
+        const createEventForm = document.getElementById('createEventForm');
+        const searchInput = document.getElementById('searchInput');
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        
+        // Modal handlers
+        createEventBtn.addEventListener('click', () => {
+            modal.classList.add('active');
+            // Set minimum datetime to now
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('eventStartTime').min = now.toISOString().slice(0, 16);
+        });
+        
+        closeModalBtn.addEventListener('click', () => modal.classList.remove('active'));
+        cancelEventBtn.addEventListener('click', () => modal.classList.remove('active'));
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.classList.remove('active');
+        });
+        
+        // Tab switching
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.add('hidden');
                 });
-
+                document.getElementById(`tab-${btn.dataset.tab}`).classList.remove('hidden');
+            });
+        });
+        
+        // Search functionality
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            filterAndRenderEvents(query);
+        });
+        
+        // Create event form submission
+        createEventForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitEventBtn');
+            const originalText = submitBtn.innerHTML;
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `
+                <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Creating...
+            `;
+            
+            const eventData = {
+                title: document.getElementById('eventTitle').value.trim(),
+                category: document.getElementById('eventCategory').value,
+                description: document.getElementById('eventDescription').value.trim(),
+                start_time: document.getElementById('eventStartTime').value,
+                end_time: document.getElementById('eventEndTime').value || '',
+                location: document.getElementById('eventLocation').value.trim()
+            };
+            
+            console.log('Sending event data:', eventData);
+            
+            try {
+                const response = await fetch('/api/student/events', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(eventData)
+                });
+                
+                const result = await response.json();
+                console.log('Server response:', response.status, result);
+                
+                if (response.ok) {
+                    modal.classList.remove('active');
+                    createEventForm.reset();
+                    showNotification('🎉 Event created successfully!', 'success');
+                    loadAllData(); // Refresh all data
+                    // Switch to My Events tab
+                    document.querySelector('[data-tab="my-events"]').click();
+                } else {
+                    console.error('Server error:', result);
+                    showNotification(result.error || 'Failed to create event', 'error');
+                }
             } catch (err) {
-                console.error('Error loading events', err);
+                console.error('Error creating event:', err);
+                showNotification('Failed to create event. Please try again.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
+        
+        // Load all events
+        async function loadAllEvents() {
+            try {
+                const response = await fetch('/api/student/upcoming-events', { credentials: 'include' });
+                if (!response.ok) throw new Error('Failed to load events');
+                const data = await response.json();
+                allEvents = data.events || [];
+                renderAllEvents(allEvents);
+                document.getElementById('totalEventsCount').textContent = allEvents.length;
+                document.getElementById('upcomingCount').textContent = allEvents.length;
+            } catch (err) {
+                console.error('Error loading events:', err);
+                document.getElementById('allEventsGrid').innerHTML = renderEmptyState('No events found');
             }
         }
-
-        window.addEventListener('DOMContentLoaded', fetchAndRenderEvents);
+        
+        // Load my events
+        async function loadMyEvents() {
+            try {
+                const response = await fetch('/api/student/my-events', { credentials: 'include' });
+                if (!response.ok) throw new Error('Failed to load my events');
+                const data = await response.json();
+                myEvents = data.events || [];
+                renderMyEvents(myEvents);
+                document.getElementById('myEventsCount').textContent = myEvents.length;
+            } catch (err) {
+                console.error('Error loading my events:', err);
+                document.getElementById('myEventsGrid').innerHTML = renderEmptyState('No events created yet');
+            }
+        }
+        
+        // Load registered events
+        async function loadRegisteredEvents() {
+            try {
+                const response = await fetch('/api/student/events', { credentials: 'include' });
+                if (!response.ok) throw new Error('Failed to load registered events');
+                const data = await response.json();
+                registeredEvents = data.events || [];
+                renderRegisteredEvents(registeredEvents);
+                document.getElementById('registeredCount').textContent = registeredEvents.length;
+            } catch (err) {
+                console.error('Error loading registered events:', err);
+                document.getElementById('registeredEventsGrid').innerHTML = renderEmptyState('No registered events');
+            }
+        }
+        
+        // Render event card
+        function createEventCard(event, options = {}) {
+            const { showDelete = false, isRegistered = false, showRegister = true, isMyEvent = false } = options;
+            
+            const start = event.start_time ? new Date(event.start_time) : null;
+            const month = start ? start.toLocaleString('default', { month: 'short' }).toUpperCase() : '';
+            const day = start ? start.getDate() : '';
+            const time = start ? start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '';
+            
+            const isStudentEvent = event.created_by_student ? true : false;
+            const tagClass = isStudentEvent ? 'student' : (event.created_by ? 'faculty' : 'general');
+            const tagLabel = event.category || (isStudentEvent ? 'Student Event' : 'Event');
+            
+            const card = document.createElement('div');
+            card.className = 'glass-card rounded-xl p-5 event-card';
+            card.innerHTML = `
+                <div class="flex items-start justify-between mb-4">
+                    <div class="event-date">
+                        <div class="text-2xl font-bold">${day}</div>
+                        <div class="text-sm">${month}</div>
+                    </div>
+                    <span class="event-tag ${tagClass}">${tagLabel}</span>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">${event.title}</h3>
+                <p class="text-gray-500 text-sm mb-4 line-clamp-2">${event.description || 'No description'}</p>
+                <div class="space-y-2 mb-4">
+                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span>${event.location || 'Location TBA'}</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>${time}${event.end_time ? ' - ' + new Date(event.end_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : ''}</span>
+                    </div>
+                    ${event.registration_count !== undefined ? `
+                    <div class="flex items-center gap-2 text-sm ${isMyEvent ? 'text-indigo-600 font-medium cursor-pointer hover:underline view-registrations-link' : 'text-gray-600'}" ${isMyEvent ? `data-event-id="${event.event_id}" data-event-title="${event.title}"` : ''}>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <span>${event.registration_count} registered${isMyEvent ? ' (click to view)' : ''}</span>
+                    </div>
+                    ` : ''}
+                </div>
+                <div class="flex gap-2">
+                    ${showRegister && !isRegistered ? `
+                        <button class="event-button primary flex-1 register-btn" data-event-id="${event.event_id}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                            </svg>
+                            Register
+                        </button>
+                    ` : ''}
+                    ${isRegistered ? `
+                        <button class="event-button secondary flex-1" disabled>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Registered
+                        </button>
+                    ` : ''}
+                    ${isMyEvent ? `
+                        <button class="event-button secondary view-registrations-btn" data-event-id="${event.event_id}" data-event-title="${event.title}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            View
+                        </button>
+                    ` : ''}
+                    ${showDelete ? `
+                        <button class="event-button danger delete-btn" data-event-id="${event.event_id}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // Render empty state
+        function renderEmptyState(message) {
+            return `
+                <div class="empty-state col-span-full">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p class="text-lg font-medium">${message}</p>
+                    <p class="text-sm mt-1">Create an event to get started!</p>
+                </div>
+            `;
+        }
+        
+        // Render all events
+        function renderAllEvents(events) {
+            const grid = document.getElementById('allEventsGrid');
+            grid.innerHTML = '';
+            
+            if (!events || events.length === 0) {
+                grid.innerHTML = renderEmptyState('No upcoming events');
+                return;
+            }
+            
+            events.forEach(event => {
+                const isRegistered = registeredEvents.some(re => re.event_id === event.event_id);
+                const card = createEventCard(event, { isRegistered });
+                grid.appendChild(card);
+            });
+            
+            wireRegisterButtons(grid);
+        }
+        
+        // Render my events
+        function renderMyEvents(events) {
+            const grid = document.getElementById('myEventsGrid');
+            grid.innerHTML = '';
+            
+            if (!events || events.length === 0) {
+                grid.innerHTML = renderEmptyState('You haven\'t created any events yet');
+                return;
+            }
+            
+            events.forEach(event => {
+                const card = createEventCard(event, { showDelete: true, showRegister: false, isMyEvent: true });
+                grid.appendChild(card);
+            });
+            
+            wireDeleteButtons(grid);
+            wireViewRegistrationsButtons(grid);
+        }
+        
+        // Render registered events
+        function renderRegisteredEvents(events) {
+            const grid = document.getElementById('registeredEventsGrid');
+            grid.innerHTML = '';
+            
+            if (!events || events.length === 0) {
+                grid.innerHTML = renderEmptyState('You haven\'t registered for any events');
+                return;
+            }
+            
+            events.forEach(event => {
+                const card = createEventCard(event, { isRegistered: true, showRegister: false });
+                grid.appendChild(card);
+            });
+        }
+        
+        // Filter events by search query
+        function filterAndRenderEvents(query) {
+            const filteredAll = allEvents.filter(e => 
+                e.title.toLowerCase().includes(query) || 
+                (e.description && e.description.toLowerCase().includes(query)) ||
+                (e.location && e.location.toLowerCase().includes(query))
+            );
+            renderAllEvents(filteredAll);
+            
+            const filteredMy = myEvents.filter(e => 
+                e.title.toLowerCase().includes(query) || 
+                (e.description && e.description.toLowerCase().includes(query))
+            );
+            renderMyEvents(filteredMy);
+            
+            const filteredRegistered = registeredEvents.filter(e => 
+                e.title.toLowerCase().includes(query) || 
+                (e.description && e.description.toLowerCase().includes(query))
+            );
+            renderRegisteredEvents(filteredRegistered);
+        }
+        
+        // Wire register buttons
+        function wireRegisterButtons(container) {
+            container.querySelectorAll('.register-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const eventId = btn.dataset.eventId;
+                    btn.disabled = true;
+                    btn.innerHTML = `
+                        <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Registering...
+                    `;
+                    
+                    try {
+                        const response = await fetch(`/api/student/events/${eventId}/register`, {
+                            method: 'POST',
+                            credentials: 'include'
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (response.ok) {
+                            btn.classList.remove('primary');
+                            btn.classList.add('secondary');
+                            btn.disabled = true;
+                            btn.innerHTML = `
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Registered
+                            `;
+                            showNotification('Successfully registered!', 'success');
+                            loadRegisteredEvents(); // Refresh registered events
+                        } else {
+                            btn.disabled = false;
+                            btn.innerHTML = `
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                </svg>
+                                Register
+                            `;
+                            showNotification(result.error || result.message || 'Registration failed', 'error');
+                        }
+                    } catch (err) {
+                        console.error('Registration error:', err);
+                        btn.disabled = false;
+                        btn.innerHTML = `
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                            </svg>
+                            Register
+                        `;
+                        showNotification('Registration failed', 'error');
+                    }
+                });
+            });
+        }
+        
+        // Wire delete buttons
+        function wireDeleteButtons(container) {
+            container.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    if (!confirm('Are you sure you want to delete this event?')) return;
+                    
+                    const eventId = btn.dataset.eventId;
+                    btn.disabled = true;
+                    
+                    try {
+                        const response = await fetch(`/api/student/events/${eventId}`, {
+                            method: 'DELETE',
+                            credentials: 'include'
+                        });
+                        
+                        if (response.ok) {
+                            showNotification('Event deleted successfully', 'success');
+                            loadAllData(); // Refresh all data
+                        } else {
+                            const result = await response.json();
+                            showNotification(result.error || 'Failed to delete event', 'error');
+                            btn.disabled = false;
+                        }
+                    } catch (err) {
+                        console.error('Delete error:', err);
+                        showNotification('Failed to delete event', 'error');
+                        btn.disabled = false;
+                    }
+                });
+            });
+        }
+        
+        // Wire view registrations buttons
+        function wireViewRegistrationsButtons(container) {
+            // Wire both the link and the button
+            const elements = container.querySelectorAll('.view-registrations-btn, .view-registrations-link');
+            elements.forEach(el => {
+                el.addEventListener('click', async () => {
+                    const eventId = el.dataset.eventId;
+                    const eventTitle = el.dataset.eventTitle;
+                    
+                    // Show modal
+                    const modal = document.getElementById('registrationsModal');
+                    const titleEl = document.getElementById('registrationsEventTitle');
+                    const tableBody = document.getElementById('registrationsTableBody');
+                    const downloadBtn = document.getElementById('downloadRegistrationsBtn');
+                    const countEl = document.getElementById('registrationsCount');
+                    
+                    titleEl.textContent = eventTitle;
+                    tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-500">Loading...</td></tr>';
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    
+                    try {
+                        const response = await fetch(`/api/student/events/${eventId}/registrations`, {
+                            credentials: 'include'
+                        });
+                        const result = await response.json();
+                        
+                        if (result.registrations && result.registrations.length > 0) {
+                            countEl.textContent = `${result.registrations.length} Registration${result.registrations.length > 1 ? 's' : ''}`;
+                            tableBody.innerHTML = result.registrations.map((reg, index) => `
+                                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                    <td class="px-4 py-3 text-gray-700">${index + 1}</td>
+                                    <td class="px-4 py-3 font-medium text-gray-900">${reg.name}</td>
+                                    <td class="px-4 py-3 text-gray-600">${reg.email}</td>
+                                    <td class="px-4 py-3 text-gray-500 text-sm">${new Date(reg.registered_at).toLocaleString()}</td>
+                                </tr>
+                            `).join('');
+                            
+                            // Enable download button
+                            downloadBtn.disabled = false;
+                            downloadBtn.onclick = () => {
+                                window.location.href = `/api/student/events/${eventId}/download-registrations`;
+                            };
+                        } else {
+                            countEl.textContent = '0 Registrations';
+                            tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-500">No registrations yet</td></tr>';
+                            downloadBtn.disabled = true;
+                        }
+                    } catch (err) {
+                        console.error('Error loading registrations:', err);
+                        tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-red-500">Failed to load registrations</td></tr>';
+                        downloadBtn.disabled = true;
+                    }
+                });
+            });
+        }
+        
+        // Close registrations modal
+        document.getElementById('closeRegistrationsModal')?.addEventListener('click', () => {
+            const modal = document.getElementById('registrationsModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        });
+        
+        // Close modal on backdrop click
+        document.getElementById('registrationsModal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'registrationsModal') {
+                e.target.classList.add('hidden');
+                e.target.classList.remove('flex');
+            }
+        });
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            // Remove existing notifications
+            document.querySelectorAll('.toast-notification').forEach(n => n.remove());
+            
+            const notification = document.createElement('div');
+            notification.className = `toast-notification fixed bottom-4 right-4 px-5 py-4 rounded-xl shadow-2xl z-[200] transform transition-all duration-300 translate-y-full flex items-center gap-3 ${
+                type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white' :
+                type === 'error' ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white' :
+                'bg-gradient-to-r from-gray-700 to-gray-800 text-white'
+            }`;
+            
+            const icon = type === 'success' 
+                ? '<svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+                : type === 'error'
+                ? '<svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+                : '<svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+            
+            notification.innerHTML = `${icon}<span class="font-medium">${message}</span>`;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.classList.remove('translate-y-full'), 100);
+            setTimeout(() => {
+                notification.classList.add('translate-y-full', 'opacity-0');
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+        
+        // Load all data
+        async function loadAllData() {
+            await Promise.all([
+                loadAllEvents(),
+                loadMyEvents(),
+                loadRegisteredEvents()
+            ]);
+        }
+        
+        // Mobile menu toggle
+        document.getElementById('mobileMenuButton').addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('open');
+        });
+        
+        // Initialize
+        window.addEventListener('DOMContentLoaded', loadAllData);
     </script>
 </body>
-</html> 
+</html>

@@ -377,7 +377,9 @@ class Event(db.Model):
     start_time = db.Column(db.DateTime)
     end_time = db.Column(db.DateTime)
     location = db.Column(db.String(200))
+    category = db.Column(db.String(50), default='General')  # Event category/type
     created_by = db.Column(db.Integer, db.ForeignKey('faculty.faculty_id'), nullable=True)
+    created_by_student = db.Column(db.Integer, db.ForeignKey('students.student_id'), nullable=True)
 
     def to_dict(self):
         return {
@@ -387,7 +389,9 @@ class Event(db.Model):
             'start_time': self.start_time.isoformat() if self.start_time else None,
             'end_time': self.end_time.isoformat() if self.end_time else None,
             'location': self.location,
-            'created_by': self.created_by
+            'category': self.category,
+            'created_by': self.created_by,
+            'created_by_student': self.created_by_student
         }
 
 

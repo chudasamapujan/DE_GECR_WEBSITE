@@ -698,38 +698,27 @@ def get_schedule():
 @require_student_auth()
 def get_events():
     """
-    Get college events and announcements for students
+    Get events the student is registered for
     """
     try:
-        current_user_email = get_jwt_identity()
+        from models.gecr_models import Event, EventRegistration
         
-        # Placeholder response until models are connected
+        student_id = get_current_student_id()
+        if not student_id:
+            return jsonify({'error': 'Student not authenticated'}), 401
+        
+        # Get events the student is registered for
+        registrations = EventRegistration.query.filter_by(student_id=student_id).all()
+        events = []
+        for reg in registrations:
+            if reg.event:
+                event_dict = reg.event.to_dict()
+                event_dict['registered_at'] = reg.registered_at.isoformat() if reg.registered_at else None
+                events.append(event_dict)
+        
         return jsonify({
-            'message': 'Student events endpoint ready',
-            'email': current_user_email,
-            'sample_events': [
-                {
-                    'id': 1,
-                    'title': 'Annual Tech Fest 2024',
-                    'description': 'Join us for the biggest tech event of the year',
-                    'date': '2024-02-15',
-                    'time': '10:00 AM',
-                    'venue': 'Main Auditorium',
-                    'type': 'festival',
-                    'registration_required': True
-                },
-                {
-                    'id': 2,
-                    'title': 'Career Guidance Session',
-                    'description': 'Industry experts will guide on career opportunities',
-                    'date': '2024-01-20',
-                    'time': '2:00 PM',
-                    'venue': 'Conference Hall',
-                    'type': 'seminar',
-                    'registration_required': False
-                }
-            ],
-            'note': 'Database models not yet connected - showing sample data'
+            'events': events,
+            'count': len(events)
         }), 200
         
     except Exception as e:
@@ -835,6 +824,282 @@ def get_upcoming_events():
         
     except Exception as e:
         current_app.logger.error(f"Student events error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+@student_bp.route('/events', methods=['POST'])
+@require_student_auth()
+def create_student_event():
+    """
+    Create a new event by a student
+    Students can organize their own events (study groups, club activities, etc.)
+    """
+    try:
+        from models.gecr_models import Event, Student
+        from database import db
+        
+        student_id = get_current_student_id()
+        current_app.logger.info(f"Creating event for student_id: {student_id}")
+        
+        if not student_id:
+            return jsonify({'error': 'Student not authenticated'}), 401
+        
+        data = request.get_json() or {}
+        current_app.logger.info(f"Received data: {data}")
+        
+        title = data.get('title', '').strip() if data.get('title') else ''
+        description = data.get('description', '').strip() if data.get('description') else ''
+        start_time = data.get('start_time', '')
+        end_time = data.get('end_time', '')
+        location = data.get('location', '').strip() if data.get('location') else ''
+        category = data.get('category', 'Student Event') if data.get('category') else 'Student Event'
+        
+        # Validation
+        if not title:
+            return jsonify({'error': 'Event title is required'}), 400
+        if not start_time:
+            return jsonify({'error': 'Start time is required'}), 400
+        
+        # Parse datetime - handle both ISO format and datetime-local format
+        try:
+            start_clean = str(start_time).replace('Z', '').replace('+00:00', '')
+            if 'T' in start_clean:
+                start_dt = datetime.strptime(start_clean[:16], '%Y-%m-%dT%H:%M')
+            else:
+                start_dt = datetime.strptime(start_clean[:10], '%Y-%m-%d')
+            current_app.logger.info(f"Parsed start_dt: {start_dt}")
+        except (ValueError, TypeError) as e:
+            current_app.logger.error(f"Start time parse error: {e}, value: {start_time}")
+            return jsonify({'error': 'Invalid start time format'}), 400
+        
+        end_dt = None
+        if end_time and str(end_time).strip():
+            try:
+                end_clean = str(end_time).replace('Z', '').replace('+00:00', '')
+                if 'T' in end_clean:
+                    end_dt = datetime.strptime(end_clean[:16], '%Y-%m-%dT%H:%M')
+                else:
+                    end_dt = datetime.strptime(end_clean[:10], '%Y-%m-%d')
+                current_app.logger.info(f"Parsed end_dt: {end_dt}")
+            except (ValueError, TypeError) as e:
+                current_app.logger.error(f"End time parse error: {e}, value: {end_time}")
+                # Don't fail on end time, just skip it
+                end_dt = None
+        
+        current_app.logger.info(f"Creating Event object...")
+        # Create the event
+        event = Event(
+            title=title,
+            description=description,
+            start_time=start_dt,
+            end_time=end_dt,
+            location=location if location else None,
+            category=category,
+            created_by_student=student_id
+        )
+        
+        current_app.logger.info(f"Adding to session...")
+        db.session.add(event)
+        current_app.logger.info(f"Committing...")
+        db.session.commit()
+        current_app.logger.info(f"Event created with ID: {event.event_id}")
+        
+        # Get student info for response
+        student = Student.query.get(student_id)
+        
+        return jsonify({
+            'message': 'Event created successfully',
+            'event': event.to_dict(),
+            'created_by': student.name if student else 'Student'
+        }), 201
+        
+    except Exception as e:
+        import traceback
+        current_app.logger.error(f"Create student event error: {str(e)}")
+        current_app.logger.error(traceback.format_exc())
+        return jsonify({'error': f'Server error: {str(e)}'}), 500
+
+
+@student_bp.route('/my-events', methods=['GET'])
+@require_student_auth()
+def get_my_events():
+    """
+    Get events created by the current student
+    """
+    try:
+        from models.gecr_models import Event, EventRegistration
+        
+        student_id = get_current_student_id()
+        if not student_id:
+            return jsonify({'error': 'Student not authenticated'}), 401
+        
+        # Get events created by this student
+        events = Event.query.filter_by(created_by_student=student_id).order_by(Event.start_time.desc()).all()
+        
+        events_with_counts = []
+        for e in events:
+            reg_count = EventRegistration.query.filter_by(event_id=e.event_id).count()
+            d = e.to_dict()
+            d['registration_count'] = reg_count
+            events_with_counts.append(d)
+        
+        return jsonify({
+            'events': events_with_counts,
+            'count': len(events_with_counts)
+        }), 200
+        
+    except Exception as e:
+        current_app.logger.error(f"Get my events error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+@student_bp.route('/events/<int:event_id>', methods=['DELETE'])
+@require_student_auth()
+def delete_student_event(event_id):
+    """
+    Delete an event created by the current student
+    """
+    try:
+        from models.gecr_models import Event, EventRegistration
+        from database import db
+        
+        student_id = get_current_student_id()
+        if not student_id:
+            return jsonify({'error': 'Student not authenticated'}), 401
+        
+        # Get the event
+        event = Event.query.get(event_id)
+        if not event:
+            return jsonify({'error': 'Event not found'}), 404
+        
+        # Check if this student created the event
+        if event.created_by_student != student_id:
+            return jsonify({'error': 'You can only delete events you created'}), 403
+        
+        # Delete registrations first
+        EventRegistration.query.filter_by(event_id=event_id).delete()
+        
+        # Delete the event
+        db.session.delete(event)
+        db.session.commit()
+        
+        return jsonify({'message': 'Event deleted successfully'}), 200
+        
+    except Exception as e:
+        current_app.logger.error(f"Delete student event error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+@student_bp.route('/events/<int:event_id>/registrations', methods=['GET'])
+@require_student_auth()
+def get_event_registrations(event_id):
+    """
+    Get all registrations for a specific event (only for event creator)
+    """
+    try:
+        from models.gecr_models import Event, EventRegistration
+        
+        student_id = get_current_student_id()
+        if not student_id:
+            return jsonify({'error': 'Student not authenticated'}), 401
+        
+        # Get the event
+        event = Event.query.get(event_id)
+        if not event:
+            return jsonify({'error': 'Event not found'}), 404
+        
+        # Check if this student created the event
+        if event.created_by_student != student_id:
+            return jsonify({'error': 'You can only view registrations for your own events'}), 403
+        
+        # Get all registrations
+        registrations = EventRegistration.query.filter_by(event_id=event_id).all()
+        registered_students = []
+        for reg in registrations:
+            if reg.student:
+                registered_students.append({
+                    'student_id': reg.student.student_id,
+                    'name': reg.student.name,
+                    'email': reg.student.email,
+                    'roll_no': reg.student.roll_no,
+                    'department': reg.student.department,
+                    'semester': reg.student.semester,
+                    'phone': reg.student.phone,
+                    'registered_at': reg.registered_at.isoformat() if reg.registered_at else None
+                })
+        
+        return jsonify({
+            'event': event.to_dict(),
+            'registrations': registered_students,
+            'count': len(registered_students)
+        }), 200
+        
+    except Exception as e:
+        current_app.logger.error(f"Get event registrations error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+@student_bp.route('/events/<int:event_id>/download-registrations', methods=['GET'])
+@require_student_auth()
+def download_event_registrations(event_id):
+    """
+    Download event registrations as CSV file
+    """
+    try:
+        from models.gecr_models import Event, EventRegistration
+        import csv
+        import io
+        from flask import Response
+        
+        student_id = get_current_student_id()
+        if not student_id:
+            return jsonify({'error': 'Student not authenticated'}), 401
+        
+        # Get the event
+        event = Event.query.get(event_id)
+        if not event:
+            return jsonify({'error': 'Event not found'}), 404
+        
+        # Check if this student created the event
+        if event.created_by_student != student_id:
+            return jsonify({'error': 'You can only download registrations for your own events'}), 403
+        
+        # Get all registrations
+        registrations = EventRegistration.query.filter_by(event_id=event_id).all()
+        
+        # Create CSV
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        # Header row
+        writer.writerow(['Sr No', 'Name', 'Email', 'Roll No', 'Department', 'Semester', 'Phone', 'Registered At'])
+        
+        # Data rows
+        for idx, reg in enumerate(registrations, 1):
+            if reg.student:
+                writer.writerow([
+                    idx,
+                    reg.student.name,
+                    reg.student.email,
+                    reg.student.roll_no,
+                    reg.student.department,
+                    reg.student.semester,
+                    reg.student.phone or '',
+                    reg.registered_at.strftime('%Y-%m-%d %H:%M') if reg.registered_at else ''
+                ])
+        
+        # Create response
+        output.seek(0)
+        filename = f"{event.title.replace(' ', '_')}_registrations.csv"
+        
+        return Response(
+            output.getvalue(),
+            mimetype='text/csv',
+            headers={'Content-Disposition': f'attachment; filename={filename}'}
+        )
+        
+    except Exception as e:
+        current_app.logger.error(f"Download registrations error: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
 
