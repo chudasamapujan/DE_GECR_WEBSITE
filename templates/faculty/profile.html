@@ -384,23 +384,25 @@
         <!-- Profile Header -->
         <div class="glass-card p-6 rounded-lg mb-8">
             <div class="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
-                <div class="profile-pic">DR</div>
+                <div class="profile-pic">{{ faculty.name[:2].upper() if faculty.name else 'FA' }}</div>
                 <div class="flex-1 text-center md:text-left">
-                    <h2 class="text-2xl font-bold gradient-text">Dr. Rajesh Kumar</h2>
-                    <p class="text-gray-600">Professor • Computer Engineering Department</p>
-                    <p class="text-gray-500">Faculty ID: CS101 • Joined: August 2010</p>
+                    <h2 class="text-2xl font-bold gradient-text">{{ faculty.name or 'Faculty Member' }}</h2>
+                    <p class="text-gray-600">{{ faculty.designation or 'Faculty' }} • {{ faculty.department or 'Department' }}</p>
+                    <p class="text-gray-500">Faculty ID: {{ faculty.faculty_id or 'N/A' }}{% if faculty.date_joined %} • Joined: {{ faculty.date_joined.strftime('%B %Y') if faculty.date_joined else 'N/A' }}{% endif %}</p>
                     <div class="mt-4 flex flex-wrap gap-2 justify-center md:justify-start">
-                        <span class="skill-badge">Database Systems</span>
-                        <span class="skill-badge">Software Engineering</span>
-                        <span class="skill-badge">Data Structures</span>
-                        <span class="skill-badge">Web Technologies</span>
-                        <span class="skill-badge">Machine Learning</span>
+                        {% if faculty.specialization %}
+                            {% for subject in faculty.specialization.split(',') %}
+                                <span class="skill-badge">{{ subject.strip() }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="skill-badge">Subject Expert</span>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="text-center md:text-left">
-                    <p class="text-gray-600">Email: rajesh.kumar@gecrajkot.ac.in</p>
-                    <p class="text-gray-600">Phone: +91 9876543210</p>
-                    <p class="text-gray-600">Office: CE-205, Block A</p>
+                    <p class="text-gray-600">Email: {{ faculty.email or 'Not provided' }}</p>
+                    <p class="text-gray-600">Phone: {{ faculty.phone or 'Not provided' }}</p>
+                    <p class="text-gray-600">Office: {{ faculty.office or 'Not specified' }}</p>
                 </div>
             </div>
         </div>
@@ -412,58 +414,79 @@
                 <div class="space-y-4">
                     <div class="flex justify-between items-center">
                         <span class="text-gray-600">Designation</span>
-                        <span class="font-semibold">Professor</span>
+                        <span class="font-semibold">{{ faculty.designation or 'Faculty' }}</span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-gray-600">Department</span>
-                        <span class="font-semibold">Computer Engineering</span>
+                        <span class="font-semibold">{{ faculty.department or 'Not specified' }}</span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-gray-600">Faculty ID</span>
-                        <span class="font-semibold">CS101</span>
+                        <span class="font-semibold">{{ faculty.faculty_id or 'N/A' }}</span>
                     </div>
+                    {% if faculty.date_joined %}
                     <div class="flex justify-between items-center">
                         <span class="text-gray-600">Date of Joining</span>
-                        <span class="font-semibold">August 15, 2010</span>
+                        <span class="font-semibold">{{ faculty.date_joined.strftime('%B %d, %Y') }}</span>
                     </div>
+                    {% endif %}
+                    {% if faculty.experience %}
                     <div class="flex justify-between items-center">
                         <span class="text-gray-600">Experience</span>
-                        <span class="font-semibold">13+ Years</span>
+                        <span class="font-semibold">{{ faculty.experience }}</span>
                     </div>
+                    {% endif %}
+                    {% if faculty.office_hours %}
                     <div class="flex justify-between items-center">
                         <span class="text-gray-600">Office Hours</span>
-                        <span class="font-semibold">10:00 AM - 5:00 PM</span>
+                        <span class="font-semibold">{{ faculty.office_hours }}</span>
                     </div>
+                    {% endif %}
                 </div>
             </div>
 
             <div class="glass-card p-6 rounded-lg">
                 <h2 class="text-xl font-semibold mb-4 gradient-text">Academic Credentials</h2>
                 <div class="space-y-4">
+                    {% if faculty.qualification %}
                     <div class="flex justify-between items-center">
                         <span class="text-gray-600">Highest Qualification</span>
-                        <span class="font-semibold">Ph.D. Computer Science</span>
+                        <span class="font-semibold">{{ faculty.qualification }}</span>
                     </div>
+                    {% endif %}
+                    {% if faculty.university %}
                     <div class="flex justify-between items-center">
                         <span class="text-gray-600">University</span>
-                        <span class="font-semibold">IIT Bombay</span>
+                        <span class="font-semibold">{{ faculty.university }}</span>
                     </div>
+                    {% endif %}
+                    {% if faculty.year_of_completion %}
                     <div class="flex justify-between items-center">
                         <span class="text-gray-600">Year of Completion</span>
-                        <span class="font-semibold">2008</span>
+                        <span class="font-semibold">{{ faculty.year_of_completion }}</span>
                     </div>
+                    {% endif %}
+                    {% if faculty.specialization %}
                     <div class="flex justify-between items-center">
                         <span class="text-gray-600">Specialization</span>
-                        <span class="font-semibold">Database Systems</span>
+                        <span class="font-semibold">{{ faculty.specialization }}</span>
                     </div>
+                    {% endif %}
+                    {% if faculty.research_area %}
                     <div class="flex justify-between items-center">
                         <span class="text-gray-600">Research Area</span>
-                        <span class="font-semibold">Big Data Analytics</span>
+                        <span class="font-semibold">{{ faculty.research_area }}</span>
                     </div>
+                    {% endif %}
+                    {% if faculty.publications %}
                     <div class="flex justify-between items-center">
                         <span class="text-gray-600">Publications</span>
-                        <span class="font-semibold">25+ Papers</span>
+                        <span class="font-semibold">{{ faculty.publications }}</span>
                     </div>
+                    {% endif %}
+                    {% if not (faculty.qualification or faculty.university or faculty.year_of_completion or faculty.specialization or faculty.research_area or faculty.publications) %}
+                    <p class="text-gray-500 text-center py-4">Academic credentials not yet added</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -481,7 +504,7 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Email</p>
-                            <p class="font-medium">rajesh.kumar@gecrajkot.ac.in</p>
+                            <p class="font-medium">{{ faculty.email or 'Not provided' }}</p>
                         </div>
                     </div>
                     <div class="contact-info-item">
@@ -492,7 +515,7 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Phone</p>
-                            <p class="font-medium">+91 9876543210</p>
+                            <p class="font-medium">{{ faculty.phone or 'Not provided' }}</p>
                         </div>
                     </div>
                 </div>
@@ -506,9 +529,10 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Office</p>
-                            <p class="font-medium">CE-205, Computer Engineering Block</p>
+                            <p class="font-medium">{{ faculty.office or 'Not specified' }}</p>
                         </div>
                     </div>
+                    {% if faculty.office_hours %}
                     <div class="contact-info-item">
                         <div class="contact-icon">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -517,9 +541,10 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Office Hours</p>
-                            <p class="font-medium">Mon-Fri: 10:00 AM - 5:00 PM</p>
+                            <p class="font-medium">{{ faculty.office_hours }}</p>
                         </div>
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

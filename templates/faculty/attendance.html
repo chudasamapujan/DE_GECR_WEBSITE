@@ -3,618 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance - Faculty Portal</title>
+    <title>Attendance Management - Faculty Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-     <style>
-        :root {
-            --primary: #4F46E5;
-            --accent: #3B82F6;
-            --bg: #ffffff;
-            --text: #1f2937;
-            --card-bg: #f9fafb;
-            --sidebar-bg: rgba(255, 255, 255, 0.98);
-            --sidebar-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.1);
-            --hover-bg: rgba(79, 70, 229, 0.08);
-            --active-bg: rgba(79, 70, 229, 0.12);
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(--bg) 0%, #f3f4f6 100%);
-            min-height: 100vh;
-            color: var(--text);
-        }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-            transform-style: preserve-3d;
-            perspective: 1000px;
-            transition: all 0.3s ease;
-        }
-        .glass-card:hover {
-            transform: translateY(-5px) rotateX(2deg) rotateY(2deg);
-            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
-        }
-        .gradient-text {
-            background: linear-gradient(45deg, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .sidebar {
-            background: var(--sidebar-bg);
-            backdrop-filter: blur(10px);
-            box-shadow: var(--sidebar-shadow);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            width: 280px;
-            position: fixed;
-            height: calc(100vh - 2rem);
-            top: 1rem;
-            left: 1rem;
-            z-index: 50;
-            border-radius: 1rem;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .sidebar-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            background: linear-gradient(to right, rgba(79, 70, 229, 0.05), transparent);
-            flex-shrink: 0;
-        }
-        .sidebar-nav {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1rem 0;
-        }
-        .sidebar-nav::-webkit-scrollbar {
-            width: 6px;
-        }
-        .sidebar-nav::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .sidebar-nav::-webkit-scrollbar-thumb {
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 3px;
-        }
-        .sidebar-nav::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 0, 0, 0.2);
-        }
-        .sidebar-item {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 0.75rem;
-            margin: 0.25rem 1rem;
-            position: relative;
-            overflow: hidden;
-        }
-        .sidebar-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, var(--hover-bg), transparent);
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-        .sidebar-item:hover::before {
-            opacity: 1;
-        }
-        .sidebar-item:hover {
-            transform: translateX(5px);
-        }
-        .sidebar-item.active {
-            background: var(--active-bg);
-            color: var(--primary);
-        }
-        .sidebar-item.active::after {
-            content: '';
-            position: absolute;
-            left: -1rem;
-            top: 0;
-            height: 100%;
-            width: 4px;
-            background: linear-gradient(to bottom, var(--primary), var(--accent));
-            border-radius: 0 4px 4px 0;
-        }
-        .submenu-item {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 0.75rem;
-            margin: 0.25rem 0;
-            padding-left: 2.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-        .submenu-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, var(--hover-bg), transparent);
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-        .submenu-item:hover::before {
-            opacity: 1;
-        }
-        .submenu-item:hover {
-            transform: translateX(3px);
-        }
-        .submenu-item.active {
-            color: var(--primary);
-            background: var(--active-bg);
-        }
-        .notification-badge {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white;
-            font-size: 0.75rem;
-            padding: 2px 6px;
-            border-radius: 9999px;
-            min-width: 1.5rem;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .menu-divider {
-            height: 1px;
-            background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.1), transparent);
-            margin: 1rem;
-        }
-        .main-content {
-            margin-left: 300px;
-            padding: 2rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .mobile-menu-button {
-            display: none;
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 60;
-            padding: 0.75rem;
-            background: white;
-            border-radius: 0.75rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: all 0.2s ease;
-        }
-        .mobile-menu-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
-        .progress-bar {
-            height: 8px;
-            background-color: #e5e7eb;
-            border-radius: 9999px;
-            overflow: hidden;
-        }
-        .progress-bar-fill {
-            height: 100%;
-            background: linear-gradient(to right, var(--primary), var(--accent));
-            border-radius: 9999px;
-            transition: width 0.3s ease;
-        }
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-                margin: 0;
-                border-radius: 0;
-            }
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            .main-content {
-                margin-left: 0;
-            }
-            .mobile-menu-button {
-                display: block;
-            }
-        }
-    </style>
 </head>
-<body>
-    <!-- Mobile Menu Button -->
-    <button id="mobileMenuButton" class="mobile-menu-button">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-    </button>
-
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="flex items-center space-x-3">
-                <img src="logo.png" alt="GEC Rajkot Logo" class="w-12 h-12 object-contain">
-                <div class="text-2xl font-bold gradient-text">Faculty Portal</div>
+<body class="bg-gray-100">
+    <div class="max-w-7xl mx-auto p-6">
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Attendance Management</h1>
+                    <p class="text-gray-600 mt-1">Mark and manage student attendance</p>
+                </div>
+                <a href="/faculty/dashboard" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Back to Dashboard</a>
             </div>
         </div>
-        <nav class="sidebar-nav">
-            <!-- Dashboard -->
-            <a href="/faculty/dashboard" class="sidebar-item active flex items-center p-3 text-indigo-600 hover:text-indigo-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-                <span class="ml-3">Dashboard</span>
-            </a>
 
-            <!-- Profile -->
-            <a href="/faculty/profile" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                <span class="ml-3">Profile</span>
-            </a>
-
-            <!-- My Subjects -->
-            <a href="/faculty/subjects" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-                <span class="ml-3">My Subjects</span>
-            </a>
-
-            <!-- Students -->
-            <a href="/faculty/students" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                </svg>
-                <span class="ml-3">Students</span>
-            </a>
-
-            <!-- Attendance -->
-            <a href="/faculty/attendance" class="sidebar-item active flex items-center p-3 text-indigo-600 hover:text-indigo-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span class="ml-3">Attendance</span>
-            </a>
-
-            <!-- Assignments -->
-            <a href="/faculty/assignments" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-                <span class="ml-3">Assignments</span>
-                <div class="notification-badge ml-auto">3</div>
-            </a>          
-            
-            <!-- Schedule -->
-            <a href="/faculty/schedule" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span class="ml-3">Schedule</span>
-            </a>
-
-            <div class="menu-divider"></div>
-
-            <!-- Events -->
-            <a href="/faculty/events" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span class="ml-3">Events</span>
-                <div class="notification-badge ml-auto">2</div>
-            </a>
-
-            <!-- Settings -->
-            <a href="/faculty/settings" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <span class="ml-3">Settings</span>
-            </a>
-
-            <!-- Logout -->
-            <a href="/" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600 mt-4">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
-                </svg>
-                <span class="ml-3">Logout</span>
-            </a>
-        </nav>
-    </aside>
-    <!-- Main Content -->
-    <main class="main-content">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold gradient-text">Attendance Management</h1>
-            <button class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-150">
-                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Mark Attendance
-            </button>
-        </div>
-
-        <!-- Excel Upload Section -->
-        <div class="glass-card p-6 rounded-lg mb-8">
-            <h2 class="text-xl font-semibold mb-4 gradient-text">Upload Attendance from Excel</h2>
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                <h3 class="text-sm font-semibold text-blue-800 mb-2">📋 Excel Format Instructions:</h3>
-                <ul class="text-sm text-blue-700 space-y-1 ml-4 list-disc">
-                    <li>First column: <strong>Roll No</strong> (student roll numbers)</li>
-                    <li>Remaining columns: <strong>Dates</strong> in format DD/MM/YYYY or YYYY-MM-DD</li>
-                    <li>Cell values: <strong>P</strong> (Present), <strong>A</strong> (Absent), <strong>L</strong> (Late)</li>
-                    <li>Example: Roll No | 15/01/2024 | 16/01/2024 | 17/01/2024</li>
-                </ul>
+        <div class="bg-white rounded-lg shadow">
+            <div class="border-b">
+                <nav class="flex">
+                    <button onclick="switchTab('manual')" id="tab-manual" class="px-6 py-4 font-medium border-b-2 border-blue-600 text-blue-600">Manual Marking</button>
+                    <button onclick="switchTab('upload')" id="tab-upload" class="px-6 py-4 font-medium text-gray-500">Excel Upload</button>
+                </nav>
             </div>
-            
-            <form id="uploadAttendanceForm" enctype="multipart/form-data">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+
+            <div id="content-manual" class="p-6">
+                <h2 class="text-xl font-semibold mb-4">Mark Attendance Manually</h2>
+                <div class="grid grid-cols-2 gap-4 mb-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Select Subject</label>
-                        <select id="uploadSubjectId" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2" required>
-                            <option value="">Select Subject</option>
-                            <option value="1">CS302 - Database Management Systems</option>
-                            <option value="2">CS401 - Software Engineering</option>
-                            <option value="3">CS301 - Data Structures</option>
-                            <option value="4">CS403 - Web Technologies</option>
+                        <label class="block text-sm font-medium mb-2">Select Subject</label>
+                        <select id="subject-select" class="w-full px-4 py-2 border rounded" onchange="loadStudents()">
+                            <option value="">-- Select Subject --</option>
+                            {% for subject in subjects %}
+                            <option value="{{ subject.subject_id }}">{{ subject.subject_name }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Upload Excel File</label>
-                        <input type="file" id="attendanceFile" accept=".xlsx,.xls" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm" required>
+                        <label class="block text-sm font-medium mb-2">Date</label>
+                        <input type="date" id="attendance-date" class="w-full px-4 py-2 border rounded">
                     </div>
                 </div>
-                
-                <div class="flex justify-between items-center">
-                    <a href="#" class="text-sm text-indigo-600 hover:text-indigo-800" id="downloadTemplate">
-                        📥 Download Sample Template
-                    </a>
-                    <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition duration-150">
-                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                        </svg>
-                        Upload Attendance
-                    </button>
+
+                <div id="students-container" class="hidden">
+                    <div class="flex justify-between mb-4">
+                        <h3 class="font-semibold">Students (<span id="student-count">0</span>)</h3>
+                        <div class="space-x-2">
+                            <button onclick="markAll('Present')" class="px-4 py-2 bg-green-500 text-white rounded text-sm">Mark All Present</button>
+                            <button onclick="markAll('Absent')" class="px-4 py-2 bg-red-500 text-white rounded text-sm">Mark All Absent</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full" id="students-table">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="px-4 py-2 text-left">Roll No</th>
+                                    <th class="px-4 py-2 text-left">Name</th>
+                                    <th class="px-4 py-2 text-left">Department</th>
+                                    <th class="px-4 py-2 text-center">Attendance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="students-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div class="mt-6 text-right">
+                        <button onclick="submitAttendance()" class="bg-blue-600 text-white px-6 py-3 rounded font-semibold">Submit Attendance</button>
+                    </div>
                 </div>
-            </form>
-            
-            <!-- Upload Result Message -->
-            <div id="uploadMessage" class="mt-4 hidden">
-                <div class="p-4 rounded-lg" id="uploadMessageContent"></div>
-            </div>
-        </div>
 
-        <!-- Attendance Form -->
-        <div class="glass-card p-6 rounded-lg mb-8">
-            <h2 class="text-xl font-semibold mb-4 gradient-text">Mark Today's Attendance (Manual)</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <select class="bg-white border border-gray-300 rounded-lg px-3 py-2">
-                    <option>Select Subject</option>
-                    <option>CS302 - Database Management Systems</option>
-                    <option>CS401 - Software Engineering</option>
-                    <option>CS301 - Data Structures</option>
-                    <option>CS403 - Web Technologies</option>
-                </select>
-                <input type="date" class="bg-white border border-gray-300 rounded-lg px-3 py-2" value="2024-01-15">
-                <input type="time" class="bg-white border border-gray-300 rounded-lg px-3 py-2" value="10:00">
+                <div id="students-empty" class="text-center py-12 text-gray-500">
+                    <p>Select a subject to view students</p>
+                </div>
             </div>
-            
-            <!-- Student List for Attendance -->
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enrollment</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Present</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Absent</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Late</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                                        <span class="text-indigo-600 font-medium">JD</span>
-                                    </div>
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">John Doe</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">220001</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <input type="radio" name="attendance_220001" value="present" class="w-4 h-4 text-green-600">
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <input type="radio" name="attendance_220001" value="absent" class="w-4 h-4 text-red-600">
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <input type="radio" name="attendance_220001" value="late" class="w-4 h-4 text-yellow-600">
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                        <span class="text-blue-600 font-medium">JS</span>
-                                    </div>
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">Jane Smith</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">220002</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <input type="radio" name="attendance_220002" value="present" class="w-4 h-4 text-green-600">
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <input type="radio" name="attendance_220002" value="absent" class="w-4 h-4 text-red-600">
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <input type="radio" name="attendance_220002" value="late" class="w-4 h-4 text-yellow-600">
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="mt-6 flex justify-end space-x-3">
-                <button class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition duration-150">
-                    Cancel
-                </button>
-                <button class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-150">
-                    Save Attendance
-                </button>
-            </div>
-        </div>
 
-        <!-- Attendance History -->
-        <div class="glass-card rounded-lg overflow-hidden">
-            <div class="p-6 border-b border-gray-200">
-                <h2 class="text-xl font-semibold gradient-text">Attendance History</h2>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Present</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Absent</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2024-01-15</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">CS302 - Database Management</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">42</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">3</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">45</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button class="text-indigo-600 hover:text-indigo-900">View Details</button>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2024-01-13</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">CS401 - Software Engineering</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">36</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">38</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button class="text-indigo-600 hover:text-indigo-900">View Details</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div id="content-upload" class="p-6 hidden">
+                <h2 class="text-xl font-semibold mb-4">Upload Attendance via Excel</h2>
+                <div class="bg-blue-50 border border-blue-200 rounded p-4 mb-6">
+                    <h3 class="font-semibold mb-2">Excel Format:</h3>
+                    <ul class="text-sm space-y-1">
+                        <li>Required columns: student_id or roll_no, subject_id or subject_name, date, status</li>
+                        <li>Date format: YYYY-MM-DD</li>
+                        <li>Status: Present, Absent, or Late</li>
+                    </ul>
+                </div>
+
+                <div class="border-2 border-dashed border-gray-300 rounded p-8 text-center">
+                    <input type="file" id="excel-file" accept=".xlsx,.xls" class="hidden" onchange="handleFileSelect(event)">
+                    <label for="excel-file" class="cursor-pointer">
+                        <p class="text-lg mb-2">Click to select Excel file</p>
+                        <p class="text-sm text-gray-500">XLSX, XLS up to 10MB</p>
+                    </label>
+                </div>
+
+                <div id="file-selected" class="mt-4 hidden bg-green-50 border rounded p-4">
+                    <p class="font-medium" id="selected-filename"></p>
+                </div>
+
+                <div class="mt-6">
+                    <button onclick="uploadExcel()" id="upload-btn" class="w-full bg-blue-600 text-white px-6 py-3 rounded font-semibold" disabled>Upload</button>
+                </div>
+
+                <div id="upload-result" class="mt-4 hidden"></div>
             </div>
         </div>
-    </main>
+    </div>
+
+    <div id="alert-container" class="fixed top-4 right-4 z-50 max-w-md"></div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const mobileMenuButton = document.getElementById('mobileMenuButton');
-            const sidebar = document.querySelector('.sidebar');
-            const uploadForm = document.getElementById('uploadAttendanceForm');
-            const uploadMessage = document.getElementById('uploadMessage');
-            const uploadMessageContent = document.getElementById('uploadMessageContent');
+        document.getElementById('attendance-date').value = new Date().toISOString().split('T')[0];
+        let currentStudents = [];
+        let selectedFile = null;
 
-            mobileMenuButton.addEventListener('click', function() {
-                sidebar.classList.toggle('open');
-            });
-
-            document.addEventListener('click', function(event) {
-                if (window.innerWidth <= 768) {
-                    if (!sidebar.contains(event.target) && !mobileMenuButton.contains(event.target)) {
-                        sidebar.classList.remove('open');
-                    }
-                }
-            });
-
-            // Handle Excel upload form submission
-            uploadForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                const subjectId = document.getElementById('uploadSubjectId').value;
-                const fileInput = document.getElementById('attendanceFile');
-                
-                if (!subjectId) {
-                    showMessage('Please select a subject', 'error');
-                    return;
-                }
-                
-                if (!fileInput.files || !fileInput.files[0]) {
-                    showMessage('Please select an Excel file', 'error');
-                    return;
-                }
-                
-                const formData = new FormData();
-                formData.append('file', fileInput.files[0]);
-                formData.append('subject_id', subjectId);
-                
-                try {
-                    showMessage('Uploading and processing attendance...', 'info');
-                    
-                    const response = await fetch('/api/faculty/attendance/upload', {
-                        method: 'POST',
-                        body: formData,
-                        credentials: 'include'  // Include session cookies
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (response.ok) {
-                        const successMsg = `
-                            <strong>✅ Attendance uploaded successfully!</strong><br>
-                            📊 Records inserted: ${data.records_inserted}<br>
-                            🔄 Records updated: ${data.records_updated || 0}<br>
-                            ⏭️ Records skipped: ${data.records_skipped || 0}<br>
-                            📅 Dates processed: ${data.dates.join(', ')}<br>
-                            👥 Students: ${data.total_students}
-                        `;
-                        showMessage(successMsg, 'success');
-                        
-                        // Reset form
-                        uploadForm.reset();
-                        
-                        // Optionally reload attendance history
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 3000);
-                    } else {
-                        let errorMsg = '<strong>❌ Upload failed!</strong><br>';
-                        if (data.details && Array.isArray(data.details)) {
-                            errorMsg += data.details.join('<br>');
-                        } else {
-                            errorMsg += data.error || 'Unknown error occurred';
-                        }
-                        if (data.dates_found) {
-                            errorMsg += `<br>Dates found: ${data.dates_found.join(', ')}`;
-                        }
-                        showMessage(errorMsg, 'error');
-                    }
-                } catch (error) {
-                    console.error('Upload error:', error);
-                    showMessage('❌ Network error: ' + error.message, 'error');
-                }
-            });
-            
-            function showMessage(message, type) {
-                uploadMessage.classList.remove('hidden');
-                uploadMessageContent.innerHTML = message;
-                
-                // Remove previous classes
-                uploadMessageContent.classList.remove('bg-green-100', 'bg-red-100', 'bg-blue-100', 'text-green-800', 'text-red-800', 'text-blue-800', 'border', 'border-green-200', 'border-red-200', 'border-blue-200');
-                
-                if (type === 'success') {
-                    uploadMessageContent.classList.add('bg-green-100', 'text-green-800', 'border', 'border-green-200');
-                } else if (type === 'error') {
-                    uploadMessageContent.classList.add('bg-red-100', 'text-red-800', 'border', 'border-red-200');
+        function switchTab(tab) {
+            ['manual', 'upload'].forEach(t => {
+                document.getElementById('content-' + t).classList.toggle('hidden', t !== tab);
+                const tabEl = document.getElementById('tab-' + t);
+                if (t === tab) {
+                    tabEl.classList.add('border-blue-600', 'text-blue-600');
+                    tabEl.classList.remove('text-gray-500');
                 } else {
-                    uploadMessageContent.classList.add('bg-blue-100', 'text-blue-800', 'border', 'border-blue-200');
+                    tabEl.classList.remove('border-blue-600', 'text-blue-600');
+                    tabEl.classList.add('text-gray-500');
                 }
+            });
+        }
+
+        async function loadStudents() {
+            const subjectId = document.getElementById('subject-select').value;
+            if (!subjectId) {
+                document.getElementById('students-container').classList.add('hidden');
+                document.getElementById('students-empty').classList.remove('hidden');
+                return;
             }
-        });
+
+            try {
+                const response = await fetch('/api/attendance/faculty/students/' + subjectId);
+                const data = await response.json();
+                if (data.success) {
+                    currentStudents = data.students;
+                    renderStudentsTable();
+                    document.getElementById('students-empty').classList.add('hidden');
+                    document.getElementById('students-container').classList.remove('hidden');
+                }
+            } catch (error) {
+                showAlert('Failed to load students', 'error');
+            }
+        }
+
+        function renderStudentsTable() {
+            const tbody = document.getElementById('students-tbody');
+            tbody.innerHTML = '';
+            document.getElementById('student-count').textContent = currentStudents.length;
+
+            currentStudents.forEach(student => {
+                const row = document.createElement('tr');
+                row.className = 'border-b';
+                row.innerHTML = '<td class="px-4 py-3">' + student.roll_no + '</td>' +
+                    '<td class="px-4 py-3">' + student.name + '</td>' +
+                    '<td class="px-4 py-3">' + student.department + '</td>' +
+                    '<td class="px-4 py-3 text-center">' +
+                    '<div class="inline-flex space-x-2">' +
+                    '<button onclick="setStatus(' + student.student_id + ',\'Present\')" class="status-btn px-3 py-1 rounded text-sm" data-student="' + student.student_id + '" data-status="Present">P</button>' +
+                    '<button onclick="setStatus(' + student.student_id + ',\'Absent\')" class="status-btn px-3 py-1 rounded text-sm" data-student="' + student.student_id + '" data-status="Absent">A</button>' +
+                    '<button onclick="setStatus(' + student.student_id + ',\'Late\')" class="status-btn px-3 py-1 rounded text-sm" data-student="' + student.student_id + '" data-status="Late">L</button>' +
+                    '</div></td>';
+                tbody.appendChild(row);
+            });
+        }
+
+        function setStatus(studentId, status) {
+            document.querySelectorAll('[data-student="' + studentId + '"]').forEach(btn => {
+                btn.className = 'status-btn px-3 py-1 rounded text-sm bg-gray-200';
+            });
+            const btn = document.querySelector('[data-student="' + studentId + '"][data-status="' + status + '"]');
+            btn.className = 'status-btn px-3 py-1 rounded text-sm ' + (status === 'Present' ? 'bg-green-200' : status === 'Absent' ? 'bg-red-200' : 'bg-yellow-200');
+            const student = currentStudents.find(s => s.student_id === studentId);
+            if (student) student.attendance_status = status;
+        }
+
+        function markAll(status) {
+            currentStudents.forEach(s => setStatus(s.student_id, status));
+        }
+
+        async function submitAttendance() {
+            const subjectId = document.getElementById('subject-select').value;
+            const date = document.getElementById('attendance-date').value;
+            const attendance = currentStudents.map(s => ({student_id: s.student_id, status: s.attendance_status || 'Absent'}));
+
+            try {
+                const response = await fetch('/api/attendance/faculty/mark', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({subject_id: parseInt(subjectId), date: date, attendance: attendance})
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('Attendance marked successfully!', 'success');
+                    document.getElementById('subject-select').value = '';
+                    loadStudents();
+                } else {
+                    showAlert('Error: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Failed to submit attendance', 'error');
+            }
+        }
+
+        function handleFileSelect(event) {
+            selectedFile = event.target.files[0];
+            if (selectedFile) {
+                document.getElementById('file-selected').classList.remove('hidden');
+                document.getElementById('selected-filename').textContent = selectedFile.name;
+                document.getElementById('upload-btn').disabled = false;
+            }
+        }
+
+        async function uploadExcel() {
+            if (!selectedFile) return;
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch('/api/attendance/faculty/upload', {method: 'POST', body: formData});
+                const data = await response.json();
+                if (data.success) {
+                    const msg = 'Upload complete: ' + data.inserted + ' new, ' + data.updated + ' updated';
+                    document.getElementById('upload-result').innerHTML = '<div class="bg-green-50 border rounded p-4">' + msg + '</div>';
+                    document.getElementById('upload-result').classList.remove('hidden');
+                    selectedFile = null;
+                    document.getElementById('excel-file').value = '';
+                    document.getElementById('file-selected').classList.add('hidden');
+                    document.getElementById('upload-btn').disabled = true;
+                } else {
+                    showAlert('Upload failed: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Failed to upload', 'error');
+            }
+        }
+
+        function showAlert(message, type) {
+            const container = document.getElementById('alert-container');
+            const color = type === 'success' ? 'green' : type === 'error' ? 'red' : 'blue';
+            const alert = document.createElement('div');
+            alert.className = 'bg-' + color + '-50 border border-' + color + '-200 rounded p-4 mb-2';
+            alert.textContent = message;
+            container.appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
     </script>
 </body>
 </html>
-

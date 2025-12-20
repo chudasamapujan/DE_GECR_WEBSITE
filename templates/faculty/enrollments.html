@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Enrollments - GEC Rajkot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-gray-800">GEC Rajkot - Student Enrollments</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-700">{{ faculty.name }}</span>
+                    <a href="/faculty/dashboard" class="text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white shadow-md rounded-lg p-6">
+                <div class="flex items-center">
+                    <div class="bg-blue-100 rounded-lg p-3">
+                        <i class="fas fa-book text-blue-600 text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500">Total Subjects</p>
+                        <p class="text-2xl font-bold text-gray-800" id="totalSubjects">-</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white shadow-md rounded-lg p-6">
+                <div class="flex items-center">
+                    <div class="bg-green-100 rounded-lg p-3">
+                        <i class="fas fa-users text-green-600 text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500">Total Enrollments</p>
+                        <p class="text-2xl font-bold text-gray-800" id="totalEnrollments">-</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white shadow-md rounded-lg p-6">
+                <div class="flex items-center">
+                    <div class="bg-purple-100 rounded-lg p-3">
+                        <i class="fas fa-chart-line text-purple-600 text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500">Avg. Students/Subject</p>
+                        <p class="text-2xl font-bold text-gray-800" id="avgEnrollments">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subjects List -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-800">Your Subjects & Enrollments</h2>
+            </div>
+            <div class="p-6">
+                <div id="loading" class="text-center py-12 hidden">
+                    <i class="fas fa-spinner fa-spin text-4xl text-blue-500"></i>
+                    <p class="mt-4 text-gray-600">Loading enrollments...</p>
+                </div>
+
+                <div id="subjectsList" class="space-y-4">
+                    <!-- Subjects will be inserted here -->
+                </div>
+
+                <div id="noSubjects" class="hidden text-center py-8 text-gray-500">
+                    <i class="fas fa-inbox text-4xl mb-4"></i>
+                    <p>No subjects assigned to you yet.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Details Modal -->
+    <div id="studentsModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-lg bg-white">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800" id="modalTitle">Enrolled Students</h3>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <div id="modalLoading" class="text-center py-12 hidden">
+                <i class="fas fa-spinner fa-spin text-4xl text-blue-500"></i>
+                <p class="mt-4 text-gray-600">Loading students...</p>
+            </div>
+
+            <div id="studentsTable" class="overflow-x-auto">
+                <!-- Students table will be inserted here -->
+            </div>
+
+            <div id="noStudents" class="hidden text-center py-8 text-gray-500">
+                <i class="fas fa-user-slash text-4xl mb-4"></i>
+                <p>No students enrolled in this subject yet.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success/Error Alert -->
+    <div id="alert" class="hidden fixed top-4 right-4 max-w-md z-50">
+        <div class="bg-white shadow-lg rounded-lg p-4 border-l-4" id="alertBox">
+            <div class="flex items-center">
+                <i id="alertIcon" class="text-2xl mr-3"></i>
+                <p id="alertMessage" class="font-medium"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let subjectsData = [];
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSubjects();
+        });
+
+        // Load all subjects with enrollment counts
+        async function loadSubjects() {
+            try {
+                document.getElementById('loading').classList.remove('hidden');
+                
+                const response = await fetch('/api/enrollment/faculty/all-enrollments');
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to load subjects');
+                }
+
+                subjectsData = data.subjects;
+                updateSummaryCards();
+                renderSubjects();
+                
+            } catch (error) {
+                showAlert('Error loading subjects: ' + error.message, 'error');
+            } finally {
+                document.getElementById('loading').classList.add('hidden');
+            }
+        }
+
+        // Update summary cards
+        function updateSummaryCards() {
+            const totalSubjects = subjectsData.length;
+            const totalEnrollments = subjectsData.reduce((sum, subject) => sum + subject.enrolled_students, 0);
+            const avgEnrollments = totalSubjects > 0 ? (totalEnrollments / totalSubjects).toFixed(1) : 0;
+
+            document.getElementById('totalSubjects').textContent = totalSubjects;
+            document.getElementById('totalEnrollments').textContent = totalEnrollments;
+            document.getElementById('avgEnrollments').textContent = avgEnrollments;
+        }
+
+        // Render subjects list
+        function renderSubjects() {
+            const container = document.getElementById('subjectsList');
+            const noSubjects = document.getElementById('noSubjects');
+
+            if (subjectsData.length === 0) {
+                container.innerHTML = '';
+                noSubjects.classList.remove('hidden');
+                return;
+            }
+
+            noSubjects.classList.add('hidden');
+            container.innerHTML = subjectsData.map(subject => `
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-gray-800 text-lg mb-2">${subject.subject_name}</h3>
+                            <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                <span><i class="fas fa-graduation-cap"></i> ${subject.department}</span>
+                                <span><i class="fas fa-book"></i> Semester ${subject.semester}</span>
+                                <span class="font-semibold ${subject.enrolled_students > 0 ? 'text-green-600' : 'text-gray-400'}">
+                                    <i class="fas fa-users"></i> ${subject.enrolled_students} students enrolled
+                                </span>
+                            </div>
+                        </div>
+                        <button onclick="viewStudents(${subject.subject_id}, '${subject.subject_name}')" 
+                                class="ml-4 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition-colors ${subject.enrolled_students === 0 ? 'opacity-50 cursor-not-allowed' : ''}"
+                                ${subject.enrolled_students === 0 ? 'disabled' : ''}>
+                            <i class="fas fa-eye"></i> View Students
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // View enrolled students for a subject
+        async function viewStudents(subjectId, subjectName) {
+            try {
+                document.getElementById('modalTitle').textContent = `Enrolled Students - ${subjectName}`;
+                document.getElementById('studentsModal').classList.remove('hidden');
+                document.getElementById('modalLoading').classList.remove('hidden');
+                document.getElementById('studentsTable').innerHTML = '';
+                document.getElementById('noStudents').classList.add('hidden');
+
+                const response = await fetch(`/api/enrollment/faculty/subject-enrollments/${subjectId}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to load students');
+                }
+
+                document.getElementById('modalLoading').classList.add('hidden');
+
+                if (data.enrollments.length === 0) {
+                    document.getElementById('noStudents').classList.remove('hidden');
+                    return;
+                }
+
+                renderStudentsTable(data.enrollments);
+                
+            } catch (error) {
+                document.getElementById('modalLoading').classList.add('hidden');
+                showAlert('Error loading students: ' + error.message, 'error');
+            }
+        }
+
+        // Render students table
+        function renderStudentsTable(students) {
+            const table = `
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roll No</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Semester</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enrolled Date</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        ${students.map((student, index) => `
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${index + 1}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${student.roll_no}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${student.name}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${student.email || '-'}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${student.department}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${student.semester}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${student.enrollment_date || '-'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                <div class="mt-4 px-6 py-3 bg-gray-50 border-t border-gray-200 text-sm text-gray-600">
+                    Total Students: <span class="font-semibold">${students.length}</span>
+                </div>
+            `;
+
+            document.getElementById('studentsTable').innerHTML = table;
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('studentsModal').classList.add('hidden');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('studentsModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeModal();
+            }
+        });
+
+        // Show alert message
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            const alertBox = document.getElementById('alertBox');
+            const alertIcon = document.getElementById('alertIcon');
+            const alertMessage = document.getElementById('alertMessage');
+
+            alertMessage.textContent = message;
+
+            if (type === 'success') {
+                alertBox.classList.remove('border-red-500');
+                alertBox.classList.add('border-green-500');
+                alertIcon.className = 'fas fa-check-circle text-green-500 text-2xl mr-3';
+            } else {
+                alertBox.classList.remove('border-green-500');
+                alertBox.classList.add('border-red-500');
+                alertIcon.className = 'fas fa-exclamation-circle text-red-500 text-2xl mr-3';
+            }
+
+            alert.classList.remove('hidden');
+            setTimeout(() => {
+                alert.classList.add('hidden');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

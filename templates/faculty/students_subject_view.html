@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students - Faculty Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --accent: #3B82F6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%);
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(79, 70, 229, 0.15);
+        }
+        
+        .tab-button {
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        
+        .tab-button.active {
+            border-bottom-color: var(--primary);
+            color: var(--primary);
+            background: linear-gradient(to bottom, rgba(79, 70, 229, 0.05), transparent);
+        }
+        
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 2px 2px 0 0;
+            box-shadow: 0 -2px 8px rgba(79, 70, 229, 0.3);
+        }
+        
+        .tab-button:hover:not(.active) {
+            background: rgba(79, 70, 229, 0.03);
+            border-bottom-color: rgba(79, 70, 229, 0.2);
+        }
+        
+        .student-row {
+            transition: all 0.2s ease;
+        }
+        
+        .student-row:hover {
+            background: linear-gradient(90deg, rgba(79, 70, 229, 0.03), transparent);
+            transform: translateX(4px);
+        }
+        
+        .subject-card-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .subject-card-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
+        .stat-card {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s;
+        }
+        
+        .stat-card:hover::before {
+            animation: shimmer 1.5s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+        
+        .badge-count {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+            animation: badge-pop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        @keyframes badge-pop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #059669);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        }
+        
+        .skeleton {
+            background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+        }
+        
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .icon-bounce {
+            animation: bounce 1s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        /* Enhanced scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+        }
+        
+        /* Tooltip styles */
+        [data-tooltip] {
+            position: relative;
+        }
+        
+        [data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 6px 12px;
+            background: #1f2937;
+            color: white;
+            font-size: 12px;
+            white-space: nowrap;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            z-index: 1000;
+            animation: fadeIn 0.2s ease-in;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+            color: #6b7280;
+        }
+        
+        .empty-state svg {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-gray-800">
+                        <i class="fas fa-users text-indigo-600 mr-2"></i>
+                        Student Management
+                    </h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/faculty/dashboard" class="text-gray-700 hover:text-indigo-600">
+                        <i class="fas fa-home mr-1"></i> Dashboard
+                    </a>
+                    <a href="/attendance/faculty/page" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
+                        <i class="fas fa-clipboard-check mr-1"></i> Take Attendance
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="glass-card stat-card p-6 rounded-xl">
+                <div class="flex items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <p class="text-sm font-medium text-gray-600 mb-1">Total Students</p>
+                        <p class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent" id="totalStudents">--</p>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card stat-card p-6 rounded-xl">
+                <div class="flex items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <p class="text-sm font-medium text-gray-600 mb-1">Your Subjects</p>
+                        <p class="text-3xl font-bold bg-gradient-to-r from-green-600 to-green-400 bg-clip-text text-transparent" id="totalSubjects">--</p>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card stat-card p-6 rounded-xl">
+                <div class="flex items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center shadow-lg">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                        </svg>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <p class="text-sm font-medium text-gray-600 mb-1">Enrolled Students</p>
+                        <p class="text-3xl font-bold bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent" id="enrolledCount">--</p>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card stat-card p-6 rounded-xl">
+                <div class="flex items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <p class="text-sm font-medium text-gray-600 mb-1">Avg. Enrollment</p>
+                        <p class="text-3xl font-bold bg-gradient-to-r from-orange-600 to-orange-400 bg-clip-text text-transparent" id="avgEnrollment">--</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="glass-card rounded-xl overflow-hidden mb-8 shadow-md">
+            <div class="border-b border-gray-200">
+                <div class="flex">
+                    <button onclick="switchTab('by-subject')" id="tab-by-subject" 
+                            class="tab-button active flex-1 px-8 py-4 text-base font-semibold flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                        By Subject
+                    </button>
+                    <button onclick="switchTab('all-students')" id="tab-all-students" 
+                            class="tab-button flex-1 px-8 py-4 text-base font-semibold text-gray-600 flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                        </svg>
+                        All Students
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- By Subject View -->
+        <div id="view-by-subject">
+            <div id="loadingSubjects" class="text-center py-12">
+                <i class="fas fa-spinner fa-spin text-4xl text-indigo-500"></i>
+                <p class="mt-4 text-gray-600">Loading subjects...</p>
+            </div>
+
+            <div id="subjectsContainer" class="hidden space-y-6">
+                <!-- Subject cards will be inserted here -->
+            </div>
+
+            <div id="noSubjects" class="hidden text-center py-12 text-gray-500">
+                <i class="fas fa-inbox text-4xl mb-4"></i>
+                <p>No subjects assigned to you yet.</p>
+            </div>
+        </div>
+
+        <!-- All Students View -->
+        <div id="view-all-students" class="hidden">
+            <!-- Filter Section -->
+            <div class="glass-card p-4 rounded-lg mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <input type="text" id="searchInput" placeholder="Search by name or roll no..." 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <select id="departmentFilter" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="">All Departments</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select id="semesterFilter" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="">All Semesters</option>
+                            <option value="1">Semester 1</option>
+                            <option value="2">Semester 2</option>
+                            <option value="3">Semester 3</option>
+                            <option value="4">Semester 4</option>
+                            <option value="5">Semester 5</option>
+                            <option value="6">Semester 6</option>
+                            <option value="7">Semester 7</option>
+                            <option value="8">Semester 8</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Students Table -->
+            <div class="glass-card rounded-lg overflow-hidden">
+                <div id="loadingAllStudents" class="p-8 text-center">
+                    <i class="fas fa-spinner fa-spin text-4xl text-indigo-500"></i>
+                    <p class="mt-4 text-gray-600">Loading students...</p>
+                </div>
+
+                <div id="allStudentsTable" class="hidden overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Roll No</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Department</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Semester</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Enrolled Subjects</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allStudentsBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="noStudentsFound" class="hidden p-8 text-center text-gray-500">
+                    <i class="fas fa-search text-4xl mb-4"></i>
+                    <p>No students found</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allSubjects = [];
+        let allStudents = [];
+        let currentTab = 'by-subject';
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSubjectsWithStudents();
+            loadAllStudents();
+
+            // Add filter listeners
+            document.getElementById('searchInput').addEventListener('input', filterAllStudents);
+            document.getElementById('departmentFilter').addEventListener('change', filterAllStudents);
+            document.getElementById('semesterFilter').addEventListener('change', filterAllStudents);
+        });
+
+        // Switch tabs
+        function switchTab(tab) {
+            currentTab = tab;
+
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active', 'text-indigo-600', 'bg-indigo-50');
+                btn.classList.add('text-gray-600');
+            });
+            const activeTab = document.getElementById(`tab-${tab}`);
+            activeTab.classList.add('active', 'text-indigo-600');
+            activeTab.classList.remove('text-gray-600');
+
+            // Show/hide views
+            document.getElementById('view-by-subject').classList.toggle('hidden', tab !== 'by-subject');
+            document.getElementById('view-all-students').classList.toggle('hidden', tab !== 'all-students');
+        }
+
+        // Load subjects with enrolled students
+        async function loadSubjectsWithStudents() {
+            try {
+                const response = await fetch('/api/enrollment/faculty/all-enrollments');
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to load subjects');
+                }
+
+                allSubjects = data.subjects;
+                updateSubjectsSummary();
+                renderSubjects();
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loadingSubjects').innerHTML = 
+                    '<p class="text-red-500">Error loading subjects: ' + error.message + '</p>';
+            }
+        }
+
+        // Update summary cards
+        function updateSubjectsSummary() {
+            document.getElementById('totalSubjects').textContent = allSubjects.length;
+            const enrolledCount = allSubjects.reduce((sum, subj) => sum + subj.enrolled_students, 0);
+            document.getElementById('enrolledCount').textContent = enrolledCount;
+            const avgEnrollment = allSubjects.length > 0 ? (enrolledCount / allSubjects.length).toFixed(1) : '0';
+            document.getElementById('avgEnrollment').textContent = avgEnrollment;
+        }
+
+        // Render subjects
+        function renderSubjects() {
+            const container = document.getElementById('subjectsContainer');
+            const loadingDiv = document.getElementById('loadingSubjects');
+            const noSubjectsDiv = document.getElementById('noSubjects');
+
+            loadingDiv.classList.add('hidden');
+
+            if (allSubjects.length === 0) {
+                noSubjectsDiv.classList.remove('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+            container.innerHTML = allSubjects.map(subject => `
+                <div class="glass-card rounded-xl overflow-hidden fade-in">
+                    <div class="subject-card-header px-6 py-5 text-white relative">
+                        <div class="flex justify-between items-start relative z-10">
+                            <div class="flex-1">
+                                <h3 class="text-xl font-bold mb-1">${subject.subject_name}</h3>
+                                <p class="text-sm opacity-90 flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                    ${subject.department} • Semester ${subject.semester}
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <div class="badge-count text-base">
+                                    ${subject.enrolled_students} ${subject.enrolled_students === 1 ? 'student' : 'students'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div id="students-loading-${subject.subject_id}" class="text-center py-6 text-gray-500">
+                            <div class="skeleton h-4 w-full rounded mb-3"></div>
+                            <div class="skeleton h-4 w-5/6 rounded mb-3"></div>
+                            <div class="skeleton h-4 w-4/6 rounded"></div>
+                        </div>
+                        <div id="students-list-${subject.subject_id}" class="hidden">
+                            <!-- Students will be loaded here -->
+                        </div>
+                        <div id="students-none-${subject.subject_id}" class="hidden empty-state">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            <p class="text-lg font-medium">No students enrolled yet</p>
+                            <p class="text-sm mt-2">Students haven't enrolled in this subject</p>
+                        </div>
+                        <div class="mt-6 flex flex-col sm:flex-row gap-3">
+                            <button onclick="loadSubjectStudents(${subject.subject_id})" 
+                                    class="btn-primary flex-1 text-white px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2"
+                                    data-tooltip="Refresh student list">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                View Students
+                            </button>
+                            <a href="/attendance/faculty/page?subject=${subject.subject_id}" 
+                               class="btn-success flex-1 text-white px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2 text-center"
+                               data-tooltip="Mark attendance for this subject">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                </svg>
+                                Take Attendance
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Auto-load students for each subject
+            allSubjects.forEach(subject => {
+                if (subject.enrolled_students > 0) {
+                    loadSubjectStudents(subject.subject_id);
+                } else {
+                    document.getElementById(`students-loading-${subject.subject_id}`).classList.add('hidden');
+                    document.getElementById(`students-none-${subject.subject_id}`).classList.remove('hidden');
+                }
+            });
+        }
+
+        // Load students for a specific subject
+        async function loadSubjectStudents(subjectId) {
+            try {
+                const response = await fetch(`/api/enrollment/faculty/subject-enrollments/${subjectId}`);
+                const data = await response.json();
+
+                const loadingDiv = document.getElementById(`students-loading-${subjectId}`);
+                const listDiv = document.getElementById(`students-list-${subjectId}`);
+                const noneDiv = document.getElementById(`students-none-${subjectId}`);
+
+                loadingDiv.classList.add('hidden');
+
+                if (!response.ok || data.enrollments.length === 0) {
+                    noneDiv.classList.remove('hidden');
+                    return;
+                }
+
+                listDiv.classList.remove('hidden');
+                listDiv.innerHTML = `
+                    <div class="bg-gradient-to-br from-gray-50 to-white rounded-xl p-5 border border-gray-100">
+                        <div class="space-y-3">
+                            ${data.enrollments.map((enrollment, index) => `
+                                <div class="student-row bg-white p-4 rounded-lg shadow-sm hover:shadow-md flex items-center justify-between border border-gray-100">
+                                    <div class="flex items-center gap-4 flex-1">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center text-white font-bold shadow-lg">
+                                                ${index + 1}
+                                            </div>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-semibold text-gray-900 text-lg">${enrollment.name}</p>
+                                            <div class="flex flex-wrap items-center gap-3 mt-1">
+                                                <span class="inline-flex items-center text-sm text-gray-600">
+                                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                                    </svg>
+                                                    ${enrollment.roll_no}
+                                                </span>
+                                                <span class="inline-flex items-center text-sm text-gray-600">
+                                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                    </svg>
+                                                    ${enrollment.department}
+                                                </span>
+                                                <span class="inline-flex items-center text-sm text-gray-600">
+                                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                                    </svg>
+                                                    Sem ${enrollment.semester}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right flex-shrink-0 ml-4">
+                                        <p class="text-xs text-gray-500">
+                                            <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                            ${enrollment.enrollment_date || 'N/A'}
+                                        </p>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="mt-6 pt-4 border-t border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2 text-gray-700">
+                                    <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                    <span class="font-semibold">Total Students:</span>
+                                    <span class="badge-count text-sm">${data.enrollments.length}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('Error loading students:', error);
+                document.getElementById(`students-loading-${subjectId}`).innerHTML = 
+                    '<p class="text-red-500 text-sm">Error loading students</p>';
+            }
+        }
+
+        // Load all students
+        async function loadAllStudents() {
+            try {
+                const response = await fetch('/api/faculty/students');
+                
+                // Log full response for debugging
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
+                let data;
+                try {
+                    data = await response.json();
+                    console.log('Response data:', data);
+                } catch (jsonError) {
+                    console.error('JSON parse error:', jsonError);
+                    const text = await response.text();
+                    console.error('Response text:', text);
+                    throw new Error('Invalid JSON response from server');
+                }
+
+                if (!response.ok) {
+                    const errorMsg = data.error || data.details || 'Failed to load students';
+                    console.error('Server error:', errorMsg);
+                    throw new Error(errorMsg);
+                }
+
+                // API returns array directly, not wrapped in { students: [...] }
+                allStudents = Array.isArray(data) ? data : (data.students || []);
+                console.log('Loaded students:', allStudents.length);
+                document.getElementById('totalStudents').textContent = allStudents.length;
+                
+                // Populate department filter
+                const departments = [...new Set(allStudents.map(s => s.department).filter(Boolean))];
+                const deptFilter = document.getElementById('departmentFilter');
+                departments.forEach(dept => {
+                    const option = document.createElement('option');
+                    option.value = dept;
+                    option.textContent = dept;
+                    deptFilter.appendChild(option);
+                });
+
+                renderAllStudents(allStudents);
+
+            } catch (error) {
+                console.error('Error loading students:', error);
+                document.getElementById('loadingAllStudents').innerHTML = 
+                    '<p class="text-red-500">Error loading students: ' + error.message + '</p>' +
+                    '<p class="text-xs text-gray-600 mt-2">Check browser console for details</p>';
+            }
+        }
+
+        // Render all students table
+        function renderAllStudents(students) {
+            const loadingDiv = document.getElementById('loadingAllStudents');
+            const tableDiv = document.getElementById('allStudentsTable');
+            const noStudentsDiv = document.getElementById('noStudentsFound');
+            const tbody = document.getElementById('allStudentsBody');
+
+            loadingDiv.classList.add('hidden');
+
+            if (students.length === 0) {
+                tableDiv.classList.add('hidden');
+                noStudentsDiv.classList.remove('hidden');
+                return;
+            }
+
+            tableDiv.classList.remove('hidden');
+            noStudentsDiv.classList.add('hidden');
+
+            tbody.innerHTML = students.map((student, index) => `
+                <tr class="student-row">
+                    <td class="px-6 py-4 text-sm text-gray-900">${index + 1}</td>
+                    <td class="px-6 py-4 text-sm font-medium text-gray-900">${student.roll_no || 'N/A'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900">${student.name || 'N/A'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">${student.email || 'N/A'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">${student.department || 'N/A'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">${student.semester || 'N/A'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">
+                        ${student.enrolled_subjects || 0} subjects
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Filter all students
+        function filterAllStudents() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const department = document.getElementById('departmentFilter').value;
+            const semester = document.getElementById('semesterFilter').value;
+
+            const filtered = allStudents.filter(student => {
+                const matchesSearch = !searchTerm || 
+                    (student.name && student.name.toLowerCase().includes(searchTerm)) ||
+                    (student.roll_no && student.roll_no.toLowerCase().includes(searchTerm));
+                
+                const matchesDept = !department || student.department === department;
+                const matchesSem = !semester || student.semester == semester;
+
+                return matchesSearch && matchesDept && matchesSem;
+            });
+
+            renderAllStudents(filtered);
+        }
+    </script>
+</body>
+</html>

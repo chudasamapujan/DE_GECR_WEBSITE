@@ -228,7 +228,6 @@
     <aside class="sidebar">
         <div class="sidebar-header">
             <div class="flex items-center space-x-3">
-                <img src="logo.png" alt="GEC Rajkot Logo" class="w-12 h-12 object-contain">
                 <div class="text-2xl font-bold gradient-text">Faculty Portal</div>
             </div>
         </div>
@@ -249,12 +248,21 @@
                 <span class="ml-3">Profile</span>
             </a>
 
-            <!-- My Subjects -->
-            <a href="/faculty/subjects" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+           
+            <!-- Manage Subjects -->
+            <a href="/api/subjects/manage-page" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
-                <span class="ml-3">My Subjects</span>
+                <span class="ml-3">Manage Subjects</span>
+            </a>
+
+            <!-- Student Enrollments -->
+            <a href="/api/enrollment/faculty/enrollments-page" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                </svg>
+                <span class="ml-3">Student Enrollments</span>
             </a>
 
             <!-- Students -->
@@ -265,30 +273,18 @@
                 <span class="ml-3">Students</span>
             </a>
 
-            <!-- Attendance -->
-            <a href="/faculty/attendance" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+            <!-- Attendance (Old - Redirects to QR) -->
+            <a href="/faculty/qr-attendance" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span class="ml-3">Attendance</span>
             </a>
 
-            <!-- Assignments -->
-            <a href="/faculty/assignments" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-                <span class="ml-3">Assignments</span>
-                <div class="notification-badge ml-auto">3</div>
-            </a>          
-            
-            <!-- Schedule -->
-            <a href="/faculty/schedule" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span class="ml-3">Schedule</span>
-            </a>
+           
+
+                     
+           
 
             <div class="menu-divider"></div>
 
@@ -365,12 +361,12 @@
         <div class="glass-card p-6 rounded-lg mb-8">
             <div class="flex items-center space-x-4">
                 <div class="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center">
-                    <span class="text-white text-xl font-bold">DR</span>
+                    <span class="text-white text-xl font-bold">{{ faculty.name[:2].upper() if faculty.name else 'FA' }}</span>
                 </div>
                 <div>
-                    <h2 class="text-2xl font-bold gradient-text">Welcome back, Dr. Rajesh Kumar!</h2>
-                    <p class="text-gray-600">Computer Engineering Department • Professor</p>
-                    <p class="text-sm text-gray-500">Faculty ID: CS101 • Last login: Today at 9:30 AM</p>
+                    <h2 class="text-2xl font-bold gradient-text">Welcome back, {{ faculty.name }}!</h2>
+                    <p class="text-gray-600">{{ faculty.department }} • {{ faculty.designation if faculty.designation else 'Faculty' }}</p>
+                    <p class="text-sm text-gray-500">Faculty ID: {{ faculty.faculty_id }} • Email: {{ faculty.email }}</p>
                 </div>
             </div>
         </div>
@@ -381,7 +377,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-gray-600">Total Subjects</p>
-                        <h2 class="text-2xl font-bold gradient-text">4</h2>
+                        <h2 class="text-2xl font-bold gradient-text">{{ total_subjects }}</h2>
                     </div>
                     <div class="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center">
                         <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -397,7 +393,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-gray-600">Total Students</p>
-                        <h2 class="text-2xl font-bold gradient-text">156</h2>
+                        <h2 class="text-2xl font-bold gradient-text">{{ total_students }}</h2>
                     </div>
                     <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
                         <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -413,7 +409,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-gray-600">Pending Assignments</p>
-                        <h2 class="text-2xl font-bold gradient-text">12</h2>
+                        <h2 class="text-2xl font-bold gradient-text">{{ pending_submissions_count }}</h2>
                     </div>
                     <div class="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center">
                         <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -429,7 +425,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-gray-600">Today's Classes</p>
-                        <h2 class="text-2xl font-bold gradient-text">3</h2>
+                        <h2 class="text-2xl font-bold gradient-text">{{ today_classes_count }}</h2>
                     </div>
                     <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
                         <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -438,55 +434,12 @@
                     </div>
                 </div>
                 <div class="mt-4">
-                    <p class="text-sm text-gray-600">Next: 10:00 AM</p>
+                    <p class="text-sm text-gray-600">{% if today_schedule and today_schedule|length > 0 %}Next: {{ today_schedule[0].time_slot }}{% else %}No classes today{% endif %}</p>
                 </div>
             </div>
         </div>
 
-        <!-- Today's Schedule and Recent Activities -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <!-- Today's Schedule -->
-            <div class="glass-card p-6 rounded-lg">
-                <h2 class="text-xl font-semibold mb-4 gradient-text">Today's Schedule</h2>
-                <div class="space-y-4">
-                    <div class="flex items-center space-x-4 p-3 bg-indigo-50 rounded-lg">
-                        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center">
-                            <span class="text-white text-sm">10:00</span>
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-gray-700 font-medium">Database Management Systems</p>
-                            <p class="text-sm text-gray-500">CS 5th Sem A • Lab 301</p>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-sm text-indigo-600 font-medium">45 students</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-4 p-3 bg-blue-50 rounded-lg">
-                        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center">
-                            <span class="text-white text-sm">14:00</span>
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-gray-700 font-medium">Software Engineering</p>
-                            <p class="text-sm text-gray-500">CS 7th Sem B • Room 205</p>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-sm text-blue-600 font-medium">38 students</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
-                        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center">
-                            <span class="text-white text-sm">16:00</span>
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-gray-700 font-medium">Data Structures Lab</p>
-                            <p class="text-sm text-gray-500">CS 3rd Sem A • Lab 205</p>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-sm text-gray-600 font-medium">42 students</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      
 
             <!-- Recent Activities -->
             <div class="glass-card p-6 rounded-lg">
@@ -524,67 +477,7 @@
             </div>
         </div>
 
-        <!-- My Subjects -->
-        <div class="glass-card p-6 rounded-lg mb-8">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold gradient-text">My Subjects (Semester 5 & 7)</h2>
-                <a href="/faculty/subjects" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">View All</a>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="p-4 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition duration-150 ease-in-out">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <p class="text-gray-700 font-medium">CS302: Database Management Systems</p>
-                            <p class="text-sm text-gray-500">5th Semester • Computer Science</p>
-                        </div>
-                        <span class="text-indigo-600 text-sm font-medium">45 students</span>
-                    </div>
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-gray-600">Mon, Wed, Fri • 10:00 AM</span>
-                        <span class="text-indigo-600">Lab 301</span>
-                    </div>
-                </div>
-                <div class="p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition duration-150 ease-in-out">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <p class="text-gray-700 font-medium">CS401: Software Engineering</p>
-                            <p class="text-sm text-gray-500">7th Semester • Computer Science</p>
-                        </div>
-                        <span class="text-blue-600 text-sm font-medium">38 students</span>
-                    </div>
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-gray-600">Tue, Thu • 2:00 PM</span>
-                        <span class="text-blue-600">Room 205</span>
-                    </div>
-                </div>
-                <div class="p-4 bg-green-50 rounded-lg hover:bg-green-100 transition duration-150 ease-in-out">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <p class="text-gray-700 font-medium">CS301: Data Structures</p>
-                            <p class="text-sm text-gray-500">3rd Semester • Computer Science</p>
-                        </div>
-                        <span class="text-green-600 text-sm font-medium">42 students</span>
-                    </div>
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-gray-600">Mon, Wed • 4:00 PM</span>
-                        <span class="text-green-600">Lab 205</span>
-                    </div>
-                </div>
-                <div class="p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition duration-150 ease-in-out">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <p class="text-gray-700 font-medium">CS403: Web Technologies</p>
-                            <p class="text-sm text-gray-500">7th Semester • Computer Science</p>
-                        </div>
-                        <span class="text-purple-600 text-sm font-medium">35 students</span>
-                    </div>
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-gray-600">Wed, Fri • 11:00 AM</span>
-                        <span class="text-purple-600">Lab 302</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+      
 
         <!-- Announcements -->
         <div class="glass-card p-6 rounded-lg">

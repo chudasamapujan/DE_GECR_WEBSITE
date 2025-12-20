@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subject Enrollment - GEC Rajkot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-gray-800">GEC Rajkot - Subject Enrollment</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-700">{{ student.name }}</span>
+                    <a href="/student/dashboard" class="text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Student Info Card -->
+        <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <p class="text-sm text-gray-500">Roll Number</p>
+                    <p class="font-semibold">{{ student.roll_no }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Department</p>
+                    <p class="font-semibold">{{ student.department }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Semester</p>
+                    <p class="font-semibold">{{ student.semester }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Enrolled Subjects</p>
+                    <p class="font-semibold" id="enrolledCount">-</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="mb-6">
+            <div class="border-b border-gray-200">
+                <nav class="flex -mb-px space-x-8" aria-label="Tabs">
+                    <button onclick="switchTab('available')" id="availableTab" 
+                            class="tab-button border-b-2 py-4 px-1 text-center border-blue-500 text-blue-600 font-medium">
+                        <i class="fas fa-book"></i> Available Subjects
+                    </button>
+                    <button onclick="switchTab('enrolled')" id="enrolledTab" 
+                            class="tab-button border-b-2 py-4 px-1 text-center border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium">
+                        <i class="fas fa-check-circle"></i> My Enrollments
+                    </button>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loading" class="text-center py-12 hidden">
+            <i class="fas fa-spinner fa-spin text-4xl text-blue-500"></i>
+            <p class="mt-4 text-gray-600">Loading subjects...</p>
+        </div>
+
+        <!-- Available Subjects Tab -->
+        <div id="availableContent" class="tab-content">
+            <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-800">Available Subjects for Enrollment</h2>
+                </div>
+                <div class="p-6">
+                    <div id="availableSubjects" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Subject cards will be inserted here -->
+                    </div>
+                    <div id="noAvailableSubjects" class="hidden text-center py-8 text-gray-500">
+                        <i class="fas fa-inbox text-4xl mb-4"></i>
+                        <p>No available subjects found for your department and semester.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Enrollments Tab -->
+        <div id="enrolledContent" class="tab-content hidden">
+            <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-800">My Enrolled Subjects</h2>
+                </div>
+                <div class="p-6">
+                    <div id="enrolledSubjects" class="space-y-4">
+                        <!-- Enrolled subjects will be inserted here -->
+                    </div>
+                    <div id="noEnrollments" class="hidden text-center py-8 text-gray-500">
+                        <i class="fas fa-inbox text-4xl mb-4"></i>
+                        <p>You haven't enrolled in any subjects yet.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success/Error Alert -->
+    <div id="alert" class="hidden fixed top-4 right-4 max-w-md z-50">
+        <div class="bg-white shadow-lg rounded-lg p-4 border-l-4" id="alertBox">
+            <div class="flex items-center">
+                <i id="alertIcon" class="text-2xl mr-3"></i>
+                <p id="alertMessage" class="font-medium"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let availableSubjectsData = [];
+        let enrolledSubjectsData = [];
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAvailableSubjects();
+            loadEnrolledSubjects();
+        });
+
+        // Switch between tabs
+        function switchTab(tab) {
+            const availableTab = document.getElementById('availableTab');
+            const enrolledTab = document.getElementById('enrolledTab');
+            const availableContent = document.getElementById('availableContent');
+            const enrolledContent = document.getElementById('enrolledContent');
+
+            if (tab === 'available') {
+                availableTab.classList.add('border-blue-500', 'text-blue-600');
+                availableTab.classList.remove('border-transparent', 'text-gray-500');
+                enrolledTab.classList.remove('border-blue-500', 'text-blue-600');
+                enrolledTab.classList.add('border-transparent', 'text-gray-500');
+                availableContent.classList.remove('hidden');
+                enrolledContent.classList.add('hidden');
+            } else {
+                enrolledTab.classList.add('border-blue-500', 'text-blue-600');
+                enrolledTab.classList.remove('border-transparent', 'text-gray-500');
+                availableTab.classList.remove('border-blue-500', 'text-blue-600');
+                availableTab.classList.add('border-transparent', 'text-gray-500');
+                enrolledContent.classList.remove('hidden');
+                availableContent.classList.add('hidden');
+                loadEnrolledSubjects(); // Reload when switching to enrolled tab
+            }
+        }
+
+        // Load available subjects
+        async function loadAvailableSubjects() {
+            try {
+                document.getElementById('loading').classList.remove('hidden');
+                
+                const response = await fetch('/api/enrollment/student/available-subjects');
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to load subjects');
+                }
+
+                // DEBUG: Log the data to console
+                console.log('📚 Available Subjects Response:', data);
+                if (data.debug_info) {
+                    console.log('🔍 Debug Info:', data.debug_info);
+                    console.log(`Total subjects in DB: ${data.debug_info.total_subjects_in_db}`);
+                    console.log(`Filtered subjects: ${data.debug_info.filtered_subjects}`);
+                    console.log(`Student filter: ${data.debug_info.student_filter}`);
+                }
+                console.log('Student Info:', data.student);
+                console.log('Subjects:', data.subjects);
+
+                availableSubjectsData = data.subjects;
+                renderAvailableSubjects();
+                
+            } catch (error) {
+                console.error('❌ Error loading subjects:', error);
+                showAlert('Error loading subjects: ' + error.message, 'error');
+            } finally {
+                document.getElementById('loading').classList.add('hidden');
+            }
+        }
+
+        // Render available subjects
+        function renderAvailableSubjects() {
+            const container = document.getElementById('availableSubjects');
+            const noSubjects = document.getElementById('noAvailableSubjects');
+
+            if (availableSubjectsData.length === 0) {
+                container.innerHTML = '';
+                noSubjects.classList.remove('hidden');
+                return;
+            }
+
+            noSubjects.classList.add('hidden');
+            container.innerHTML = availableSubjectsData.map(subject => `
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="font-semibold text-gray-800">${subject.subject_name}</h3>
+                        ${subject.is_enrolled ? 
+                            '<span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full"><i class="fas fa-check"></i> Enrolled</span>' :
+                            '<span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">Available</span>'
+                        }
+                    </div>
+                    <div class="space-y-1 text-sm text-gray-600 mb-3">
+                        <p><i class="fas fa-user-tie w-4"></i> ${subject.faculty_name}</p>
+                        <p><i class="fas fa-users w-4"></i> ${subject.enrolled_count} students enrolled</p>
+                    </div>
+                    ${!subject.is_enrolled ? 
+                        `<button onclick="enrollSubject(${subject.subject_id})" 
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition-colors">
+                            <i class="fas fa-plus"></i> Enroll Now
+                        </button>` :
+                        `<button class="w-full bg-gray-300 text-gray-600 font-medium py-2 px-4 rounded cursor-not-allowed" disabled>
+                            Already Enrolled
+                        </button>`
+                    }
+                </div>
+            `).join('');
+        }
+
+        // Load enrolled subjects
+        async function loadEnrolledSubjects() {
+            try {
+                const response = await fetch('/api/enrollment/student/my-enrollments');
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to load enrollments');
+                }
+
+                enrolledSubjectsData = data.enrollments;
+                document.getElementById('enrolledCount').textContent = data.total;
+                renderEnrolledSubjects();
+                
+            } catch (error) {
+                showAlert('Error loading enrollments: ' + error.message, 'error');
+            }
+        }
+
+        // Render enrolled subjects
+        function renderEnrolledSubjects() {
+            const container = document.getElementById('enrolledSubjects');
+            const noEnrollments = document.getElementById('noEnrollments');
+
+            if (enrolledSubjectsData.length === 0) {
+                container.innerHTML = '';
+                noEnrollments.classList.remove('hidden');
+                return;
+            }
+
+            noEnrollments.classList.add('hidden');
+            container.innerHTML = enrolledSubjectsData.map(enrollment => `
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-gray-800 mb-2">${enrollment.subject_name}</h3>
+                            <div class="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                                <p><i class="fas fa-user-tie w-4"></i> ${enrollment.faculty_name}</p>
+                                <p><i class="fas fa-calendar w-4"></i> Enrolled: ${enrollment.enrollment_date}</p>
+                                <p><i class="fas fa-graduation-cap w-4"></i> ${enrollment.department}</p>
+                                <p><i class="fas fa-book w-4"></i> Semester ${enrollment.semester}</p>
+                            </div>
+                        </div>
+                        <button onclick="unenrollSubject(${enrollment.subject_id})" 
+                                class="ml-4 bg-red-100 hover:bg-red-200 text-red-700 font-medium py-2 px-4 rounded transition-colors">
+                            <i class="fas fa-times"></i> Drop
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Enroll in subject
+        async function enrollSubject(subjectId) {
+            if (!confirm('Are you sure you want to enroll in this subject?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/enrollment/student/enroll', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ subject_id: subjectId })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to enroll');
+                }
+
+                showAlert(data.message, 'success');
+                
+                // Reload both lists
+                await loadAvailableSubjects();
+                await loadEnrolledSubjects();
+                
+            } catch (error) {
+                showAlert('Error: ' + error.message, 'error');
+            }
+        }
+
+        // Unenroll from subject
+        async function unenrollSubject(subjectId) {
+            if (!confirm('Are you sure you want to drop this subject? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/enrollment/student/unenroll', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ subject_id: subjectId })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to unenroll');
+                }
+
+                showAlert(data.message, 'success');
+                
+                // Reload both lists
+                await loadAvailableSubjects();
+                await loadEnrolledSubjects();
+                
+            } catch (error) {
+                showAlert('Error: ' + error.message, 'error');
+            }
+        }
+
+        // Show alert message
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            const alertBox = document.getElementById('alertBox');
+            const alertIcon = document.getElementById('alertIcon');
+            const alertMessage = document.getElementById('alertMessage');
+
+            alertMessage.textContent = message;
+
+            if (type === 'success') {
+                alertBox.classList.remove('border-red-500');
+                alertBox.classList.add('border-green-500');
+                alertIcon.className = 'fas fa-check-circle text-green-500 text-2xl mr-3';
+            } else {
+                alertBox.classList.remove('border-green-500');
+                alertBox.classList.add('border-red-500');
+                alertIcon.className = 'fas fa-exclamation-circle text-red-500 text-2xl mr-3';
+            }
+
+            alert.classList.remove('hidden');
+            setTimeout(() => {
+                alert.classList.add('hidden');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

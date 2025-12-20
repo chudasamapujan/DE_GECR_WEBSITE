@@ -21,7 +21,8 @@ load_dotenv()
 
 # Import configurations and routes
 from database import init_database, create_tables
-from routes import auth_bp, student_bp, faculty_bp
+from routes import auth_bp, student_bp, faculty_bp, attendance_bp, enrollment_bp, subject_bp
+from routes.qr_attendance_routes import qr_attendance_bp
 
 def create_app(config_name='development'):
     """
@@ -159,6 +160,18 @@ def register_blueprints(app):
     
     # Faculty routes
     app.register_blueprint(faculty_bp)
+    
+    # Attendance routes
+    app.register_blueprint(attendance_bp)
+    
+    # Enrollment routes
+    app.register_blueprint(enrollment_bp)
+    
+    # Subject management routes
+    app.register_blueprint(subject_bp)
+    
+    # QR-based attendance routes
+    app.register_blueprint(qr_attendance_bp)
 
 def register_error_handlers(app):
     """
@@ -453,7 +466,7 @@ def register_main_routes(app):
         except Exception:
             photo_filename = None
 
-        return render_template('student/student-profile.html', student=student, photo_filename=photo_filename)
+        return render_template('student/profile.html', student=student, photo_filename=photo_filename)
 
     @app.route('/student/attendance')
     def serve_student_attendance():
@@ -504,6 +517,14 @@ def register_main_routes(app):
         student = Student.query.get(session['user_id'])
         return render_template('student/events.html', student=student)
 
+    @app.route('/student/mark-attendance')
+    def serve_student_mark_attendance():
+        """Serve QR scanning attendance page for students"""
+        # This page doesn't require login - students access via QR scan
+        return render_template('student/mark_attendance.html')
+
+    # ==================== Faculty Pages ====================
+
     # Faculty pages with database connectivity
     @app.route('/faculty/profile')
     def serve_faculty_profile():
@@ -534,20 +555,15 @@ def register_main_routes(app):
 
     @app.route('/faculty/students')
     def serve_faculty_students():
-        """Serve faculty students page with database data"""
+        """Serve faculty students page with subject-wise grouping"""
         from flask import session, redirect, url_for, flash
-        from dashboard_data import get_faculty_students_data
         
         if 'user_id' not in session or session.get('user_type') != 'faculty':
             flash('Please log in to access this page', 'error')
             return redirect(url_for('serve_login', user_type='faculty'))
         
-        students_data = get_faculty_students_data(session['user_id'])
-        if not students_data:
-            flash('Error loading students data', 'error')
-            return redirect(url_for('serve_faculty_dashboard'))
-        
-        return render_template('faculty/students.html', **students_data)
+        # New page uses client-side API calls, no server-side data needed
+        return render_template('faculty/students_subject_view.html')
 
     @app.route('/faculty/assignments')
     def serve_faculty_assignments():
@@ -633,6 +649,28 @@ def register_main_routes(app):
         
         return render_template('faculty/manage-announcements.html')
 
+    @app.route('/faculty/qr-attendance')
+    def serve_faculty_qr_attendance():
+        """Serve QR-based attendance page"""
+        if 'user_id' not in session or session.get('user_type') != 'faculty':
+            flash('Please log in to access this page', 'error')
+            return redirect(url_for('serve_login', user_type='faculty'))
+        
+        return render_template('faculty/qr_attendance.html')
+
+    # Redirect old attendance pages to new QR system
+    @app.route('/attendance/faculty/page')
+    def redirect_faculty_attendance():
+        """Redirect old faculty attendance page to new QR system"""
+        flash('Attendance system has been upgraded to QR-based system!', 'info')
+        return redirect('/faculty/qr-attendance')
+    
+    @app.route('/attendance/student/page')
+    def redirect_student_attendance():
+        """Redirect old student attendance page to new QR system"""
+        flash('Attendance system has been upgraded to QR-based system!', 'info')
+        return redirect('/student/mark-attendance')
+
     @app.route('/faculty/settings')
     def serve_faculty_settings():
         """Serve faculty settings page"""
@@ -706,6 +744,86 @@ def register_main_routes(app):
             flash('Failed to upload photo', 'error')
 
         return redirect(url_for('serve_student_settings'))
+
+    @app.route('/student/update-profile', methods=['POST'])
+    def student_update_profile():
+        """Handle student profile update from settings page"""
+        if 'user_id' not in session or session.get('user_type') != 'student':
+            return jsonify({'success': False, 'message': 'Please log in to update your profile'}), 401
+
+        from models.gecr_models import Student
+        from database import db
+        
+        student = Student.query.get(session['user_id'])
+        if not student:
+            return jsonify({'success': False, 'message': 'Student not found'}), 404
+
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'message': 'No data provided'}), 400
+
+        try:
+            # Update allowed fields
+            if 'full_name' in data and data['full_name'].strip():
+                student.name = data['full_name'].strip()
+            if 'phone' in data:
+                student.phone = data['phone'].strip() if data['phone'] else None
+            if 'address' in data:
+                student.address = data['address'].strip() if data['address'] else None
+            if 'dob' in data and data['dob']:
+                from datetime import datetime
+                student.dob = datetime.strptime(data['dob'], '%Y-%m-%d').date()
+
+            db.session.commit()
+            return jsonify({'success': True, 'message': 'Profile updated successfully'})
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Failed to update student profile: {e}")
+            return jsonify({'success': False, 'message': 'Failed to update profile'}), 500
+
+    @app.route('/student/change-password', methods=['POST'])
+    def student_change_password():
+        """Handle student password change from settings page"""
+        if 'user_id' not in session or session.get('user_type') != 'student':
+            return jsonify({'success': False, 'message': 'Please log in to change your password'}), 401
+
+        from models.gecr_models import Student
+        from database import db
+        
+        student = Student.query.get(session['user_id'])
+        if not student:
+            return jsonify({'success': False, 'message': 'Student not found'}), 404
+
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'message': 'No data provided'}), 400
+
+        current_password = data.get('current_password', '')
+        new_password = data.get('new_password', '')
+        confirm_password = data.get('confirm_password', '')
+
+        # Validate inputs
+        if not current_password or not new_password or not confirm_password:
+            return jsonify({'success': False, 'message': 'All password fields are required'}), 400
+
+        if new_password != confirm_password:
+            return jsonify({'success': False, 'message': 'New passwords do not match'}), 400
+
+        if len(new_password) < 6:
+            return jsonify({'success': False, 'message': 'Password must be at least 6 characters long'}), 400
+
+        # Verify current password
+        if not student.check_password(current_password):
+            return jsonify({'success': False, 'message': 'Current password is incorrect'}), 400
+
+        try:
+            student.set_password(new_password)
+            db.session.commit()
+            return jsonify({'success': True, 'message': 'Password changed successfully'})
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Failed to change student password: {e}")
+            return jsonify({'success': False, 'message': 'Failed to change password'}), 500
 
     @app.route('/uploads/<path:filename>')
     def uploaded_file(filename):

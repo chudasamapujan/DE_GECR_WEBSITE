@@ -610,12 +610,15 @@ def get_students():
         from database import db
         from models.gecr_models import Student, StudentEnrollment, Subject
         
+        current_app.logger.info("=== Faculty Students API Called ===")
         current_user_email = get_current_user_email()
+        current_app.logger.info(f"User: {current_user_email}")
         
         # Get query parameters
         subject_id = request.args.get('subject_id', type=int)
         semester = request.args.get('semester', type=int)
         search = request.args.get('search', '')
+        current_app.logger.info(f"Params: subject_id={subject_id}, semester={semester}, search={search}")
         
         # Build query
         query = Student.query
@@ -646,38 +649,53 @@ def get_students():
             )
         
         students = query.order_by(Student.name).all()
+        current_app.logger.info(f"Found {len(students)} students")
         
         # Get attendance percentage for each student
         student_list = []
-        for student in students:
-            student_dict = student.to_dict()
-            
-            # Calculate attendance percentage using proper ORM
-            from models.gecr_models import Attendance
-            
-            total_classes = db.session.query(db.func.count(db.distinct(
-                db.tuple_(Attendance.subject_id, Attendance.date)
-            ))).filter(
-                Attendance.student_id == student.student_id
-            ).scalar() or 0
-            
-            present_count = db.session.query(db.func.count()).filter(
-                Attendance.student_id == student.student_id,
-                Attendance.status == 'present'
-            ).scalar() or 0
-            
-            attendance_percentage = (present_count / total_classes * 100) if total_classes > 0 else 0
-            student_dict['attendance_percentage'] = round(attendance_percentage, 2)
-            
-            # Get enrolled subjects count
-            enrolled_count = StudentEnrollment.query.filter_by(
-                student_id=student.student_id,
-                status='active'
-            ).count()
-            student_dict['enrolled_subjects_count'] = enrolled_count
-            
-            student_list.append(student_dict)
+        for idx, student in enumerate(students):
+            try:
+                current_app.logger.info(f"Processing student {idx+1}/{len(students)}: {student.name}")
+                student_dict = student.to_dict()
+                
+                # Calculate attendance percentage using proper ORM
+                from models.gecr_models import Attendance
+                
+                # Simpler query that works across SQLAlchemy versions
+                # Get unique class dates for this student
+                total_classes_query = db.session.query(
+                    Attendance.subject_id,
+                    Attendance.date
+                ).filter(
+                    Attendance.student_id == student.student_id
+                ).distinct()
+                
+                total_classes = total_classes_query.count()
+                
+                present_count = db.session.query(db.func.count(Attendance.attendance_id)).filter(
+                    Attendance.student_id == student.student_id,
+                    Attendance.status == 'present'
+                ).scalar() or 0
+                
+                attendance_percentage = (present_count / total_classes * 100) if total_classes > 0 else 0
+                student_dict['attendance_percentage'] = round(attendance_percentage, 2)
+                
+                # Get enrolled subjects count
+                enrolled_count = StudentEnrollment.query.filter_by(
+                    student_id=student.student_id,
+                    status='active'
+                ).count()
+                student_dict['enrolled_subjects_count'] = enrolled_count
+                
+                student_list.append(student_dict)
+                
+            except Exception as student_error:
+                current_app.logger.error(f"Error processing student {student.name}: {str(student_error)}")
+                import traceback
+                traceback.print_exc()
+                # Continue with other students
         
+        current_app.logger.info(f"Successfully processed {len(student_list)} students")
         return jsonify(student_list), 200
         
     except Exception as e:
@@ -1702,38 +1720,40 @@ def get_schedule():
 @require_faculty_auth()
 def get_subjects():
     """
-    Get subjects taught by faculty
+    Get subjects taught by faculty (only subjects created by this faculty)
     """
     try:
         current_user_email = get_jwt_identity()
         
-        # Placeholder response until models are connected
+        # Get faculty by email
+        faculty = Faculty.query.filter_by(email=current_user_email).first()
+        if not faculty:
+            return jsonify({'error': 'Faculty not found'}), 404
+        
+        # Get subjects created by this faculty only
+        subjects = Subject.query.filter_by(faculty_id=faculty.faculty_id).all()
+        
+        # Count enrolled students for each subject
+        subjects_data = []
+        for subject in subjects:
+            enrolled_count = StudentEnrollment.query.filter_by(
+                subject_id=subject.subject_id,
+                status='approved'
+            ).count()
+            
+            subjects_data.append({
+                'subject_id': subject.subject_id,
+                'subject_name': subject.subject_name,
+                'subject_code': getattr(subject, 'subject_code', f'SUB{subject.subject_id}'),
+                'semester': subject.semester,
+                'department': subject.department,
+                'total_students': enrolled_count,
+                'credits': getattr(subject, 'credits', 0)
+            })
+        
         return jsonify({
-            'message': 'Faculty subjects endpoint ready',
-            'email': current_user_email,
-            'sample_subjects': [
-                {
-                    'id': 1,
-                    'name': 'Mathematics',
-                    'code': 'MATH301',
-                    'semester': 3,
-                    'department': 'Computer Science',
-                    'total_students': 45,
-                    'lecture_hours': 4,
-                    'practical_hours': 2
-                },
-                {
-                    'id': 2,
-                    'name': 'Physics',
-                    'code': 'PHY201',
-                    'semester': 2,
-                    'department': 'Computer Science',
-                    'total_students': 42,
-                    'lecture_hours': 3,
-                    'practical_hours': 3
-                }
-            ],
-            'note': 'Database models not yet connected - showing sample data'
+            'subjects': subjects_data,
+            'count': len(subjects_data)
         }), 200
         
     except Exception as e:

@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Settings - GEC Rajkot</title>
+    <title>Settings - GEC Rajkot</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-   <style>
+    <style>
         :root {
             --primary: #4F46E5;
             --accent: #3B82F6;
@@ -26,17 +25,11 @@
             color: var(--text);
         }
         .glass-card {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             border: 1px solid rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(10px);
-            transform-style: preserve-3d;
-            perspective: 1000px;
             transition: all 0.3s ease;
-        }
-        .glass-card:hover {
-            transform: translateY(-5px) rotateX(2deg) rotateY(2deg);
-            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
         }
         .gradient-text {
             background: linear-gradient(45deg, var(--primary), var(--accent));
@@ -80,9 +73,6 @@
             background: rgba(0, 0, 0, 0.1);
             border-radius: 3px;
         }
-        .sidebar-nav::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 0, 0, 0.2);
-        }
         .sidebar-item {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             border-radius: 0.75rem;
@@ -121,35 +111,6 @@
             background: linear-gradient(to bottom, var(--primary), var(--accent));
             border-radius: 0 4px 4px 0;
         }
-        .submenu-item {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 0.75rem;
-            margin: 0.25rem 0;
-            padding-left: 2.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-        .submenu-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, var(--hover-bg), transparent);
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-        .submenu-item:hover::before {
-            opacity: 1;
-        }
-        .submenu-item:hover {
-            transform: translateX(3px);
-        }
-        .submenu-item.active {
-            color: var(--primary);
-            background: var(--active-bg);
-        }
         .notification-badge {
             background: linear-gradient(135deg, var(--primary), var(--accent));
             color: white;
@@ -158,7 +119,6 @@
             border-radius: 9999px;
             min-width: 1.5rem;
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .menu-divider {
             height: 1px;
@@ -184,7 +144,183 @@
         }
         .mobile-menu-button:hover {
             transform: scale(1.05);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        /* Settings Page Styles */
+        .settings-card {
+            background: white;
+            border-radius: 1rem;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        .settings-card-header {
+            background: linear-gradient(to right, rgba(79, 70, 229, 0.05), transparent);
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .settings-card-body {
+            padding: 1.5rem;
+        }
+        .photo-upload-container {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .photo-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .photo-preview .placeholder {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #4F46E5;
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #4F46E5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        .form-input:read-only {
+            background: #f9fafb;
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #4F46E5, #3B82F6);
+            color: white;
+            padding: 0.875rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+        }
+        .btn-secondary {
+            background: white;
+            color: #4F46E5;
+            padding: 0.875rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: 2px solid #e5e7eb;
+            cursor: pointer;
+        }
+        .btn-secondary:hover {
+            border-color: #4F46E5;
+            background: rgba(79, 70, 229, 0.05);
+        }
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 26px;
+            background: #e5e7eb;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .toggle-switch.active {
+            background: linear-gradient(135deg, #4F46E5, #3B82F6);
+        }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
+        }
+        .toggle-switch.active::after {
+            transform: translateX(22px);
+        }
+        .notification-setting {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem;
+            background: #f9fafb;
+            border-radius: 0.75rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.2s ease;
+        }
+        .notification-setting:hover {
+            background: #f3f4f6;
+        }
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 500;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .alert-success {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+        .alert-error {
+            background: linear-gradient(135deg, #fef2f2, #fecaca);
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
         }
         @media (max-width: 768px) {
             .sidebar {
@@ -200,6 +336,10 @@
             }
             .mobile-menu-button {
                 display: block;
+            }
+            .photo-upload-container {
+                flex-direction: column;
+                text-align: center;
             }
         }
     </style>
@@ -221,30 +361,36 @@
             </div>
         </div>
         <nav class="sidebar-nav">
-            <!-- Dashboard -->
             <a href="/student/dashboard" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
                 <span class="ml-3">Dashboard</span>
             </a>
-
-            <!-- Profile -->
             <a href="/student/profile" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
                 <span class="ml-3">Profile</span>
             </a>
-
-           
-            <!-- Schedule -->
+            <a href="/api/enrollment/student/enroll-page" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <span class="ml-3">Enroll in Subjects</span>
+            </a>
+            <a href="/student/mark-attendance" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+                <span class="ml-3">My Attendance</span>
+            </a>
             <a href="/student/schedule" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <span class="ml-3">Schedule</span>
-            </a>            <!-- Events -->
+            </a>
             <a href="/student/events" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -252,10 +398,7 @@
                 <span class="ml-3">Events</span>
                 <div class="notification-badge ml-auto">2</div>
             </a>
-
             <div class="menu-divider"></div>
-
-            <!-- Settings -->
             <a href="/student/settings" class="sidebar-item active flex items-center p-3 text-indigo-600 hover:text-indigo-600">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -263,8 +406,6 @@
                 </svg>
                 <span class="ml-3">Settings</span>
             </a>
-
-            <!-- Logout -->
             <a href="/" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600 mt-4">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
@@ -274,185 +415,376 @@
         </nav>
     </aside>
 
-
     <!-- Main Content -->
     <main class="main-content">
-        <!-- Top Bar -->
+        <!-- Page Header -->
         <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold gradient-text">Student Settings</h1>
+            <h1 class="text-3xl font-bold gradient-text">Settings</h1>
             <div class="flex items-center space-x-4">
-                <div class="relative">
-                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                </div>
-                <div class="w-10 h-10 rounded-full overflow-hidden">
-                    {% include '_avatar.html' %}
+                <div class="w-10 h-10 rounded-full overflow-hidden bg-indigo-100" id="headerAvatar">
+                    <div class="w-full h-full flex items-center justify-center text-indigo-600 font-semibold">
+                        {{ student.full_name[0] if student.full_name else 'S' }}
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Settings Content -->
-        <div class="space-y-6">
-            <!-- Profile Settings (with photo upload) -->
-            <div class="glass-card p-6 rounded-lg">
-                <h2 class="text-xl font-semibold mb-6 gradient-text">Profile Settings</h2>
-
-                <!-- Photo upload area -->
-                <div class="mb-6 flex items-center space-x-6">
-                    <div class="w-32 h-32 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
-                        {% include '_avatar.html' %}
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'error' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            {% if category == 'success' %}
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            {% else %}
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            {% endif %}
+                        </svg>
+                        {{ message }}
                     </div>
-                    <div>
-                        <form id="photoUploadForm" method="post" action="/student/upload-photo" enctype="multipart/form-data" class="space-y-2">
-                            <label class="block text-sm font-medium text-gray-700">Upload Profile Photo</label>
-                            <input id="photoInput" type="file" name="photo" accept="image/*" class="block">
-                            <p class="text-sm text-gray-500">Max 16MB. Recommended square image (300x300).</p>
-                            <div class="mt-2 flex items-center space-x-3">
-                                <button type="submit" class="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-2 rounded-lg">Upload Photo</button>
-                                <button id="cancelPreview" type="button" class="text-sm text-gray-600 underline" style="display:none;">Cancel</button>
-                            </div>
-                            <!-- Preview area for chosen file -->
-+                            <div id="filePreviewContainer" class="mt-3" style="display:none;">
-                                <p class="text-sm text-gray-500 mb-2">Preview:</p>
-                                <img id="filePreview" src="#" alt="preview" class="w-24 h-24 rounded-full object-cover border" />
-                            </div>
-+
-                        </form>
-+
-                        <script>
-+
-                            const photoInput = document.getElementById('photoInput');
-+                            const filePreview = document.getElementById('filePreview');
-+                            const filePreviewContainer = document.getElementById('filePreviewContainer');
-+                            const cancelPreview = document.getElementById('cancelPreview');
-+
-+                            photoInput && photoInput.addEventListener('change', (e) => {
-+                                const file = e.target.files[0];
-+                                if (!file) return;
-+                                const url = URL.createObjectURL(file);
-+                                filePreview.src = url;
-+                                filePreviewContainer.style.display = 'block';
-+                                cancelPreview.style.display = 'inline';
-+                            });
-+
-+                            cancelPreview && cancelPreview.addEventListener('click', () => {
-+                                photoInput.value = '';
-+                                filePreview.src = '#';
-+                                filePreviewContainer.style.display = 'none';
-+                                cancelPreview.style.display = 'none';
-                            });
-                        </script>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
+        <!-- Profile Photo Section -->
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <h2 class="text-lg font-semibold text-gray-800">Profile Photo</h2>
+            </div>
+            <div class="settings-card-body">
+                <form action="/student/upload-photo" method="POST" enctype="multipart/form-data">
+                    <div class="photo-upload-container">
+                        <div class="photo-preview" id="photoPreviewContainer">
+                            <span class="placeholder" id="avatarPlaceholder">{{ student.full_name[0] if student.full_name else 'S' }}</span>
+                            <img id="photoPreview" src="" alt="Preview" style="display: none;">
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-gray-800 mb-2">Upload New Photo</h3>
+                            <p class="text-sm text-gray-500 mb-4">Choose a photo to update your profile picture. Recommended size: 300x300 pixels. Max file size: 16MB.</p>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <label class="btn-secondary cursor-pointer inline-flex items-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                    </svg>
+                                    Choose File
+                                    <input type="file" name="photo" id="photoInput" accept="image/*" class="hidden">
+                                </label>
+                                <span class="text-sm text-gray-500" id="fileName">No file chosen</span>
+                            </div>
+                            <button type="submit" class="btn-primary mt-4 inline-flex items-center gap-2" id="uploadBtn" disabled>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                </svg>
+                                Upload Photo
+                            </button>
+                        </div>
                     </div>
-                </div>
+                </form>
+            </div>
+        </div>
 
-                <!-- Profile fields -->
-                <form class="space-y-6">
+        <!-- Profile Information Section -->
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <h2 class="text-lg font-semibold text-gray-800">Profile Information</h2>
+            </div>
+            <div class="settings-card-body">
+                <form class="space-y-6" id="profileForm">
                     <div class="grid md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
-                            <input type="text" value="{{ student.name if student else '' }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" value="{{ student.full_name }}" class="form-input" id="fullName">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                            <input type="email" value="{{ student.email if student else '' }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" value="{{ student.email }}" class="form-input" readonly>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Roll Number</label>
-                            <input type="text" value="{{ student.roll_no if student else '' }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200" readonly>
+                            <label class="form-label">Enrollment Number</label>
+                            <input type="text" value="{{ student.enrollment_no }}" class="form-input" readonly>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-                            <input type="tel" value="{{ student.phone if student else '' }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" value="{{ student.phone if student.phone else '' }}" class="form-input" placeholder="Enter phone number" id="phone">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Branch</label>
-                            <input type="text" value="{{ student.branch if student else '' }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200" readonly>
+                            <label class="form-label">Department</label>
+                            <input type="text" value="{{ student.department }}" class="form-input" readonly>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Semester</label>
-                            <input type="text" value="{{ student.semester if student else '' }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200" readonly>
+                            <label class="form-label">Semester</label>
+                            <input type="text" value="Semester {{ student.semester }}" class="form-input" readonly>
                         </div>
                     </div>
-                    <div class="flex justify-end">
-                        <button type="submit" class="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-6 py-3 rounded-lg hover:from-indigo-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 font-medium">
-                            Update Profile
+                    <div class="flex justify-end pt-4">
+                        <button type="submit" class="btn-primary inline-flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Save Changes
                         </button>
                     </div>
                 </form>
             </div>
+        </div>
 
-            <!-- Password Settings -->
-            <div class="glass-card p-6 rounded-lg">
-                <h2 class="text-xl font-semibold mb-6 gradient-text">Change Password</h2>
-                <form class="space-y-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
-                        <input type="password" 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
+        <!-- Change Password Section -->
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <h2 class="text-lg font-semibold text-gray-800">Change Password</h2>
+            </div>
+            <div class="settings-card-body">
+                <form class="space-y-6" id="passwordForm">
+                    <div class="grid md:grid-cols-1 gap-6 max-w-md">
+                        <div>
+                            <label class="form-label">Current Password</label>
+                            <input type="password" class="form-input" placeholder="Enter current password" id="currentPassword">
+                        </div>
+                        <div>
+                            <label class="form-label">New Password</label>
+                            <input type="password" class="form-input" placeholder="Enter new password" id="newPassword">
+                        </div>
+                        <div>
+                            <label class="form-label">Confirm New Password</label>
+                            <input type="password" class="form-input" placeholder="Confirm new password" id="confirmPassword">
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
-                        <input type="password" 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
-                        <input type="password" 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
-                    </div>
-                    <div class="flex justify-end">
-                        <button type="submit" class="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-6 py-3 rounded-lg hover:from-indigo-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 font-medium">
-                            Change Password
+                    <div class="flex justify-end pt-4">
+                        <button type="submit" class="btn-primary inline-flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                            </svg>
+                            Update Password
                         </button>
                     </div>
                 </form>
             </div>
+        </div>
 
-            <!-- Notification Settings -->
-            <div class="glass-card p-6 rounded-lg">
-                <h2 class="text-xl font-semibold mb-6 gradient-text">Notification Settings</h2>
-                <div class="space-y-6">
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <div>
-                            <label class="text-sm font-medium text-gray-700">Email Notifications</label>
-                            <p class="text-sm text-gray-500">Receive notifications about grades, assignments, and announcements</p>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" class="sr-only peer" checked>
-                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                        </label>
+        <!-- Notification Settings Section -->
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <h2 class="text-lg font-semibold text-gray-800">Notification Settings</h2>
+            </div>
+            <div class="settings-card-body">
+                <div class="notification-setting">
+                    <div>
+                        <h4 class="font-medium text-gray-800">Email Notifications</h4>
+                        <p class="text-sm text-gray-500">Receive notifications about grades, assignments, and announcements</p>
                     </div>
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <div>
-                            <label class="text-sm font-medium text-gray-700">SMS Notifications</label>
-                            <p class="text-sm text-gray-500">Receive important updates via SMS</p>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" class="sr-only peer">
-                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                        </label>
+                    <div class="toggle-switch active" data-setting="email" onclick="toggleSetting(this)"></div>
+                </div>
+                <div class="notification-setting">
+                    <div>
+                        <h4 class="font-medium text-gray-800">SMS Notifications</h4>
+                        <p class="text-sm text-gray-500">Receive important updates via SMS</p>
                     </div>
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <div>
-                            <label class="text-sm font-medium text-gray-700">Assignment Reminders</label>
-                            <p class="text-sm text-gray-500">Get reminders about upcoming assignment deadlines</p>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" class="sr-only peer" checked>
-                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                        </label>
+                    <div class="toggle-switch" data-setting="sms" onclick="toggleSetting(this)"></div>
+                </div>
+                <div class="notification-setting">
+                    <div>
+                        <h4 class="font-medium text-gray-800">Assignment Reminders</h4>
+                        <p class="text-sm text-gray-500">Get reminders about upcoming assignment deadlines</p>
                     </div>
+                    <div class="toggle-switch active" data-setting="assignments" onclick="toggleSetting(this)"></div>
+                </div>
+                <div class="notification-setting">
+                    <div>
+                        <h4 class="font-medium text-gray-800">Attendance Alerts</h4>
+                        <p class="text-sm text-gray-500">Get notified when your attendance drops below 75%</p>
+                    </div>
+                    <div class="toggle-switch active" data-setting="attendance" onclick="toggleSetting(this)"></div>
                 </div>
             </div>
         </div>
     </main>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobileMenuButton');
+        const sidebar = document.querySelector('.sidebar');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+
+        // Photo upload preview
+        const photoInput = document.getElementById('photoInput');
+        const photoPreview = document.getElementById('photoPreview');
+        const avatarPlaceholder = document.getElementById('avatarPlaceholder');
+        const fileName = document.getElementById('fileName');
+        const uploadBtn = document.getElementById('uploadBtn');
+
+        photoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                fileName.textContent = file.name;
+                uploadBtn.disabled = false;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    photoPreview.src = e.target.result;
+                    photoPreview.style.display = 'block';
+                    avatarPlaceholder.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Try to load existing profile photo
+        async function loadProfilePhoto() {
+            const studentId = {{ student.student_id }};
+            const extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            
+            for (const ext of extensions) {
+                const url = `/uploads/student_${studentId}.${ext}`;
+                try {
+                    const response = await fetch(url, { method: 'HEAD' });
+                    if (response.ok) {
+                        photoPreview.src = url;
+                        photoPreview.style.display = 'block';
+                        avatarPlaceholder.style.display = 'none';
+                        document.getElementById('headerAvatar').innerHTML = `<img src="${url}" alt="Profile" class="w-full h-full object-cover">`;
+                        return;
+                    }
+                } catch (e) {}
+            }
+        }
+
+        // Toggle notification settings
+        function toggleSetting(element) {
+            element.classList.toggle('active');
+            const setting = element.dataset.setting;
+            const isActive = element.classList.contains('active');
+            console.log(`Setting ${setting} is now ${isActive ? 'enabled' : 'disabled'}`);
+        }
+
+        // Show alert message
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} fixed top-4 right-4 z-50 max-w-md shadow-lg`;
+            alertDiv.innerHTML = `
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    ${type === 'success' 
+                        ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />'
+                        : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />'}
+                </svg>
+                ${message}
+            `;
+            document.body.appendChild(alertDiv);
+            setTimeout(() => alertDiv.remove(), 4000);
+        }
+
+        // Profile form submit
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fullName = document.getElementById('fullName').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            
+            if (!fullName) {
+                showAlert('Full name is required', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/student/update-profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        full_name: fullName,
+                        phone: phone
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert(result.message, 'success');
+                    // Update header avatar if name changed
+                    const headerAvatar = document.getElementById('headerAvatar');
+                    if (headerAvatar && !headerAvatar.querySelector('img')) {
+                        headerAvatar.innerHTML = `<div class="w-full h-full flex items-center justify-center text-indigo-600 font-semibold">${fullName[0]}</div>`;
+                    }
+                } else {
+                    showAlert(result.message || 'Failed to update profile', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                showAlert('Failed to update profile. Please try again.', 'error');
+            }
+        });
+
+        // Password form submit
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                showAlert('All password fields are required', 'error');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showAlert('New passwords do not match!', 'error');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                showAlert('Password must be at least 6 characters long!', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/student/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        current_password: currentPassword,
+                        new_password: newPassword,
+                        confirm_password: confirmPassword
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert(result.message, 'success');
+                    // Clear the password fields
+                    document.getElementById('currentPassword').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmPassword').value = '';
+                } else {
+                    showAlert(result.message || 'Failed to change password', 'error');
+                }
+            } catch (error) {
+                console.error('Error changing password:', error);
+                showAlert('Failed to change password. Please try again.', 'error');
+            }
+        });
+
+        // Load profile photo on page load
+        document.addEventListener('DOMContentLoaded', loadProfilePhoto);
+    </script>
 </body>
 </html>

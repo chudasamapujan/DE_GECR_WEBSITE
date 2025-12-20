@@ -456,7 +456,7 @@ def get_subjects():
             subjects_list.append({
                 'id': subject.subject_id,  # Add 'id' field
                 'subject_id': subject.subject_id,
-                'subject_code': subject.subject_code,  # Add subject_code
+                'subject_code': getattr(subject, 'subject_code', 'N/A'),  # Safe access to subject_code
                 'subject_name': subject.subject_name,
                 'department': subject.department,
                 'semester': subject.semester,
