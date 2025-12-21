@@ -160,6 +160,9 @@ def get_faculty_dashboard_data(faculty_id):
         salary_record = Salary.query.filter_by(faculty_id=faculty_id).first()
         current_salary = salary_record.amount if salary_record else faculty.salary
         
+        # Get recent activities for the dashboard
+        recent_activities = get_faculty_recent_activities(faculty_id, faculty_subjects)
+        
         return {
             'faculty': faculty,
             'faculty_subjects': faculty_subjects,
@@ -173,7 +176,8 @@ def get_faculty_dashboard_data(faculty_id):
             'recent_assignments': recent_assignments,
             'recent_graded': recent_graded,
             'recent_messages': recent_messages,
-            'current_salary': current_salary
+            'current_salary': current_salary,
+            'recent_activities': recent_activities
         }
         
     except Exception as e:
@@ -367,3 +371,146 @@ def get_faculty_assignments_data(faculty_id):
     except Exception as e:
         print(f"Error fetching faculty assignments data: {e}")
         return None
+
+
+def get_faculty_recent_activities(faculty_id, faculty_subjects):
+    """
+    Get recent activities for a faculty member's dashboard
+    Combines attendance sessions, graded submissions, created assignments, etc.
+    """
+    try:
+        from models.gecr_models import AttendanceSession, Attendance, Announcement, Event
+        
+        activities = []
+        now = datetime.now()
+        
+        # Get subject IDs for this faculty
+        subject_ids = [s.subject_id for s in faculty_subjects]
+        
+        # 1. Recent attendance sessions (marked attendance)
+        recent_sessions = AttendanceSession.query.filter_by(
+            faculty_id=faculty_id
+        ).order_by(desc(AttendanceSession.created_at)).limit(5).all()
+        
+        for session in recent_sessions:
+            # Count students who attended this session
+            attendance_count = Attendance.query.filter_by(
+                session_id=session.session_id,
+                status='Present'
+            ).count()
+            
+            time_diff = now - session.created_at if session.created_at else timedelta(days=0)
+            
+            activities.append({
+                'type': 'attendance',
+                'icon': 'check-circle',
+                'description': f"Marked attendance for {session.subject.subject_name if session.subject else 'Unknown'}",
+                'detail': f"{attendance_count} students • {format_time_ago(time_diff)}",
+                'timestamp': session.created_at,
+                'link': '/faculty/attendance'
+            })
+        
+        # 2. Recently graded submissions
+        recent_graded = Submission.query.join(Assignment).filter(
+            Assignment.faculty_id == faculty_id,
+            Submission.grade.isnot(None)
+        ).order_by(desc(Submission.submitted_at)).limit(5).all()
+        
+        for submission in recent_graded:
+            if submission.submitted_at:
+                time_diff = now - datetime.combine(submission.submitted_at, datetime.min.time())
+                activities.append({
+                    'type': 'grading',
+                    'icon': 'clipboard-check',
+                    'description': f"Graded {submission.assignment.title if submission.assignment else 'Assignment'}",
+                    'detail': f"Grade: {submission.grade} • {format_time_ago(time_diff)}",
+                    'timestamp': datetime.combine(submission.submitted_at, datetime.min.time()),
+                    'link': '/faculty/assignments'
+                })
+        
+        # 3. Recently created assignments
+        recent_assignments = Assignment.query.filter_by(
+            faculty_id=faculty_id
+        ).order_by(desc(Assignment.assignment_id)).limit(5).all()
+        
+        for assignment in recent_assignments:
+            # Use due_date as proxy for creation time
+            if assignment.due_date:
+                # Estimate creation as a few days before due date
+                estimated_created = datetime.combine(assignment.due_date, datetime.min.time()) - timedelta(days=7)
+                time_diff = now - estimated_created
+                activities.append({
+                    'type': 'assignment',
+                    'icon': 'document-add',
+                    'description': f"Created assignment: {assignment.title}",
+                    'detail': f"Due: {assignment.due_date.strftime('%b %d, %Y') if assignment.due_date else 'No date'} • {format_time_ago(time_diff)}",
+                    'timestamp': estimated_created,
+                    'link': '/faculty/assignments'
+                })
+        
+        # 4. Recent announcements created
+        try:
+            recent_announcements = Announcement.query.filter_by(
+                author_id=faculty_id
+            ).order_by(desc(Announcement.created_at)).limit(3).all()
+            
+            for ann in recent_announcements:
+                if ann.created_at:
+                    time_diff = now - ann.created_at
+                    activities.append({
+                        'type': 'announcement',
+                        'icon': 'speakerphone',
+                        'description': f"Posted announcement: {ann.title[:30]}{'...' if len(ann.title) > 30 else ''}",
+                        'detail': format_time_ago(time_diff),
+                        'timestamp': ann.created_at,
+                        'link': '/faculty/manage-announcements'
+                    })
+        except Exception:
+            pass  # Announcement model may not exist
+        
+        # 5. Recent events created
+        try:
+            recent_events = Event.query.filter_by(
+                created_by=faculty_id
+            ).order_by(desc(Event.start_time)).limit(3).all()
+            
+            for event in recent_events:
+                if event.start_time:
+                    time_diff = now - event.start_time
+                    activities.append({
+                        'type': 'event',
+                        'icon': 'calendar',
+                        'description': f"Created event: {event.title[:30]}{'...' if len(event.title) > 30 else ''}",
+                        'detail': format_time_ago(time_diff),
+                        'timestamp': event.start_time,
+                        'link': '/faculty/events'
+                    })
+        except Exception:
+            pass  # Event model may not exist
+        
+        # Sort all activities by timestamp (most recent first)
+        activities.sort(key=lambda x: x['timestamp'] if x['timestamp'] else datetime.min, reverse=True)
+        
+        # Return top 5 activities
+        return activities[:5]
+        
+    except Exception as e:
+        print(f"Error fetching recent activities: {e}")
+        return []
+
+
+def format_time_ago(time_diff):
+    """Format a timedelta as a human-readable string"""
+    if time_diff.days > 7:
+        weeks = time_diff.days // 7
+        return f"{weeks} week{'s' if weeks > 1 else ''} ago"
+    elif time_diff.days > 0:
+        return f"{time_diff.days} day{'s' if time_diff.days > 1 else ''} ago"
+    elif time_diff.seconds > 3600:
+        hours = time_diff.seconds // 3600
+        return f"{hours} hour{'s' if hours > 1 else ''} ago"
+    elif time_diff.seconds > 60:
+        minutes = time_diff.seconds // 60
+        return f"{minutes} minute{'s' if minutes > 1 else ''} ago"
+    else:
+        return "just now"

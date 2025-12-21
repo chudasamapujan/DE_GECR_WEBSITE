@@ -5,33 +5,120 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attendance Management - Faculty Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --accent: #3B82F6;
+            --sidebar-bg: rgba(255, 255, 255, 0.98);
+            --sidebar-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.1);
+            --hover-bg: rgba(79, 70, 229, 0.08);
+            --active-bg: rgba(79, 70, 229, 0.12);
+        }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%); min-height: 100vh; }
+        .glass-card { background: rgba(255, 255, 255, 0.9); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); border: 1px solid rgba(0, 0, 0, 0.1); backdrop-filter: blur(10px); }
+        .gradient-text { background: linear-gradient(45deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .sidebar { background: var(--sidebar-bg); backdrop-filter: blur(10px); box-shadow: var(--sidebar-shadow); width: 280px; position: fixed; height: calc(100vh - 2rem); top: 1rem; left: 1rem; z-index: 50; border-radius: 1rem; overflow: hidden; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 1.5rem; border-bottom: 1px solid rgba(0, 0, 0, 0.05); background: linear-gradient(to right, rgba(79, 70, 229, 0.05), transparent); }
+        .sidebar-nav { flex: 1; overflow-y: auto; padding: 1rem 0; }
+        .sidebar-nav::-webkit-scrollbar { width: 6px; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.1); border-radius: 3px; }
+        .sidebar-item { transition: all 0.2s; border-radius: 0.75rem; margin: 0.25rem 1rem; position: relative; }
+        .sidebar-item:hover { transform: translateX(5px); background: var(--hover-bg); }
+        .sidebar-item.active { background: var(--active-bg); color: var(--primary); }
+        .sidebar-item.active::after { content: ''; position: absolute; left: -1rem; top: 0; height: 100%; width: 4px; background: linear-gradient(to bottom, var(--primary), var(--accent)); border-radius: 0 4px 4px 0; }
+        .menu-divider { height: 1px; background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.1), transparent); margin: 1rem; }
+        .main-content { margin-left: 300px; padding: 2rem; }
+        .mobile-menu-button { display: none; position: fixed; top: 1rem; right: 1rem; z-index: 60; padding: 0.75rem; background: white; border-radius: 0.75rem; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); margin: 0; border-radius: 0; }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .mobile-menu-button { display: block; }
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="max-w-7xl mx-auto p-6">
-        <div class="bg-white rounded-lg shadow p-6 mb-6">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Attendance Management</h1>
-                    <p class="text-gray-600 mt-1">Mark and manage student attendance</p>
-                </div>
-                <a href="/faculty/dashboard" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Back to Dashboard</a>
+<body>
+    <button id="mobileMenuButton" class="mobile-menu-button">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+    </button>
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="flex items-center space-x-3">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="w-12 h-12 object-contain">
+                <div class="text-2xl font-bold gradient-text">Faculty Portal</div>
             </div>
         </div>
+        <nav class="sidebar-nav">
+            <a href="/faculty/dashboard" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                <span class="ml-3">Dashboard</span>
+            </a>
+            <a href="/faculty/profile" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                <span class="ml-3">Profile</span>
+            </a>
+            <a href="/faculty/subjects" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                <span class="ml-3">My Subjects</span>
+            </a>
+            <a href="/faculty/students" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" /></svg>
+                <span class="ml-3">Students</span>
+            </a>
+            <a href="/faculty/attendance" class="sidebar-item active flex items-center p-3 text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                <span class="ml-3">Attendance</span>
+            </a>
+            <a href="/faculty/assignments" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                <span class="ml-3">Assignments</span>
+            </a>
+            <a href="/faculty/schedule" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                <span class="ml-3">Schedule</span>
+            </a>
+            <div class="menu-divider"></div>
+            <a href="/faculty/events" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                <span class="ml-3">Events</span>
+            </a>
+            <a href="/faculty/manage-announcements" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
+                <span class="ml-3">Announcements</span>
+            </a>
+            <a href="/faculty/settings" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                <span class="ml-3">Settings</span>
+            </a>
+            <a href="/" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-red-600 mt-4">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                <span class="ml-3">Logout</span>
+            </a>
+        </nav>
+    </aside>
 
-        <div class="bg-white rounded-lg shadow">
+    <main class="main-content">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold gradient-text">Attendance Management</h1>
+            <p class="text-gray-600 mt-1">Mark and manage student attendance</p>
+        </div>
+
+        <div class="glass-card rounded-xl overflow-hidden">
             <div class="border-b">
                 <nav class="flex">
-                    <button onclick="switchTab('manual')" id="tab-manual" class="px-6 py-4 font-medium border-b-2 border-blue-600 text-blue-600">Manual Marking</button>
-                    <button onclick="switchTab('upload')" id="tab-upload" class="px-6 py-4 font-medium text-gray-500">Excel Upload</button>
+                    <button onclick="switchTab('manual')" id="tab-manual" class="px-6 py-4 font-medium border-b-2 border-indigo-600 text-indigo-600">Manual Marking</button>
+                    <button onclick="switchTab('upload')" id="tab-upload" class="px-6 py-4 font-medium text-gray-500 hover:text-gray-700">Excel Upload</button>
                 </nav>
             </div>
 
             <div id="content-manual" class="p-6">
                 <h2 class="text-xl font-semibold mb-4">Mark Attendance Manually</h2>
-                <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div>
-                        <label class="block text-sm font-medium mb-2">Select Subject</label>
-                        <select id="subject-select" class="w-full px-4 py-2 border rounded" onchange="loadStudents()">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Select Subject</label>
+                        <select id="subject-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" onchange="loadStudents()">
                             <option value="">-- Select Subject --</option>
                             {% for subject in subjects %}
                             <option value="{{ subject.subject_id }}">{{ subject.subject_name }}</option>
@@ -39,73 +126,69 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-2">Date</label>
-                        <input type="date" id="attendance-date" class="w-full px-4 py-2 border rounded">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                        <input type="date" id="attendance-date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                     </div>
                 </div>
 
                 <div id="students-container" class="hidden">
-                    <div class="flex justify-between mb-4">
+                    <div class="flex justify-between items-center mb-4">
                         <h3 class="font-semibold">Students (<span id="student-count">0</span>)</h3>
                         <div class="space-x-2">
-                            <button onclick="markAll('Present')" class="px-4 py-2 bg-green-500 text-white rounded text-sm">Mark All Present</button>
-                            <button onclick="markAll('Absent')" class="px-4 py-2 bg-red-500 text-white rounded text-sm">Mark All Absent</button>
+                            <button onclick="markAll('Present')" class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600">Mark All Present</button>
+                            <button onclick="markAll('Absent')" class="px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600">Mark All Absent</button>
                         </div>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full" id="students-table">
-                            <thead class="bg-gray-100">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-4 py-2 text-left">Roll No</th>
-                                    <th class="px-4 py-2 text-left">Name</th>
-                                    <th class="px-4 py-2 text-left">Department</th>
-                                    <th class="px-4 py-2 text-center">Attendance</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Roll No</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Name</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Department</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Attendance</th>
                                 </tr>
                             </thead>
                             <tbody id="students-tbody"></tbody>
                         </table>
                     </div>
                     <div class="mt-6 text-right">
-                        <button onclick="submitAttendance()" class="bg-blue-600 text-white px-6 py-3 rounded font-semibold">Submit Attendance</button>
+                        <button onclick="submitAttendance()" class="bg-gradient-to-r from-indigo-600 to-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90">Submit Attendance</button>
                     </div>
                 </div>
 
                 <div id="students-empty" class="text-center py-12 text-gray-500">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
                     <p>Select a subject to view students</p>
                 </div>
             </div>
 
             <div id="content-upload" class="p-6 hidden">
                 <h2 class="text-xl font-semibold mb-4">Upload Attendance via Excel</h2>
-                <div class="bg-blue-50 border border-blue-200 rounded p-4 mb-6">
-                    <h3 class="font-semibold mb-2">Excel Format:</h3>
-                    <ul class="text-sm space-y-1">
-                        <li>Required columns: student_id or roll_no, subject_id or subject_name, date, status</li>
-                        <li>Date format: YYYY-MM-DD</li>
-                        <li>Status: Present, Absent, or Late</li>
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <h3 class="font-semibold text-blue-800 mb-2">Excel Format:</h3>
+                    <ul class="text-sm text-blue-700 space-y-1">
+                        <li>• Required columns: student_id or roll_no, subject_id or subject_name, date, status</li>
+                        <li>• Date format: YYYY-MM-DD</li>
+                        <li>• Status: Present, Absent, or Late</li>
                     </ul>
                 </div>
-
-                <div class="border-2 border-dashed border-gray-300 rounded p-8 text-center">
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-indigo-400 transition cursor-pointer" onclick="document.getElementById('excel-file').click()">
                     <input type="file" id="excel-file" accept=".xlsx,.xls" class="hidden" onchange="handleFileSelect(event)">
-                    <label for="excel-file" class="cursor-pointer">
-                        <p class="text-lg mb-2">Click to select Excel file</p>
-                        <p class="text-sm text-gray-500">XLSX, XLS up to 10MB</p>
-                    </label>
+                    <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                    <p class="text-lg mb-2 text-gray-700">Click to select Excel file</p>
+                    <p class="text-sm text-gray-500">XLSX, XLS up to 10MB</p>
                 </div>
-
-                <div id="file-selected" class="mt-4 hidden bg-green-50 border rounded p-4">
-                    <p class="font-medium" id="selected-filename"></p>
+                <div id="file-selected" class="mt-4 hidden bg-green-50 border border-green-200 rounded-lg p-4">
+                    <p class="font-medium text-green-800" id="selected-filename"></p>
                 </div>
-
                 <div class="mt-6">
-                    <button onclick="uploadExcel()" id="upload-btn" class="w-full bg-blue-600 text-white px-6 py-3 rounded font-semibold" disabled>Upload</button>
+                    <button onclick="uploadExcel()" id="upload-btn" class="w-full bg-gradient-to-r from-indigo-600 to-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50" disabled>Upload</button>
                 </div>
-
                 <div id="upload-result" class="mt-4 hidden"></div>
             </div>
         </div>
-    </div>
+    </main>
 
     <div id="alert-container" class="fixed top-4 right-4 z-50 max-w-md"></div>
 
@@ -114,17 +197,18 @@
         let currentStudents = [];
         let selectedFile = null;
 
+        document.getElementById('mobileMenuButton').addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('open');
+        });
+
         function switchTab(tab) {
             ['manual', 'upload'].forEach(t => {
                 document.getElementById('content-' + t).classList.toggle('hidden', t !== tab);
                 const tabEl = document.getElementById('tab-' + t);
-                if (t === tab) {
-                    tabEl.classList.add('border-blue-600', 'text-blue-600');
-                    tabEl.classList.remove('text-gray-500');
-                } else {
-                    tabEl.classList.remove('border-blue-600', 'text-blue-600');
-                    tabEl.classList.add('text-gray-500');
-                }
+                tabEl.classList.toggle('border-indigo-600', t === tab);
+                tabEl.classList.toggle('text-indigo-600', t === tab);
+                tabEl.classList.toggle('border-b-2', t === tab);
+                tabEl.classList.toggle('text-gray-500', t !== tab);
             });
         }
 
@@ -135,7 +219,6 @@
                 document.getElementById('students-empty').classList.remove('hidden');
                 return;
             }
-
             try {
                 const response = await fetch('/api/attendance/faculty/students/' + subjectId);
                 const data = await response.json();
@@ -154,66 +237,45 @@
             const tbody = document.getElementById('students-tbody');
             tbody.innerHTML = '';
             document.getElementById('student-count').textContent = currentStudents.length;
-
             currentStudents.forEach(student => {
                 const row = document.createElement('tr');
-                row.className = 'border-b';
-                row.innerHTML = '<td class="px-4 py-3">' + student.roll_no + '</td>' +
-                    '<td class="px-4 py-3">' + student.name + '</td>' +
-                    '<td class="px-4 py-3">' + student.department + '</td>' +
-                    '<td class="px-4 py-3 text-center">' +
-                    '<div class="inline-flex space-x-2">' +
-                    '<button onclick="setStatus(' + student.student_id + ',\'Present\')" class="status-btn px-3 py-1 rounded text-sm" data-student="' + student.student_id + '" data-status="Present">P</button>' +
-                    '<button onclick="setStatus(' + student.student_id + ',\'Absent\')" class="status-btn px-3 py-1 rounded text-sm" data-student="' + student.student_id + '" data-status="Absent">A</button>' +
-                    '<button onclick="setStatus(' + student.student_id + ',\'Late\')" class="status-btn px-3 py-1 rounded text-sm" data-student="' + student.student_id + '" data-status="Late">L</button>' +
-                    '</div></td>';
+                row.className = 'border-b hover:bg-gray-50';
+                row.innerHTML = `<td class="px-4 py-3">${student.roll_no}</td><td class="px-4 py-3 font-medium">${student.name}</td><td class="px-4 py-3 text-gray-600">${student.department}</td><td class="px-4 py-3 text-center"><div class="inline-flex space-x-2"><button onclick="setStatus(${student.student_id},'Present')" class="status-btn px-3 py-1 rounded-lg text-sm bg-gray-200" data-student="${student.student_id}" data-status="Present">P</button><button onclick="setStatus(${student.student_id},'Absent')" class="status-btn px-3 py-1 rounded-lg text-sm bg-gray-200" data-student="${student.student_id}" data-status="Absent">A</button><button onclick="setStatus(${student.student_id},'Late')" class="status-btn px-3 py-1 rounded-lg text-sm bg-gray-200" data-student="${student.student_id}" data-status="Late">L</button></div></td>`;
                 tbody.appendChild(row);
             });
         }
 
         function setStatus(studentId, status) {
-            document.querySelectorAll('[data-student="' + studentId + '"]').forEach(btn => {
-                btn.className = 'status-btn px-3 py-1 rounded text-sm bg-gray-200';
-            });
-            const btn = document.querySelector('[data-student="' + studentId + '"][data-status="' + status + '"]');
-            btn.className = 'status-btn px-3 py-1 rounded text-sm ' + (status === 'Present' ? 'bg-green-200' : status === 'Absent' ? 'bg-red-200' : 'bg-yellow-200');
+            document.querySelectorAll(`[data-student="${studentId}"]`).forEach(btn => btn.className = 'status-btn px-3 py-1 rounded-lg text-sm bg-gray-200');
+            const btn = document.querySelector(`[data-student="${studentId}"][data-status="${status}"]`);
+            const colors = { Present: 'bg-green-500 text-white', Absent: 'bg-red-500 text-white', Late: 'bg-yellow-500 text-white' };
+            btn.className = `status-btn px-3 py-1 rounded-lg text-sm ${colors[status]}`;
             const student = currentStudents.find(s => s.student_id === studentId);
             if (student) student.attendance_status = status;
         }
 
-        function markAll(status) {
-            currentStudents.forEach(s => setStatus(s.student_id, status));
-        }
+        function markAll(status) { currentStudents.forEach(s => setStatus(s.student_id, status)); }
 
         async function submitAttendance() {
             const subjectId = document.getElementById('subject-select').value;
             const date = document.getElementById('attendance-date').value;
             const attendance = currentStudents.map(s => ({student_id: s.student_id, status: s.attendance_status || 'Absent'}));
-
             try {
                 const response = await fetch('/api/attendance/faculty/mark', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({subject_id: parseInt(subjectId), date: date, attendance: attendance})
                 });
                 const data = await response.json();
-                if (data.success) {
-                    showAlert('Attendance marked successfully!', 'success');
-                    document.getElementById('subject-select').value = '';
-                    loadStudents();
-                } else {
-                    showAlert('Error: ' + data.error, 'error');
-                }
-            } catch (error) {
-                showAlert('Failed to submit attendance', 'error');
-            }
+                if (data.success) { showAlert('Attendance marked successfully!', 'success'); document.getElementById('subject-select').value = ''; loadStudents(); }
+                else { showAlert('Error: ' + data.error, 'error'); }
+            } catch (error) { showAlert('Failed to submit attendance', 'error'); }
         }
 
         function handleFileSelect(event) {
             selectedFile = event.target.files[0];
             if (selectedFile) {
                 document.getElementById('file-selected').classList.remove('hidden');
-                document.getElementById('selected-filename').textContent = selectedFile.name;
+                document.getElementById('selected-filename').textContent = '📄 ' + selectedFile.name;
                 document.getElementById('upload-btn').disabled = false;
             }
         }
@@ -222,31 +284,24 @@
             if (!selectedFile) return;
             const formData = new FormData();
             formData.append('file', selectedFile);
-
             try {
                 const response = await fetch('/api/attendance/faculty/upload', {method: 'POST', body: formData});
                 const data = await response.json();
                 if (data.success) {
-                    const msg = 'Upload complete: ' + data.inserted + ' new, ' + data.updated + ' updated';
-                    document.getElementById('upload-result').innerHTML = '<div class="bg-green-50 border rounded p-4">' + msg + '</div>';
+                    document.getElementById('upload-result').innerHTML = `<div class="bg-green-50 border border-green-200 rounded-lg p-4 text-green-800">Upload complete: ${data.inserted} new, ${data.updated} updated</div>`;
                     document.getElementById('upload-result').classList.remove('hidden');
-                    selectedFile = null;
-                    document.getElementById('excel-file').value = '';
+                    selectedFile = null; document.getElementById('excel-file').value = '';
                     document.getElementById('file-selected').classList.add('hidden');
                     document.getElementById('upload-btn').disabled = true;
-                } else {
-                    showAlert('Upload failed: ' + data.error, 'error');
-                }
-            } catch (error) {
-                showAlert('Failed to upload', 'error');
-            }
+                } else { showAlert('Upload failed: ' + data.error, 'error'); }
+            } catch (error) { showAlert('Failed to upload', 'error'); }
         }
 
         function showAlert(message, type) {
             const container = document.getElementById('alert-container');
-            const color = type === 'success' ? 'green' : type === 'error' ? 'red' : 'blue';
+            const colors = { success: 'green', error: 'red', info: 'blue' };
             const alert = document.createElement('div');
-            alert.className = 'bg-' + color + '-50 border border-' + color + '-200 rounded p-4 mb-2';
+            alert.className = `bg-${colors[type]}-50 border border-${colors[type]}-200 text-${colors[type]}-800 rounded-lg p-4 mb-2 shadow-lg`;
             alert.textContent = message;
             container.appendChild(alert);
             setTimeout(() => alert.remove(), 5000);

@@ -224,101 +224,57 @@
         </svg>
     </button>
 
-    <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
             <div class="flex items-center space-x-3">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="w-12 h-12 object-contain">
                 <div class="text-2xl font-bold gradient-text">Faculty Portal</div>
             </div>
         </div>
         <nav class="sidebar-nav">
-            <!-- Dashboard -->
-            <a href="/faculty/dashboard" class="sidebar-item active flex items-center p-3 text-indigo-600 hover:text-indigo-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
+            <a href="/faculty/dashboard" class="sidebar-item active flex items-center p-3 text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
                 <span class="ml-3">Dashboard</span>
             </a>
-
-            <!-- Profile -->
             <a href="/faculty/profile" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                 <span class="ml-3">Profile</span>
             </a>
-
-           
-            <!-- Manage Subjects -->
-            <a href="/api/subjects/manage-page" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                <span class="ml-3">Manage Subjects</span>
+            <a href="/faculty/subjects" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                <span class="ml-3">My Subjects</span>
             </a>
-
-            <!-- Student Enrollments -->
-            <a href="/api/enrollment/faculty/enrollments-page" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                </svg>
-                <span class="ml-3">Student Enrollments</span>
-            </a>
-
-            <!-- Students -->
             <a href="/faculty/students" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                </svg>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" /></svg>
                 <span class="ml-3">Students</span>
             </a>
-
-            <!-- Attendance (Old - Redirects to QR) -->
-            <a href="/faculty/qr-attendance" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+            <a href="/faculty/attendance" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
                 <span class="ml-3">Attendance</span>
             </a>
-
-           
-
-                     
-           
-
+            <a href="/faculty/assignments" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                <span class="ml-3">Assignments</span>
+            </a>
+            <a href="/faculty/schedule" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                <span class="ml-3">Schedule</span>
+            </a>
             <div class="menu-divider"></div>
-
-            <!-- Manage Announcements -->
-            <a href="/faculty/manage-announcements" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-                </svg>
-                <span class="ml-3">Manage Announcements</span>
-            </a>
-
-            <!-- Events -->
             <a href="/faculty/events" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                 <span class="ml-3">Events</span>
-                <div class="notification-badge ml-auto">2</div>
             </a>
-
-            <!-- Settings -->
+            <a href="/faculty/manage-announcements" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
+                <span class="ml-3">Announcements</span>
+            </a>
             <a href="/faculty/settings" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 <span class="ml-3">Settings</span>
             </a>
-
-            <!-- Logout -->
-            <a href="/" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600 mt-4">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
-                </svg>
+            <a href="/" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-red-600 mt-4">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                 <span class="ml-3">Logout</span>
             </a>
         </nav>
@@ -444,35 +400,23 @@
             <!-- Recent Activities -->
             <div class="glass-card p-6 rounded-lg">
                 <h2 class="text-xl font-semibold mb-4 gradient-text">Recent Activities</h2>
-                <div class="space-y-4">
-                    <div class="flex items-start space-x-4">
-                        <div class="w-2 h-2 rounded-full bg-indigo-500 mt-2"></div>
-                        <div>
-                            <p class="text-gray-600">Graded Database Design Assignment</p>
-                            <span class="text-sm text-gray-500">25 submissions • 2 hours ago</span>
+                <div id="recent-activities-list" class="space-y-4">
+                    {% if recent_activities and recent_activities|length > 0 %}
+                        {% for activity in recent_activities %}
+                        <div class="flex items-start space-x-4">
+                            <div class="w-2 h-2 rounded-full bg-indigo-500 mt-2"></div>
+                            <div>
+                                <p class="text-gray-600">{{ activity.description }}</p>
+                                <span class="text-sm text-gray-500">{{ activity.detail }}</span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="flex items-start space-x-4">
-                        <div class="w-2 h-2 rounded-full bg-indigo-500 mt-2"></div>
-                        <div>
-                            <p class="text-gray-600">Marked attendance for CS302</p>
-                            <span class="text-sm text-gray-500">45 students • 4 hours ago</span>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-gray-500 py-4">
+                            <p>No recent activities</p>
+                            <p class="text-sm">Your recent actions will appear here</p>
                         </div>
-                    </div>
-                    <div class="flex items-start space-x-4">
-                        <div class="w-2 h-2 rounded-full bg-indigo-500 mt-2"></div>
-                        <div>
-                            <p class="text-gray-600">Created new assignment for CS401</p>
-                            <span class="text-sm text-gray-500">Due: Jan 25, 2024 • Yesterday</span>
-                        </div>
-                    </div>
-                    <div class="flex items-start space-x-4">
-                        <div class="w-2 h-2 rounded-full bg-indigo-500 mt-2"></div>
-                        <div>
-                            <p class="text-gray-600">Updated course materials for CS301</p>
-                            <span class="text-sm text-gray-500">3 new files uploaded • 2 days ago</span>
-                        </div>
-                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -557,19 +501,148 @@
             return Math.floor(seconds / 604800) + ' weeks ago';
         }
     </script>
-    <!-- Lightweight badge updater only (no toast popups) -->
+    <!-- Browser Notifications & Badge Updater -->
     <script>
         (function() {
             const POLL_INTERVAL_MS = 15000; // 15 seconds
+            let lastUnreadCount = 0;
+            let notificationsCache = [];
+            let browserNotificationsEnabled = false;
 
+            // Request browser notification permission
+            async function requestNotificationPermission() {
+                if (!('Notification' in window)) {
+                    console.log('Browser does not support notifications');
+                    return false;
+                }
+                
+                if (Notification.permission === 'granted') {
+                    browserNotificationsEnabled = true;
+                    return true;
+                }
+                
+                if (Notification.permission !== 'denied') {
+                    const permission = await Notification.requestPermission();
+                    browserNotificationsEnabled = permission === 'granted';
+                    return browserNotificationsEnabled;
+                }
+                
+                return false;
+            }
+
+            // Show browser notification
+            function showBrowserNotification(notification) {
+                if (!browserNotificationsEnabled || Notification.permission !== 'granted') return;
+                
+                const icons = {
+                    'announcement': '📢',
+                    'event': '📅',
+                    'attendance': '✓',
+                    'assignment': '📝',
+                    'general': '📌'
+                };
+                
+                const icon = icons[notification.notification_type] || '📌';
+                
+                const browserNotif = new Notification(`${icon} ${notification.title}`, {
+                    body: notification.message,
+                    icon: '/static/images/logo.png',
+                    badge: '/static/images/logo.png',
+                    tag: `notification-${notification.notification_id}`,
+                    requireInteraction: true,
+                    silent: false
+                });
+                
+                // Handle click - open relevant page
+                browserNotif.onclick = function(event) {
+                    event.preventDefault();
+                    window.focus();
+                    
+                    // Navigate based on notification type
+                    let targetUrl = '/faculty/dashboard';
+                    if (notification.link) {
+                        targetUrl = notification.link;
+                    } else {
+                        switch(notification.notification_type) {
+                            case 'announcement':
+                                targetUrl = '/faculty/manage-announcements';
+                                break;
+                            case 'event':
+                                targetUrl = '/faculty/events';
+                                break;
+                            case 'attendance':
+                                targetUrl = '/faculty/attendance';
+                                break;
+                            case 'assignment':
+                                targetUrl = '/faculty/assignments';
+                                break;
+                            default:
+                                targetUrl = '/faculty/dashboard';
+                        }
+                    }
+                    
+                    window.location.href = targetUrl;
+                    browserNotif.close();
+                    
+                    // Mark as read
+                    markNotificationRead(notification.notification_id);
+                };
+                
+                // Auto close after 10 seconds
+                setTimeout(() => browserNotif.close(), 10000);
+            }
+
+            // Mark notification as read
+            async function markNotificationRead(notificationId) {
+                try {
+                    await fetch(`/api/faculty/notifications/${notificationId}/mark-read`, { method: 'POST' });
+                } catch (e) {
+                    console.error('Error marking notification read:', e);
+                }
+            }
+
+            // Fetch unread count and check for new notifications
             async function fetchUnreadCount() {
                 try {
                     const res = await fetch('/api/faculty/notifications/unread-count');
                     if (!res.ok) return;
                     const data = await res.json();
-                    updateBadges(data.unread_count || 0);
+                    const newCount = data.unread_count || 0;
+                    
+                    // If count increased, fetch new notifications and show browser notification
+                    if (newCount > lastUnreadCount && lastUnreadCount !== 0) {
+                        await checkForNewNotifications();
+                    }
+                    
+                    lastUnreadCount = newCount;
+                    updateBadges(newCount);
                 } catch (e) {
                     // ignore in dev when unauthenticated
+                }
+            }
+
+            // Check for new notifications and show browser notification
+            async function checkForNewNotifications() {
+                try {
+                    const res = await fetch('/api/faculty/notifications?limit=5&unread_only=true');
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    
+                    if (data.notifications && data.notifications.length > 0) {
+                        // Find notifications that weren't in our cache
+                        const cachedIds = notificationsCache.map(n => n.notification_id);
+                        const newNotifications = data.notifications.filter(n => !cachedIds.includes(n.notification_id));
+                        
+                        // Show browser notification for the newest one
+                        if (newNotifications.length > 0) {
+                            showBrowserNotification(newNotifications[0]);
+                        }
+                        
+                        // Update cache
+                        notificationsCache = data.notifications;
+                    }
+                } catch (e) {
+                    console.error('Error checking for new notifications:', e);
                 }
             }
 
@@ -584,7 +657,20 @@
                 });
             }
 
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', async function() {
+                // Request notification permission
+                await requestNotificationPermission();
+                
+                // Initial load of notifications cache
+                try {
+                    const res = await fetch('/api/faculty/notifications?limit=5&unread_only=true');
+                    if (res.ok) {
+                        const data = await res.json();
+                        notificationsCache = data.notifications || [];
+                        lastUnreadCount = notificationsCache.length;
+                    }
+                } catch (e) {}
+                
                 // Run once immediately, then at interval
                 fetchUnreadCount();
                 setInterval(fetchUnreadCount, POLL_INTERVAL_MS);
@@ -608,13 +694,34 @@
                         }
                     });
 
-                    // Mark all read button handled in existing code
+                    // Mark all read button
+                    const markAllReadBtn = document.getElementById('facultyMarkAllRead');
+                    if (markAllReadBtn) {
+                        markAllReadBtn.addEventListener('click', async (e) => {
+                            e.stopPropagation();
+                            try {
+                                await fetch('/api/faculty/notifications/mark-all-read', { method: 'POST' });
+                                loadFacultyNotifications();
+                                fetchUnreadCount();
+                            } catch (err) {
+                                console.error('Error marking all as read:', err);
+                            }
+                        });
+                    }
                 }
             });
         })();
     </script>
 
     <script>
+        // Utility function to escape HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
         async function loadFacultyNotifications() {
             try {
                 const res = await fetch('/api/faculty/notifications?limit=50&unread_only=false');
@@ -649,9 +756,20 @@
                             'general': '📌'
                         };
                         const icon = icons[notif.notification_type] || '📌';
+                        
+                        // Determine navigation link based on type
+                        let navLink = notif.link || '/faculty/dashboard';
+                        if (!notif.link) {
+                            switch(notif.notification_type) {
+                                case 'announcement': navLink = '/faculty/manage-announcements'; break;
+                                case 'event': navLink = '/faculty/events'; break;
+                                case 'attendance': navLink = '/faculty/attendance'; break;
+                                case 'assignment': navLink = '/faculty/assignments'; break;
+                            }
+                        }
 
                         return `
-                            <div class="p-4 hover:bg-gray-50 cursor-pointer ${notif.read ? 'opacity-60' : 'bg-blue-50'}" data-notification-id="${notif.notification_id}">
+                            <div class="p-4 hover:bg-gray-50 cursor-pointer ${notif.read ? 'opacity-60' : 'bg-blue-50'}" data-notification-id="${notif.notification_id}" data-notification-type="${notif.notification_type}" data-notification-link="${navLink}">
                                 <div class="flex items-start space-x-3">
                                     <span class="text-2xl">${icon}</span>
                                     <div class="flex-1">
@@ -665,15 +783,25 @@
                         `;
                     }).join('');
 
-                    // Attach click handlers to mark read
+                    // Attach click handlers to mark read and navigate
                     document.querySelectorAll('#facultyNotificationsList [data-notification-id]').forEach(item => {
                         item.addEventListener('click', async () => {
                             const id = item.dataset.notificationId;
+                            const navLink = item.dataset.notificationLink;
+                            
+                            // Mark as read
                             try {
                                 await fetch(`/api/faculty/notifications/${id}/mark-read`, { method: 'POST' });
                             } catch (e) {}
-                            loadFacultyNotifications();
-                            fetch('/api/faculty/notifications/unread-count').then(() => {});
+                            
+                            // Navigate to the relevant page
+                            if (navLink && navLink !== '/faculty/dashboard') {
+                                window.location.href = navLink;
+                            } else {
+                                // Just reload notifications if staying on dashboard
+                                loadFacultyNotifications();
+                                fetch('/api/faculty/notifications/unread-count').then(() => {});
+                            }
                         });
                     });
                 } else {
