@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Faculty Dashboard - GEC Rajkot</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -26,17 +25,15 @@
             color: var(--text);
         }
         .glass-card {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             border: 1px solid rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(10px);
-            transform-style: preserve-3d;
-            perspective: 1000px;
             transition: all 0.3s ease;
         }
         .glass-card:hover {
-            transform: translateY(-5px) rotateX(2deg) rotateY(2deg);
-            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(79, 70, 229, 0.15);
         }
         .gradient-text {
             background: linear-gradient(45deg, var(--primary), var(--accent));
@@ -80,9 +77,6 @@
             background: rgba(0, 0, 0, 0.1);
             border-radius: 3px;
         }
-        .sidebar-nav::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 0, 0, 0.2);
-        }
         .sidebar-item {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             border-radius: 0.75rem;
@@ -121,35 +115,6 @@
             background: linear-gradient(to bottom, var(--primary), var(--accent));
             border-radius: 0 4px 4px 0;
         }
-        .submenu-item {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 0.75rem;
-            margin: 0.25rem 0;
-            padding-left: 2.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-        .submenu-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, var(--hover-bg), transparent);
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-        .submenu-item:hover::before {
-            opacity: 1;
-        }
-        .submenu-item:hover {
-            transform: translateX(3px);
-        }
-        .submenu-item.active {
-            color: var(--primary);
-            background: var(--active-bg);
-        }
         .notification-badge {
             background: linear-gradient(135deg, var(--primary), var(--accent));
             color: white;
@@ -158,7 +123,6 @@
             border-radius: 9999px;
             min-width: 1.5rem;
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .menu-divider {
             height: 1px;
@@ -184,7 +148,20 @@
         }
         .mobile-menu-button:hover {
             transform: scale(1.05);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        .progress-bar {
+            height: 8px;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            border-radius: 9999px;
+            transition: width 0.3s ease;
+        }
+        @media (max-width: 768px) {
         }
         .progress-bar {
             height: 8px;
@@ -227,8 +204,8 @@
     <aside class="sidebar">
         <div class="sidebar-header">
             <div class="flex items-center space-x-3">
-                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="w-12 h-12 object-contain">
-                <div class="text-2xl font-bold gradient-text">Faculty Portal</div>
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="GEC Rajkot Logo" class="w-12 h-12 object-contain">
+                <div class="text-2xl font-bold gradient-text">GEC Rajkot</div>
             </div>
         </div>
         <nav class="sidebar-nav">
@@ -251,10 +228,6 @@
             <a href="/faculty/attendance" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
                 <span class="ml-3">Attendance</span>
-            </a>
-            <a href="/faculty/assignments" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-                <span class="ml-3">Assignments</span>
             </a>
             <a href="/faculty/schedule" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -307,22 +280,10 @@
                     </div>
                 </div>
 
-                <div class="w-10 h-10 rounded-full overflow-hidden">
-                    {% include '_avatar.html' %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Welcome Message -->
-        <div class="glass-card p-6 rounded-lg mb-8">
-            <div class="flex items-center space-x-4">
-                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center">
-                    <span class="text-white text-xl font-bold">{{ faculty.name[:2].upper() if faculty.name else 'FA' }}</span>
-                </div>
-                <div>
-                    <h2 class="text-2xl font-bold gradient-text">Welcome back, {{ faculty.name }}!</h2>
-                    <p class="text-gray-600">{{ faculty.department }} • {{ faculty.designation if faculty.designation else 'Faculty' }}</p>
-                    <p class="text-sm text-gray-500">Faculty ID: {{ faculty.faculty_id }} • Email: {{ faculty.email }}</p>
+                <div class="w-10 h-10 rounded-full overflow-hidden bg-indigo-100" id="headerAvatar">
+                    <div class="w-full h-full flex items-center justify-center text-indigo-600 font-semibold">
+                        {{ faculty.name[0] if faculty.name else 'F' }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -364,22 +325,6 @@
             <div class="glass-card p-6 rounded-lg">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-gray-600">Pending Assignments</p>
-                        <h2 class="text-2xl font-bold gradient-text">{{ pending_submissions_count }}</h2>
-                    </div>
-                    <div class="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center">
-                        <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <p class="text-sm text-gray-600">To be graded</p>
-                </div>
-            </div>
-            <div class="glass-card p-6 rounded-lg">
-                <div class="flex items-center justify-between">
-                    <div>
                         <p class="text-gray-600">Today's Classes</p>
                         <h2 class="text-2xl font-bold gradient-text">{{ today_classes_count }}</h2>
                     </div>
@@ -395,8 +340,8 @@
             </div>
         </div>
 
-      
-
+        <!-- Recent Activities and Upcoming Events -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Recent Activities -->
             <div class="glass-card p-6 rounded-lg">
                 <h2 class="text-xl font-semibold mb-4 gradient-text">Recent Activities</h2>
@@ -404,7 +349,7 @@
                     {% if recent_activities and recent_activities|length > 0 %}
                         {% for activity in recent_activities %}
                         <div class="flex items-start space-x-4">
-                            <div class="w-2 h-2 rounded-full bg-indigo-500 mt-2"></div>
+                            <div class="w-2 h-2 rounded-full bg-indigo-500 mt-2 flex-shrink-0"></div>
                             <div>
                                 <p class="text-gray-600">{{ activity.description }}</p>
                                 <span class="text-sm text-gray-500">{{ activity.detail }}</span>
@@ -419,18 +364,35 @@
                     {% endif %}
                 </div>
             </div>
+
+            <!-- Upcoming Events -->
+            <div class="glass-card p-6 rounded-lg">
+                <h2 class="text-xl font-semibold mb-4 gradient-text">Upcoming Events</h2>
+                <div id="faculty-events-widget" class="space-y-4">
+                    <div class="text-center text-gray-500 py-4">Loading events...</div>
+                </div>
+            </div>
         </div>
 
-      
-
         <!-- Announcements -->
-        <div class="glass-card p-6 rounded-lg">
+        <div class="glass-card p-6 rounded-lg mt-6">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold gradient-text">Recent Announcements</h2>
+                <h2 class="text-xl font-semibold gradient-text">Announcements</h2>
                 <a href="/faculty/manage-announcements" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">Manage</a>
             </div>
             <div id="faculty-announcements-widget" class="space-y-4">
                 <div class="text-center text-gray-500 py-4">Loading announcements...</div>
+            </div>
+        </div>
+
+        <!-- My Subjects -->
+        <div class="glass-card p-6 rounded-lg mt-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold gradient-text">My Subjects</h2>
+                <a href="/faculty/subjects" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">View All</a>
+            </div>
+            <div id="faculty-subjects-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="text-center text-gray-500 py-4 col-span-full">Loading subjects...</div>
             </div>
         </div>
     </main>
@@ -454,9 +416,62 @@
                 }
             });
 
-            // Load faculty announcements
+            // Load faculty announcements, events, and subjects
             loadFacultyAnnouncements();
+            loadFacultyEvents();
+            loadFacultySubjects();
         });
+
+        async function loadFacultySubjects() {
+            try {
+                const response = await fetch('/api/faculty/subjects');
+                const data = await response.json();
+                
+                const container = document.getElementById('faculty-subjects-list');
+                
+                if (data && data.length > 0) {
+                    container.innerHTML = data.slice(0, 6).map(subject => {
+                        const studentCount = subject.enrolled_count || 0;
+                        
+                        return `
+                            <div class="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition duration-150 ease-in-out border border-gray-100">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <p class="text-gray-800 font-semibold">
+                                            ${subject.subject_code || 'N/A'}
+                                        </p>
+                                        <p class="text-sm text-gray-600">
+                                            ${subject.subject_name || 'N/A'}
+                                        </p>
+                                        <div class="flex items-center gap-2 mt-2">
+                                            <span class="text-xs px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full">
+                                                Sem ${subject.semester || 'N/A'}
+                                            </span>
+                                            <span class="text-xs text-gray-500">
+                                                ${studentCount} students
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="text-center text-gray-500 py-8 col-span-full">
+                            <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                            <p>No subjects assigned</p>
+                            <a href="/faculty/manage-subjects" class="text-indigo-600 hover:underline text-sm">Add subjects</a>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading subjects:', error);
+                document.getElementById('faculty-subjects-list').innerHTML = '<div class="text-center text-red-500 py-8 col-span-full">Error loading subjects</div>';
+            }
+        }
 
         async function loadFacultyAnnouncements() {
             try {
@@ -475,8 +490,8 @@
                             <div class="flex items-start space-x-4">
                                 <div class="w-2 h-2 rounded-full bg-${color}-500 mt-2 flex-shrink-0"></div>
                                 <div>
-                                    <p class="text-gray-700 font-medium">${ann.title}</p>
-                                    <p class="text-gray-600 text-sm">${ann.message}</p>
+                                    <p class="text-gray-700 font-medium">${escapeHtml(ann.title)}</p>
+                                    <p class="text-gray-600 text-sm">${escapeHtml(ann.message)}</p>
                                     <span class="text-xs text-gray-500">Posted: ${timeAgo}</span>
                                 </div>
                             </div>
@@ -489,6 +504,49 @@
                 console.error('Error loading announcements:', error);
                 document.getElementById('faculty-announcements-widget').innerHTML = '<div class="text-center text-red-500 py-4">Error loading announcements</div>';
             }
+        }
+
+        async function loadFacultyEvents() {
+            try {
+                const response = await fetch('/api/faculty/upcoming-events');
+                const data = await response.json();
+                
+                const container = document.getElementById('faculty-events-widget');
+                
+                if (data.events && data.events.length > 0) {
+                    container.innerHTML = data.events.slice(0, 3).map(event => {
+                        const eventDate = new Date(event.event_date);
+                        const formattedDate = eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        
+                        return `
+                            <div class="flex items-start space-x-4">
+                                <div class="flex-shrink-0 w-12 h-12 bg-indigo-100 rounded-lg flex flex-col items-center justify-center">
+                                    <span class="text-xs text-indigo-600 font-medium">${formattedDate.split(' ')[0]}</span>
+                                    <span class="text-lg font-bold text-indigo-700">${formattedDate.split(' ')[1]}</span>
+                                </div>
+                                <div>
+                                    <p class="text-gray-700 font-medium">${escapeHtml(event.title)}</p>
+                                    <p class="text-gray-600 text-sm">${escapeHtml(event.description || '')}</p>
+                                    <span class="text-xs text-gray-500">${event.location || 'Location TBA'}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    container.innerHTML = '<div class="text-center text-gray-500 py-4">No upcoming events</div>';
+                }
+            } catch (error) {
+                console.error('Error loading events:', error);
+                document.getElementById('faculty-events-widget').innerHTML = '<div class="text-center text-gray-500 py-4">No upcoming events</div>';
+            }
+        }
+
+        // Utility function to escape HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         function getTimeAgo(date) {

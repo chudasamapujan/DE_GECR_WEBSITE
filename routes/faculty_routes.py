@@ -167,14 +167,17 @@ def require_faculty_auth():
                 verify_jwt_in_request(optional=True)
                 claims = get_jwt()
                 if claims and claims.get('user_type') == 'faculty':
+                    current_app.logger.info(f"Faculty auth via JWT: {claims.get('sub')}")
                     return f(*args, **kwargs)
-            except Exception:
-                pass
+            except Exception as e:
+                current_app.logger.warning(f"JWT auth failed: {str(e)}")
             
             # Fall back to session-based auth
             if 'user_id' in session and session.get('user_type') == 'faculty':
+                current_app.logger.info(f"Faculty auth via session: {session.get('user_id')}")
                 return f(*args, **kwargs)
             
+            current_app.logger.error(f"Faculty auth failed - session: {dict(session)}, JWT claims: {get_jwt() if hasattr(request, 'jwt') else 'none'}")
             return jsonify({'error': 'Faculty authentication required'}), 401
         return wrapper
     return decorator
@@ -1716,6 +1719,321 @@ def get_schedule():
         current_app.logger.error(f"Faculty schedule error: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
+
+@faculty_bp.route('/timetable', methods=['GET'])
+@require_faculty_auth()
+def get_faculty_timetable():
+    """
+    Get all timetable entries for the logged-in faculty
+    """
+    try:
+        from models.gecr_models import Faculty, Timetable, Subject, StudentEnrollment
+        from database import db
+        
+        current_user_email = get_jwt_identity()
+        faculty = Faculty.query.filter_by(email=current_user_email).first()
+        
+        if not faculty:
+            return jsonify({'error': 'Faculty not found'}), 404
+        
+        # Get all timetable entries for this faculty
+        timetable_entries = Timetable.query.filter_by(faculty_id=faculty.faculty_id).all()
+        
+        # Enrich with subject details and enrollment count
+        result = []
+        for entry in timetable_entries:
+            subject = Subject.query.get(entry.subject_id)
+            enrollment_count = StudentEnrollment.query.filter_by(
+                subject_id=entry.subject_id,
+                status='active'
+            ).count()
+            
+            # Parse time_slot (format: "HH:MM-HH:MM")
+            start_time, end_time = '09:00', '10:00'
+            if entry.time_slot and '-' in entry.time_slot:
+                parts = entry.time_slot.split('-')
+                if len(parts) == 2:
+                    start_time = parts[0].strip()
+                    end_time = parts[1].strip()
+            
+            result.append({
+                'timetable_id': entry.timetable_id,
+                'subject_id': entry.subject_id,
+                'subject_name': subject.subject_name if subject else 'Unknown',
+                'subject_code': subject.subject_code if subject else 'N/A',
+                'day_of_week': entry.day_of_week,
+                'start_time': start_time,
+                'end_time': end_time,
+                'time_slot': entry.time_slot,
+                'room': getattr(entry, 'room', None),
+                'class_type': getattr(entry, 'class_type', 'Lecture'),
+                'department': entry.department,
+                'semester': entry.semester,
+                'enrollment_count': enrollment_count
+            })
+        
+        return jsonify({
+            'timetable': result,
+            'total': len(result)
+        }), 200
+        
+    except Exception as e:
+        current_app.logger.error(f"Get timetable error: {str(e)}")
+        import traceback
+        current_app.logger.error(traceback.format_exc())
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+@faculty_bp.route('/timetable', methods=['POST'])
+@require_faculty_auth()
+def create_timetable_entry():
+    """
+    Create a new timetable entry for the faculty
+    """
+    try:
+        from models.gecr_models import Faculty, Timetable, Subject
+        from database import db
+        
+        current_user_email = get_jwt_identity()
+        faculty = Faculty.query.filter_by(email=current_user_email).first()
+        
+        if not faculty:
+            return jsonify({'error': 'Faculty not found'}), 404
+        
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['subject_id', 'day_of_week', 'start_time', 'end_time']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        # Get subject to fetch department and semester
+        subject = Subject.query.get(data['subject_id'])
+        if not subject:
+            return jsonify({'error': 'Subject not found'}), 404
+        
+        # Verify faculty teaches this subject
+        if subject.faculty_id != faculty.faculty_id:
+            return jsonify({'error': 'You are not assigned to teach this subject'}), 403
+        
+        # Create time_slot string
+        time_slot = f"{data['start_time']}-{data['end_time']}"
+        
+        # Check for time conflicts
+        existing = Timetable.query.filter_by(
+            faculty_id=faculty.faculty_id,
+            day_of_week=data['day_of_week'],
+            time_slot=time_slot
+        ).first()
+        
+        if existing:
+            return jsonify({'error': 'You already have a class scheduled at this time'}), 409
+        
+        # Create new timetable entry
+        new_entry = Timetable(
+            department=subject.department or faculty.department,
+            semester=subject.semester,
+            day_of_week=data['day_of_week'],
+            subject_id=data['subject_id'],
+            faculty_id=faculty.faculty_id,
+            time_slot=time_slot
+        )
+        
+        # Add optional fields if they exist in the model
+        if 'room' in data and hasattr(Timetable, 'room'):
+            setattr(new_entry, 'room', data['room'])
+        if 'class_type' in data and hasattr(Timetable, 'class_type'):
+            setattr(new_entry, 'class_type', data['class_type'])
+        
+        db.session.add(new_entry)
+        db.session.commit()
+        
+        current_app.logger.info(f"Timetable entry created: {new_entry.timetable_id} by {current_user_email}")
+        
+        return jsonify({
+            'message': 'Timetable entry created successfully',
+            'timetable_id': new_entry.timetable_id
+        }), 201
+        
+    except Exception as e:
+        current_app.logger.error(f"Create timetable error: {str(e)}")
+        import traceback
+        current_app.logger.error(traceback.format_exc())
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+@faculty_bp.route('/timetable/<int:timetable_id>', methods=['GET'])
+@require_faculty_auth()
+def get_timetable_entry(timetable_id):
+    """
+    Get a specific timetable entry
+    """
+    try:
+        from models.gecr_models import Faculty, Timetable, Subject
+        from database import db
+        
+        current_user_email = get_jwt_identity()
+        faculty = Faculty.query.filter_by(email=current_user_email).first()
+        
+        if not faculty:
+            return jsonify({'error': 'Faculty not found'}), 404
+        
+        entry = Timetable.query.get(timetable_id)
+        
+        if not entry:
+            return jsonify({'error': 'Timetable entry not found'}), 404
+        
+        # Verify faculty owns this entry
+        if entry.faculty_id != faculty.faculty_id:
+            return jsonify({'error': 'Unauthorized'}), 403
+        
+        subject = Subject.query.get(entry.subject_id)
+        
+        # Parse time_slot
+        start_time, end_time = '09:00', '10:00'
+        if entry.time_slot and '-' in entry.time_slot:
+            parts = entry.time_slot.split('-')
+            if len(parts) == 2:
+                start_time = parts[0].strip()
+                end_time = parts[1].strip()
+        
+        return jsonify({
+            'entry': {
+                'timetable_id': entry.timetable_id,
+                'subject_id': entry.subject_id,
+                'subject_name': subject.subject_name if subject else 'Unknown',
+                'subject_code': subject.subject_code if subject else 'N/A',
+                'day_of_week': entry.day_of_week,
+                'start_time': start_time,
+                'end_time': end_time,
+                'time_slot': entry.time_slot,
+                'room': getattr(entry, 'room', None),
+                'class_type': getattr(entry, 'class_type', 'Lecture'),
+                'department': entry.department,
+                'semester': entry.semester
+            }
+        }), 200
+        
+    except Exception as e:
+        current_app.logger.error(f"Get timetable entry error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+@faculty_bp.route('/timetable/<int:timetable_id>', methods=['PUT'])
+@require_faculty_auth()
+def update_timetable_entry(timetable_id):
+    """
+    Update a timetable entry
+    """
+    try:
+        from models.gecr_models import Faculty, Timetable, Subject
+        from database import db
+        
+        current_user_email = get_jwt_identity()
+        faculty = Faculty.query.filter_by(email=current_user_email).first()
+        
+        if not faculty:
+            return jsonify({'error': 'Faculty not found'}), 404
+        
+        entry = Timetable.query.get(timetable_id)
+        
+        if not entry:
+            return jsonify({'error': 'Timetable entry not found'}), 404
+        
+        # Verify faculty owns this entry
+        if entry.faculty_id != faculty.faculty_id:
+            return jsonify({'error': 'Unauthorized'}), 403
+        
+        data = request.get_json()
+        
+        # Update fields
+        if 'subject_id' in data:
+            subject = Subject.query.get(data['subject_id'])
+            if not subject:
+                return jsonify({'error': 'Subject not found'}), 404
+            if subject.faculty_id != faculty.faculty_id:
+                return jsonify({'error': 'You are not assigned to teach this subject'}), 403
+            
+            entry.subject_id = data['subject_id']
+            entry.department = subject.department or faculty.department
+            entry.semester = subject.semester
+        
+        if 'day_of_week' in data:
+            entry.day_of_week = data['day_of_week']
+        
+        if 'start_time' in data and 'end_time' in data:
+            time_slot = f"{data['start_time']}-{data['end_time']}"
+            
+            # Check for conflicts (excluding current entry)
+            conflict = Timetable.query.filter(
+                Timetable.timetable_id != timetable_id,
+                Timetable.faculty_id == faculty.faculty_id,
+                Timetable.day_of_week == entry.day_of_week,
+                Timetable.time_slot == time_slot
+            ).first()
+            
+            if conflict:
+                return jsonify({'error': 'Time conflict with another class'}), 409
+            
+            entry.time_slot = time_slot
+        
+        if 'room' in data and hasattr(entry, 'room'):
+            setattr(entry, 'room', data['room'])
+        
+        if 'class_type' in data and hasattr(entry, 'class_type'):
+            setattr(entry, 'class_type', data['class_type'])
+        
+        db.session.commit()
+        
+        current_app.logger.info(f"Timetable entry updated: {timetable_id} by {current_user_email}")
+        
+        return jsonify({'message': 'Timetable entry updated successfully'}), 200
+        
+    except Exception as e:
+        current_app.logger.error(f"Update timetable error: {str(e)}")
+        import traceback
+        current_app.logger.error(traceback.format_exc())
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+@faculty_bp.route('/timetable/<int:timetable_id>', methods=['DELETE'])
+@require_faculty_auth()
+def delete_timetable_entry(timetable_id):
+    """
+    Delete a timetable entry
+    """
+    try:
+        from models.gecr_models import Faculty, Timetable
+        from database import db
+        
+        current_user_email = get_jwt_identity()
+        faculty = Faculty.query.filter_by(email=current_user_email).first()
+        
+        if not faculty:
+            return jsonify({'error': 'Faculty not found'}), 404
+        
+        entry = Timetable.query.get(timetable_id)
+        
+        if not entry:
+            return jsonify({'error': 'Timetable entry not found'}), 404
+        
+        # Verify faculty owns this entry
+        if entry.faculty_id != faculty.faculty_id:
+            return jsonify({'error': 'Unauthorized'}), 403
+        
+        db.session.delete(entry)
+        db.session.commit()
+        
+        current_app.logger.info(f"Timetable entry deleted: {timetable_id} by {current_user_email}")
+        
+        return jsonify({'message': 'Timetable entry deleted successfully'}), 200
+        
+    except Exception as e:
+        current_app.logger.error(f"Delete timetable error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
 @faculty_bp.route('/subjects', methods=['GET'])
 @require_faculty_auth()
 def get_subjects():
@@ -1723,7 +2041,25 @@ def get_subjects():
     Get subjects taught by faculty (only subjects created by this faculty)
     """
     try:
-        current_user_email = get_jwt_identity()
+        from models.gecr_models import Faculty, Subject, StudentEnrollment
+        
+        # Get current user email - support both JWT and session auth
+        current_user_email = None
+        try:
+            verify_jwt_in_request(optional=True)
+            current_user_email = get_jwt_identity()
+        except Exception:
+            pass
+        
+        # Fall back to session
+        if not current_user_email and 'user_id' in session:
+            faculty_id = session.get('user_id')
+            faculty = Faculty.query.filter_by(faculty_id=faculty_id).first()
+            if faculty:
+                current_user_email = faculty.email
+        
+        if not current_user_email:
+            return jsonify({'error': 'Authentication failed'}), 401
         
         # Get faculty by email
         faculty = Faculty.query.filter_by(email=current_user_email).first()
@@ -1738,7 +2074,7 @@ def get_subjects():
         for subject in subjects:
             enrolled_count = StudentEnrollment.query.filter_by(
                 subject_id=subject.subject_id,
-                status='approved'
+                status='active'
             ).count()
             
             subjects_data.append({
@@ -1757,8 +2093,230 @@ def get_subjects():
         }), 200
         
     except Exception as e:
+        import traceback
         current_app.logger.error(f"Faculty subjects error: {str(e)}")
-        return jsonify({'error': 'Internal server error'}), 500
+        current_app.logger.error(traceback.format_exc())
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
+
+@faculty_bp.route('/subjects/create', methods=['POST'])
+@require_faculty_auth()
+def create_subject():
+    """
+    Create a new subject (Faculty only)
+    """
+    try:
+        from database import db
+        from models.gecr_models import Faculty, Subject
+        
+        # Get current user email - support both JWT and session auth
+        current_user_email = None
+        try:
+            verify_jwt_in_request(optional=True)
+            current_user_email = get_jwt_identity()
+        except Exception:
+            pass
+        
+        # Fall back to session
+        if not current_user_email and 'user_id' in session:
+            faculty_id = session.get('user_id')
+            faculty = Faculty.query.filter_by(faculty_id=faculty_id).first()
+            if faculty:
+                current_user_email = faculty.email
+        
+        if not current_user_email:
+            return jsonify({'error': 'Authentication failed'}), 401
+        
+        # Get faculty by email
+        faculty = Faculty.query.filter_by(email=current_user_email).first()
+        if not faculty:
+            return jsonify({'error': 'Faculty not found'}), 404
+        
+        data = request.get_json()
+        
+        # Validate required fields
+        subject_name = data.get('subject_name')
+        department = data.get('department')
+        semester = data.get('semester')
+        
+        if not subject_name or not department or not semester:
+            return jsonify({'error': 'Subject name, department, and semester are required'}), 400
+        
+        # Check if subject already exists for this faculty
+        existing = Subject.query.filter_by(
+            subject_name=subject_name,
+            department=department,
+            semester=semester,
+            faculty_id=faculty.faculty_id
+        ).first()
+        
+        if existing:
+            return jsonify({'error': 'You already have a subject with this name in this department and semester'}), 400
+        
+        # Create new subject
+        new_subject = Subject(
+            subject_name=subject_name,
+            department=department,
+            semester=semester,
+            faculty_id=faculty.faculty_id
+        )
+        
+        db.session.add(new_subject)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Subject created successfully',
+            'subject_id': new_subject.subject_id,
+            'subject': {
+                'subject_id': new_subject.subject_id,
+                'subject_name': new_subject.subject_name,
+                'subject_code': f'SUB{new_subject.subject_id}',
+                'department': new_subject.department,
+                'semester': new_subject.semester,
+                'credits': 0,
+                'total_students': 0
+            }
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Create subject error: {str(e)}")
+        return jsonify({'error': f'Failed to create subject: {str(e)}'}), 500
+
+@faculty_bp.route('/subjects/<int:subject_id>/update', methods=['PUT'])
+@require_faculty_auth()
+def update_subject(subject_id):
+    """
+    Update a subject (Faculty only - own subjects)
+    """
+    try:
+        from database import db
+        from models.gecr_models import Faculty, Subject
+        
+        # Get current user email - support both JWT and session auth
+        current_user_email = None
+        try:
+            verify_jwt_in_request(optional=True)
+            current_user_email = get_jwt_identity()
+        except Exception:
+            pass
+        
+        # Fall back to session
+        if not current_user_email and 'user_id' in session:
+            faculty_id = session.get('user_id')
+            faculty = Faculty.query.filter_by(faculty_id=faculty_id).first()
+            if faculty:
+                current_user_email = faculty.email
+        
+        if not current_user_email:
+            return jsonify({'error': 'Authentication failed'}), 401
+        
+        # Get faculty by email
+        faculty = Faculty.query.filter_by(email=current_user_email).first()
+        if not faculty:
+            return jsonify({'error': 'Faculty not found'}), 404
+        
+        # Get subject and verify ownership
+        subject = Subject.query.get(subject_id)
+        if not subject:
+            return jsonify({'error': 'Subject not found'}), 404
+        
+        if subject.faculty_id != faculty.faculty_id:
+            return jsonify({'error': 'You can only update your own subjects'}), 403
+        
+        data = request.get_json()
+        
+        # Update fields
+        if 'subject_name' in data:
+            subject.subject_name = data['subject_name']
+        if 'department' in data:
+            subject.department = data['department']
+        if 'semester' in data:
+            subject.semester = data['semester']
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Subject updated successfully',
+            'subject': {
+                'subject_id': subject.subject_id,
+                'subject_name': subject.subject_name,
+                'subject_code': f'SUB{subject.subject_id}',
+                'department': subject.department,
+                'semester': subject.semester
+            }
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Update subject error: {str(e)}")
+        return jsonify({'error': f'Failed to update subject: {str(e)}'}), 500
+
+@faculty_bp.route('/subjects/<int:subject_id>/delete', methods=['DELETE'])
+@require_faculty_auth()
+def delete_subject(subject_id):
+    """
+    Delete a subject (Faculty only - own subjects)
+    """
+    try:
+        from database import db
+        from models.gecr_models import Faculty, Subject, StudentEnrollment
+        
+        # Get current user email - support both JWT and session auth
+        current_user_email = None
+        try:
+            verify_jwt_in_request(optional=True)
+            current_user_email = get_jwt_identity()
+        except Exception:
+            pass
+        
+        # Fall back to session
+        if not current_user_email and 'user_id' in session:
+            faculty_id = session.get('user_id')
+            faculty = Faculty.query.filter_by(faculty_id=faculty_id).first()
+            if faculty:
+                current_user_email = faculty.email
+        
+        if not current_user_email:
+            return jsonify({'error': 'Authentication failed'}), 401
+        
+        # Get faculty by email
+        faculty = Faculty.query.filter_by(email=current_user_email).first()
+        if not faculty:
+            return jsonify({'error': 'Faculty not found'}), 404
+        
+        # Get subject and verify ownership
+        subject = Subject.query.get(subject_id)
+        if not subject:
+            return jsonify({'error': 'Subject not found'}), 404
+        
+        if subject.faculty_id != faculty.faculty_id:
+            return jsonify({'error': 'You can only delete your own subjects'}), 403
+        
+        # Check if there are active enrollments
+        enrollment_count = StudentEnrollment.query.filter_by(
+            subject_id=subject_id,
+            status='active'
+        ).count()
+        
+        if enrollment_count > 0:
+            return jsonify({
+                'error': f'Cannot delete subject with {enrollment_count} active enrollments. Please remove students first.'
+            }), 400
+        
+        db.session.delete(subject)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Subject deleted successfully'
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Delete subject error: {str(e)}")
+        return jsonify({'error': f'Failed to delete subject: {str(e)}'}), 500
 
 # Error handlers for the faculty blueprint
 @faculty_bp.errorhandler(403)

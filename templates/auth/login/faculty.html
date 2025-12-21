@@ -68,7 +68,7 @@
                 {% endif %}
             {% endwith %}
             
-            <form id="facultyLoginForm" class="space-y-6" method="POST" action="{{ url_for('auth_login', user_type='faculty') }}">
+            <form id="facultyLoginForm" class="space-y-6">
                 <div>
                     <label for="facultyId" class="block text-sm font-medium text-gray-700 mb-2">
                         <i class="fas fa-envelope mr-2 text-indigo-600"></i>Email Address
@@ -177,24 +177,60 @@
                     icon.classList.toggle('fa-eye-slash');
                 });
 
-                // Basic form validation
-                form.addEventListener('submit', function(e) {
+                // AJAX form submission
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+
                     const facultyId = facultyIdField.value.trim();
                     const password = passwordField.value;
+                    const department = document.getElementById('department').value;
 
                     if (!facultyId) {
                         alert('Email address is required');
-                        e.preventDefault();
                         return;
                     }
 
                     if (!password) {
                         alert('Password is required');
-                        e.preventDefault();
                         return;
                     }
 
-                    // Form will submit normally to server
+                    if (!department) {
+                        alert('Department is required');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/api/auth/faculty/login', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                email: facultyId,
+                                password: password,
+                                department: department
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            // Store JWT token in localStorage
+                            localStorage.setItem('faculty_token', data.access_token);
+                            
+                            // Store user info for UI display
+                            localStorage.setItem('faculty_user', JSON.stringify(data.user));
+                            
+                            // Redirect to faculty dashboard
+                            window.location.href = '/faculty/dashboard';
+                        } else {
+                            alert(data.error || 'Login failed. Please check your credentials.');
+                        }
+                    } catch (error) {
+                        console.error('Login error:', error);
+                        alert('An error occurred during login. Please try again.');
+                    }
                 });
             });
         </script>

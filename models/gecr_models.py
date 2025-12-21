@@ -242,6 +242,8 @@ class Timetable(db.Model):
     subject_id = db.Column(db.Integer, db.ForeignKey('subjects.subject_id'))
     faculty_id = db.Column(db.Integer, db.ForeignKey('faculty.faculty_id'))
     time_slot = db.Column(db.String(20))
+    room = db.Column(db.String(100), nullable=True)
+    class_type = db.Column(db.String(20), default='Lecture')
     
     def to_dict(self):
         """Convert to dictionary"""
@@ -253,6 +255,8 @@ class Timetable(db.Model):
             'subject_id': self.subject_id,
             'faculty_id': self.faculty_id,
             'time_slot': self.time_slot,
+            'room': self.room,
+            'class_type': self.class_type,
             'subject_name': self.subject.subject_name if self.subject else None,
             'faculty_name': self.faculty.name if self.faculty else None
         }

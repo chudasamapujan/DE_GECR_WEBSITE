@@ -152,6 +152,8 @@ def faculty_login():
 
         email = data.get('email', '').strip().lower()
         password = data.get('password', '')
+        
+        current_app.logger.info(f"Faculty login attempt for email: {email}")
 
         if not all([email, password]):
             return jsonify({'error': 'Email and password are required'}), 400
@@ -159,10 +161,12 @@ def faculty_login():
         # Find faculty user
         user = Faculty.find_by_email(email)
         if not user:
-            return jsonify({'error': 'User not found'}), 404
+            current_app.logger.warning(f"Faculty not found for email: {email}")
+            return jsonify({'error': 'Faculty account not found. Please register first.'}), 404
         if not getattr(user, 'is_active', True):
             return jsonify({'error': 'Account is deactivated'}), 403
         if not user.check_password(password):
+            current_app.logger.warning(f"Invalid password for faculty: {email}")
             return jsonify({'error': 'Invalid password'}), 401
 
         user_id_val = getattr(user, 'faculty_id', getattr(user, 'student_id', None))
@@ -418,20 +422,16 @@ def verify_otp():
                 new_user = Student(**user_kwargs)
                 new_user.set_password(raw_password)
             else:
-                required = ['first_name', 'last_name', 'email', 'password', 'phone', 'employee_id', 'designation', 'department', 'joining_date']
+                # Faculty registration - match the actual Faculty model fields
+                required = ['name', 'email', 'password', 'phone', 'department']
                 missing = [f for f in required if f not in user_data]
                 if missing:
                     return jsonify({'error': f'Missing fields for faculty registration: {missing}'}), 400
 
-                allowed = ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'address', 'employee_id', 'designation', 'department', 'qualification', 'specialization', 'experience_years', 'joining_date', 'office_room', 'office_hours', 'research_interests', 'publications', 'research_projects', 'office_phone', 'personal_website', 'linkedin_profile']
+                # Faculty model has: name, email, password, department, designation, salary, phone
+                allowed = ['name', 'email', 'phone', 'department', 'designation', 'salary']
                 user_kwargs = {k: v for k, v in user_data.items() if k in allowed}
-                # Convert joining_date from string to date if present
-                jdate = user_kwargs.get('joining_date')
-                if isinstance(jdate, str):
-                    try:
-                        user_kwargs['joining_date'] = datetime.strptime(jdate, '%Y-%m-%d').date()
-                    except Exception:
-                        pass
+                
                 raw_password = user_data.get('password')
                 new_user = Faculty(**user_kwargs)
                 new_user.set_password(raw_password)
