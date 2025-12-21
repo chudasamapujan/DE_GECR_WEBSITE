@@ -833,10 +833,10 @@
                                     <div class="flex justify-between items-start">
                                         <div class="flex-1">
                                             <p class="text-gray-700 font-medium">
-                                                ${subject.subject_code || 'N/A'}: ${subject.subject_name || 'N/A'}
+                                                ${subject.subject_name || 'N/A'}
                                             </p>
                                             <p class="text-sm text-gray-500">
-                                                Faculty: ${subject.faculty_name || 'N/A'}
+                                                Faculty: ${subject.faculty_name || 'N/A'} • ${subject.department || 'N/A'} - Sem ${subject.semester || 'N/A'}
                                             </p>
                                             <p class="text-xs text-gray-400 mt-1">
                                                 Classes: ${subject.present_count || 0}/${subject.total_classes || 0}

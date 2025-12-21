@@ -602,6 +602,199 @@ def remove_student_enrollment(subject_id, enrollment_id):
         return jsonify({'error': 'Internal server error'}), 500
 
 
+@faculty_bp.route('/enrollment-requests', methods=['GET'])
+@require_faculty_auth()
+def get_enrollment_requests():
+    """
+    Get all pending enrollment requests for faculty's subjects
+    """
+    try:
+        from database import db
+        from models.gecr_models import Faculty, Subject, StudentEnrollment, Student
+        
+        current_user_email = get_current_user_email()
+        faculty = Faculty.find_by_email(current_user_email) if current_user_email else None
+        faculty_id = faculty.faculty_id if faculty else get_current_faculty_id()
+        
+        if not faculty_id:
+            return jsonify({'error': 'Faculty not found'}), 404
+        
+        # Get all subjects taught by this faculty
+        faculty_subjects = Subject.query.filter_by(faculty_id=faculty_id).all()
+        subject_ids = [s.subject_id for s in faculty_subjects]
+        
+        if not subject_ids:
+            return jsonify({
+                'success': True,
+                'requests': [],
+                'total_requests': 0
+            }), 200
+        
+        # Get all pending enrollments for these subjects
+        pending_enrollments = StudentEnrollment.query.filter(
+            StudentEnrollment.subject_id.in_(subject_ids),
+            StudentEnrollment.status == 'pending'
+        ).all()
+        
+        requests_data = []
+        for enrollment in pending_enrollments:
+            student = enrollment.student
+            subject = enrollment.subject
+            
+            requests_data.append({
+                'enrollment_id': enrollment.enrollment_id,
+                'student_id': enrollment.student_id,
+                'student_name': student.name if student else 'Unknown',
+                'student_roll_no': student.roll_no if student else 'N/A',
+                'student_email': student.email if student else 'N/A',
+                'student_department': student.department if student else 'N/A',
+                'student_semester': student.semester if student else 'N/A',
+                'subject_id': enrollment.subject_id,
+                'subject_name': subject.subject_name if subject else 'Unknown',
+                'subject_department': subject.department if subject else 'N/A',
+                'subject_semester': subject.semester if subject else 'N/A',
+                'enrollment_date': enrollment.enrollment_date.isoformat() if enrollment.enrollment_date else None,
+                'status': enrollment.status
+            })
+        
+        return jsonify({
+            'success': True,
+            'requests': requests_data,
+            'total_requests': len(requests_data)
+        }), 200
+        
+    except Exception as e:
+        current_app.logger.error(f"Get enrollment requests error: {str(e)}")
+        return jsonify({'error': f'Failed to fetch enrollment requests: {str(e)}'}), 500
+
+
+@faculty_bp.route('/enrollment-requests/<int:enrollment_id>/approve', methods=['POST'])
+@require_faculty_auth()
+def approve_enrollment_request(enrollment_id):
+    """
+    Approve a pending enrollment request
+    """
+    try:
+        from database import db
+        from models.gecr_models import Faculty, Subject, StudentEnrollment, Notification
+        
+        current_user_email = get_current_user_email()
+        faculty = Faculty.find_by_email(current_user_email) if current_user_email else None
+        faculty_id = faculty.faculty_id if faculty else get_current_faculty_id()
+        
+        if not faculty_id:
+            return jsonify({'error': 'Faculty not found'}), 404
+        
+        # Get enrollment
+        enrollment = StudentEnrollment.query.get(enrollment_id)
+        if not enrollment:
+            return jsonify({'error': 'Enrollment request not found'}), 404
+        
+        # Verify faculty teaches this subject
+        subject = Subject.query.get(enrollment.subject_id)
+        if not subject or subject.faculty_id != faculty_id:
+            return jsonify({'error': 'You are not authorized to approve this request'}), 403
+        
+        # Check if status is pending
+        if enrollment.status != 'pending':
+            return jsonify({'error': f'Enrollment is already {enrollment.status}'}), 400
+        
+        # Approve the enrollment
+        enrollment.status = 'active'
+        
+        # Send notification to student
+        notification = Notification(
+            user_id=enrollment.student_id,
+            user_type='student',
+            title='Enrollment Approved',
+            message=f'Your enrollment request for {subject.subject_name} has been approved by {faculty.name}.',
+            notification_type='enrollment_approved',
+            read=False
+        )
+        db.session.add(notification)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Enrollment request approved successfully',
+            'enrollment': {
+                'enrollment_id': enrollment.enrollment_id,
+                'status': enrollment.status
+            }
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Approve enrollment error: {str(e)}")
+        return jsonify({'error': f'Failed to approve enrollment: {str(e)}'}), 500
+
+
+@faculty_bp.route('/enrollment-requests/<int:enrollment_id>/reject', methods=['POST'])
+@require_faculty_auth()
+def reject_enrollment_request(enrollment_id):
+    """
+    Reject a pending enrollment request
+    Expects JSON: {"reason": "optional rejection reason"}
+    """
+    try:
+        from database import db
+        from models.gecr_models import Faculty, Subject, StudentEnrollment, Notification
+        
+        current_user_email = get_current_user_email()
+        faculty = Faculty.find_by_email(current_user_email) if current_user_email else None
+        faculty_id = faculty.faculty_id if faculty else get_current_faculty_id()
+        
+        if not faculty_id:
+            return jsonify({'error': 'Faculty not found'}), 404
+        
+        # Get enrollment
+        enrollment = StudentEnrollment.query.get(enrollment_id)
+        if not enrollment:
+            return jsonify({'error': 'Enrollment request not found'}), 404
+        
+        # Verify faculty teaches this subject
+        subject = Subject.query.get(enrollment.subject_id)
+        if not subject or subject.faculty_id != faculty_id:
+            return jsonify({'error': 'You are not authorized to reject this request'}), 403
+        
+        # Check if status is pending
+        if enrollment.status != 'pending':
+            return jsonify({'error': f'Enrollment is already {enrollment.status}'}), 400
+        
+        # Get rejection reason if provided
+        data = request.get_json() or {}
+        reason = data.get('reason', 'No reason provided')
+        
+        # Reject the enrollment
+        enrollment.status = 'rejected'
+        
+        # Send notification to student
+        notification = Notification(
+            user_id=enrollment.student_id,
+            user_type='student',
+            title='Enrollment Request Rejected',
+            message=f'Your enrollment request for {subject.subject_name} has been rejected. Reason: {reason}',
+            notification_type='enrollment_rejected',
+            read=False
+        )
+        db.session.add(notification)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Enrollment request rejected',
+            'enrollment': {
+                'enrollment_id': enrollment.enrollment_id,
+                'status': enrollment.status
+            }
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Reject enrollment error: {str(e)}")
+        return jsonify({'error': f'Failed to reject enrollment: {str(e)}'}), 500
+
+
 @faculty_bp.route('/students', methods=['GET'])
 @require_faculty_auth()
 def get_students():
@@ -2080,11 +2273,12 @@ def get_subjects():
             subjects_data.append({
                 'subject_id': subject.subject_id,
                 'subject_name': subject.subject_name,
-                'subject_code': getattr(subject, 'subject_code', f'SUB{subject.subject_id}'),
+                'subject_code': subject.subject_code or f'SUB{subject.subject_id}',
                 'semester': subject.semester,
                 'department': subject.department,
                 'total_students': enrolled_count,
-                'credits': getattr(subject, 'credits', 0)
+                'credits': subject.credits or 0,
+                'description': subject.description
             })
         
         return jsonify({
@@ -2155,8 +2349,11 @@ def create_subject():
         # Create new subject
         new_subject = Subject(
             subject_name=subject_name,
+            subject_code=data.get('subject_code'),
             department=department,
             semester=semester,
+            credits=data.get('credits', 0),
+            description=data.get('description'),
             faculty_id=faculty.faculty_id
         )
         
@@ -2170,10 +2367,11 @@ def create_subject():
             'subject': {
                 'subject_id': new_subject.subject_id,
                 'subject_name': new_subject.subject_name,
-                'subject_code': f'SUB{new_subject.subject_id}',
+                'subject_code': new_subject.subject_code or f'SUB{new_subject.subject_id}',
                 'department': new_subject.department,
                 'semester': new_subject.semester,
-                'credits': 0,
+                'credits': new_subject.credits,
+                'description': new_subject.description,
                 'total_students': 0
             }
         }), 201
@@ -2229,10 +2427,16 @@ def update_subject(subject_id):
         # Update fields
         if 'subject_name' in data:
             subject.subject_name = data['subject_name']
+        if 'subject_code' in data:
+            subject.subject_code = data['subject_code']
         if 'department' in data:
             subject.department = data['department']
         if 'semester' in data:
             subject.semester = data['semester']
+        if 'credits' in data:
+            subject.credits = data['credits']
+        if 'description' in data:
+            subject.description = data['description']
         
         db.session.commit()
         
@@ -2242,9 +2446,11 @@ def update_subject(subject_id):
             'subject': {
                 'subject_id': subject.subject_id,
                 'subject_name': subject.subject_name,
-                'subject_code': f'SUB{subject.subject_id}',
+                'subject_code': subject.subject_code or f'SUB{subject.subject_id}',
                 'department': subject.department,
-                'semester': subject.semester
+                'semester': subject.semester,
+                'credits': subject.credits,
+                'description': subject.description
             }
         }), 200
         

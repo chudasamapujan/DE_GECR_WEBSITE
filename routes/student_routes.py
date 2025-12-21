@@ -177,7 +177,19 @@ def get_profile():
             for subj in enrolled_subjects
         ]
         
-        return jsonify(student_dict), 200
+        # Count active enrollments
+        enrolled_count = StudentEnrollment.query.filter_by(
+            student_id=student.student_id,
+            status='active'
+        ).count()
+        
+        return jsonify({
+            'success': True,
+            'student': {
+                **student_dict,
+                'enrolled_count': enrolled_count
+            }
+        }), 200
         
     except Exception as e:
         current_app.logger.error(f"Student profile error: {str(e)}")

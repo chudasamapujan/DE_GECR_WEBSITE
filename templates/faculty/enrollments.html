@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Enrollments - Faculty Portal</title>
+    <title>Enrollment Requests - Faculty Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -24,6 +24,9 @@
         .main-content { margin-left: 300px; padding: 2rem; }
         .mobile-menu-button { display: none; position: fixed; top: 1rem; right: 1rem; z-index: 60; padding: 0.75rem; background: white; border-radius: 0.75rem; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
         @media (max-width: 768px) { .sidebar { transform: translateX(-100%); margin: 0; border-radius: 0; } .sidebar.open { transform: translateX(0); } .main-content { margin-left: 0; } .mobile-menu-button { display: block; } }
+        .tab-button { padding: 0.75rem 1.5rem; font-weight: 500; transition: all 0.2s; border-bottom: 2px solid transparent; }
+        .tab-button.active { border-color: #4F46E5; color: #4F46E5; }
+        .tab-button:not(.active) { color: #6B7280; }
     </style>
 </head>
 <body>
@@ -46,26 +49,70 @@
     </aside>
 
     <main class="main-content">
-        <div class="mb-8"><h1 class="text-3xl font-bold gradient-text">Student Enrollments</h1><p class="text-gray-600 mt-1">View students enrolled in your subjects</p></div>
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold gradient-text">Enrollment Management</h1>
+            <p class="text-gray-600 mt-1">Manage student enrollment requests and view enrolled students</p>
+        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="glass-card rounded-xl p-6">
-                <div class="flex items-center"><div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center"><svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg></div><div class="ml-4"><p class="text-sm text-gray-500">Total Subjects</p><p class="text-2xl font-bold text-gray-800" id="totalSubjects">-</p></div></div>
-            </div>
-            <div class="glass-card rounded-xl p-6">
-                <div class="flex items-center"><div class="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center"><svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg></div><div class="ml-4"><p class="text-sm text-gray-500">Total Enrollments</p><p class="text-2xl font-bold text-gray-800" id="totalEnrollments">-</p></div></div>
-            </div>
-            <div class="glass-card rounded-xl p-6">
-                <div class="flex items-center"><div class="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center"><svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg></div><div class="ml-4"><p class="text-sm text-gray-500">Avg Students/Subject</p><p class="text-2xl font-bold text-gray-800" id="avgEnrollments">-</p></div></div>
+        <!-- Tabs -->
+        <div class="glass-card rounded-xl mb-6 overflow-hidden">
+            <div class="flex border-b">
+                <button id="pendingTab" class="tab-button active" onclick="switchTab('pending')">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Pending Requests
+                        <span id="pendingCount" class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full text-xs font-semibold">0</span>
+                    </div>
+                </button>
+                <button id="enrolledTab" class="tab-button" onclick="switchTab('enrolled')">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        Enrolled Students
+                        <span id="enrolledCount" class="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-semibold">0</span>
+                    </div>
+                </button>
             </div>
         </div>
 
-        <div class="glass-card rounded-xl overflow-hidden">
-            <div class="px-6 py-4 bg-gray-50 border-b"><h2 class="text-lg font-semibold text-gray-800">Your Subjects & Enrollments</h2></div>
-            <div class="p-6">
-                <div id="loading" class="text-center py-12 hidden"><svg class="animate-spin h-8 w-8 mx-auto text-indigo-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><p class="mt-4 text-gray-600">Loading enrollments...</p></div>
-                <div id="subjectsList" class="space-y-4"></div>
-                <div id="noSubjects" class="hidden text-center py-12 text-gray-500"><svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg><p>No subjects assigned to you yet.</p></div>
+        <!-- Pending Requests Tab Content -->
+        <div id="pendingContent" class="space-y-4">
+            <div id="pendingLoading" class="glass-card rounded-xl p-12 text-center">
+                <svg class="animate-spin h-8 w-8 mx-auto text-indigo-600" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="mt-4 text-gray-600">Loading enrollment requests...</p>
+            </div>
+            <div id="pendingRequests" class="hidden space-y-4"></div>
+            <div id="noPending" class="hidden glass-card rounded-xl p-12 text-center text-gray-500">
+                <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p class="text-lg font-medium">No pending enrollment requests</p>
+                <p class="text-sm text-gray-400 mt-1">All requests have been processed</p>
+            </div>
+        </div>
+
+        <!-- Enrolled Students Tab Content -->
+        <div id="enrolledContent" class="hidden">
+            <div id="enrolledLoading" class="glass-card rounded-xl p-12 text-center">
+                <svg class="animate-spin h-8 w-8 mx-auto text-indigo-600" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="mt-4 text-gray-600">Loading enrolled students...</p>
+            </div>
+            <div id="subjectsList" class="hidden space-y-4"></div>
+            <div id="noEnrolled" class="hidden glass-card rounded-xl p-12 text-center text-gray-500">
+                <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <p class="text-lg font-medium">No subjects assigned yet</p>
+                <p class="text-sm text-gray-400 mt-1">Contact administration for subject assignments</p>
             </div>
         </div>
     </main>
@@ -91,38 +138,207 @@
     <script>
         document.getElementById('mobileMenuButton').addEventListener('click', () => document.querySelector('.sidebar').classList.toggle('open'));
 
-        async function loadEnrollments() {
-            document.getElementById('loading').classList.remove('hidden');
+        let currentTab = 'pending';
+
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // Update tab buttons
+            document.getElementById('pendingTab').classList.toggle('active', tab === 'pending');
+            document.getElementById('enrolledTab').classList.toggle('active', tab === 'enrolled');
+            
+            // Update content visibility
+            document.getElementById('pendingContent').classList.toggle('hidden', tab !== 'pending');
+            document.getElementById('enrolledContent').classList.toggle('hidden', tab !== 'enrolled');
+            
+            // Load data for the selected tab
+            if (tab === 'pending') {
+                loadPendingRequests();
+            } else {
+                loadEnrollments();
+            }
+        }
+
+        async function loadPendingRequests() {
+            document.getElementById('pendingLoading').classList.remove('hidden');
+            document.getElementById('pendingRequests').classList.add('hidden');
+            document.getElementById('noPending').classList.add('hidden');
+            
             try {
-                const response = await fetch('/api/faculty/enrollments');
+                const token = localStorage.getItem('faculty_token');
+                const response = await fetch('/api/faculty/enrollment-requests', {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+                    credentials: 'include'
+                });
                 const data = await response.json();
-                document.getElementById('loading').classList.add('hidden');
                 
-                if (data.subjects && data.subjects.length > 0) {
-                    document.getElementById('totalSubjects').textContent = data.subjects.length;
-                    const totalEnrollments = data.subjects.reduce((sum, s) => sum + (s.enrollment_count || 0), 0);
-                    document.getElementById('totalEnrollments').textContent = totalEnrollments;
-                    document.getElementById('avgEnrollments').textContent = (totalEnrollments / data.subjects.length).toFixed(1);
-                    
-                    document.getElementById('subjectsList').innerHTML = data.subjects.map(subject => `
-                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
-                            <div><h3 class="font-medium text-gray-900">${subject.subject_name}</h3><p class="text-sm text-gray-500">${subject.department || ''} • Semester ${subject.semester || ''}</p></div>
-                            <div class="flex items-center gap-4">
-                                <span class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium">${subject.enrollment_count || 0} students</span>
-                                <button onclick="viewStudents(${subject.subject_id}, '${subject.subject_name}')" class="text-indigo-600 hover:text-indigo-800"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></button>
+                document.getElementById('pendingLoading').classList.add('hidden');
+                document.getElementById('pendingCount').textContent = data.total_requests || 0;
+                
+                if (data.requests && data.requests.length > 0) {
+                    document.getElementById('pendingRequests').classList.remove('hidden');
+                    document.getElementById('pendingRequests').innerHTML = data.requests.map(req => `
+                        <div class="glass-card rounded-xl p-6 hover:shadow-lg transition-shadow">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg">
+                                            ${req.student_name.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-gray-900">${req.student_name}</h3>
+                                            <p class="text-sm text-gray-500">Roll No: ${req.student_roll_no}</p>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4 mb-4">
+                                        <div>
+                                            <p class="text-xs text-gray-500">Subject Requested</p>
+                                            <p class="font-medium text-gray-800">${req.subject_name}</p>
+                                            <p class="text-xs text-gray-500">${req.subject_department} - Sem ${req.subject_semester}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-gray-500">Student Details</p>
+                                            <p class="text-sm text-gray-700">${req.student_email}</p>
+                                            <p class="text-xs text-gray-500">${req.student_department} - Sem ${req.student_semester}</p>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-gray-400">
+                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Requested on ${new Date(req.enrollment_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                    </p>
+                                </div>
+                                <div class="flex flex-col gap-2 ml-4">
+                                    <button onclick="approveRequest(${req.enrollment_id})" 
+                                        class="px-6 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        Approve
+                                    </button>
+                                    <button onclick="rejectRequest(${req.enrollment_id})" 
+                                        class="px-6 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                        Reject
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `).join('');
-                    document.getElementById('noSubjects').classList.add('hidden');
                 } else {
-                    document.getElementById('noSubjects').classList.remove('hidden');
-                    document.getElementById('totalSubjects').textContent = '0';
-                    document.getElementById('totalEnrollments').textContent = '0';
-                    document.getElementById('avgEnrollments').textContent = '0';
+                    document.getElementById('noPending').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error loading requests:', error);
+                document.getElementById('pendingLoading').classList.add('hidden');
+                alert('Failed to load enrollment requests: ' + error.message);
+            }
+        }
+
+        async function approveRequest(enrollmentId) {
+            if (!confirm('Are you sure you want to approve this enrollment request?')) return;
+            
+            try {
+                const token = localStorage.getItem('faculty_token');
+                const response = await fetch(`/api/faculty/enrollment-requests/${enrollmentId}/approve`, {
+                    method: 'POST',
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('✅ ' + data.message);
+                    loadPendingRequests(); // Reload the list
+                } else {
+                    alert('❌ ' + (data.error || 'Failed to approve request'));
+                }
+            } catch (error) {
+                console.error('Error approving request:', error);
+                alert('Failed to approve request: ' + error.message);
+            }
+        }
+
+        async function rejectRequest(enrollmentId) {
+            const reason = prompt('Enter rejection reason (optional):');
+            if (reason === null) return; // User cancelled
+            
+            try {
+                const token = localStorage.getItem('faculty_token');
+                const response = await fetch(`/api/faculty/enrollment-requests/${enrollmentId}/reject`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ reason: reason || 'No reason provided' })
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('✅ ' + data.message);
+                    loadPendingRequests(); // Reload the list
+                } else {
+                    alert('❌ ' + (data.error || 'Failed to reject request'));
+                }
+            } catch (error) {
+                console.error('Error rejecting request:', error);
+                alert('Failed to reject request: ' + error.message);
+            }
+        }
+
+        async function loadEnrollments() {
+            document.getElementById('enrolledLoading').classList.remove('hidden');
+            document.getElementById('subjectsList').classList.add('hidden');
+            document.getElementById('noEnrolled').classList.add('hidden');
+            
+            try {
+                const token = localStorage.getItem('faculty_token');
+                const response = await fetch('/api/faculty/subjects', {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                document.getElementById('enrolledLoading').classList.add('hidden');
+                
+                const subjects = data.subjects || [];
+                if (subjects.length > 0) {
+                    const totalEnrollments = subjects.reduce((sum, s) => sum + (s.total_students || 0), 0);
+                    document.getElementById('enrolledCount').textContent = totalEnrollments;
+                    
+                    document.getElementById('subjectsList').classList.remove('hidden');
+                    document.getElementById('subjectsList').innerHTML = subjects.map(subject => `
+                        <div class="glass-card rounded-xl p-6 flex items-center justify-between hover:shadow-lg transition-shadow">
+                            <div>
+                                <h3 class="font-semibold text-lg text-gray-900">${subject.subject_name}</h3>
+                                <p class="text-sm text-gray-500">${subject.department || 'N/A'} • Semester ${subject.semester || 'N/A'}</p>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <span class="px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                                    ${subject.total_students || 0} students
+                                </span>
+                                <button onclick="viewStudents(${subject.subject_id}, '${subject.subject_name}')" 
+                                    class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    document.getElementById('noEnrolled').classList.remove('hidden');
+                    document.getElementById('enrolledCount').textContent = '0';
                 }
             } catch (error) {
                 console.error('Error loading enrollments:', error);
-                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('enrolledLoading').classList.add('hidden');
+                alert('Failed to load enrollments: ' + error.message);
             }
         }
 
@@ -134,13 +350,23 @@
             document.getElementById('noStudents').classList.add('hidden');
             
             try {
-                const response = await fetch(`/api/faculty/subjects/${subjectId}/students`);
+                const token = localStorage.getItem('faculty_token');
+                const response = await fetch(`/api/faculty/subjects/${subjectId}/enrollments`, {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+                    credentials: 'include'
+                });
                 const data = await response.json();
                 document.getElementById('modalLoading').classList.add('hidden');
-                
-                if (data.students && data.students.length > 0) {
-                    document.getElementById('studentsTableBody').innerHTML = data.students.map(s => `
-                        <tr class="border-b hover:bg-gray-50"><td class="px-4 py-3">${s.roll_no}</td><td class="px-4 py-3 font-medium">${s.name}</td><td class="px-4 py-3 text-gray-600">${s.email}</td><td class="px-4 py-3">${s.semester}</td></tr>
+
+                const students = data.enrollments || [];
+                if (students.length > 0) {
+                    document.getElementById('studentsTableBody').innerHTML = students.map(s => `
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-4 py-3">${s.student_roll_no || 'N/A'}</td>
+                            <td class="px-4 py-3 font-medium">${s.student_name || 'N/A'}</td>
+                            <td class="px-4 py-3 text-gray-600">${s.student_email || 'N/A'}</td>
+                            <td class="px-4 py-3">${s.student_semester || 'N/A'}</td>
+                        </tr>
                     `).join('');
                     document.getElementById('studentsTable').classList.remove('hidden');
                 } else {
@@ -149,13 +375,22 @@
             } catch (error) {
                 console.error('Error loading students:', error);
                 document.getElementById('modalLoading').classList.add('hidden');
+                alert('Failed to load students: ' + error.message);
             }
         }
 
         function closeModal() { document.getElementById('studentsModal').classList.add('hidden'); }
         document.getElementById('studentsModal').addEventListener('click', (e) => { if (e.target.id === 'studentsModal') closeModal(); });
 
-        loadEnrollments();
+        // Load data on page load
+        loadPendingRequests();
+        
+        // Auto-refresh pending requests every 30 seconds
+        setInterval(() => {
+            if (currentTab === 'pending') {
+                loadPendingRequests();
+            }
+        }, 30000);
     </script>
 </body>
 </html>

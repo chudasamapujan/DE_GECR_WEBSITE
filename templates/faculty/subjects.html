@@ -66,10 +66,19 @@
                 <h1 class="text-3xl font-bold gradient-text">My Subjects</h1>
                 <p class="text-gray-600 mt-1">Manage your subjects and enrolled students</p>
             </div>
-            <button onclick="openAddModal()" class="px-6 py-3 btn-primary rounded-lg font-medium transition flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                Add Subject
-            </button>
+            <div class="flex gap-3">
+                <a href="/faculty/enrollments" class="relative px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg font-medium transition hover:shadow-lg flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    Enrollment Requests
+                    <span id="pendingBadge" class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse">0</span>
+                </a>
+                <button onclick="openAddModal()" class="px-6 py-3 btn-primary rounded-lg font-medium transition flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                    Add Subject
+                </button>
+            </div>
         </div>
 
         <!-- Filters -->
@@ -127,11 +136,19 @@
             </div>
             <form id="subjectForm" class="p-6 space-y-4">
                 <input type="hidden" id="editSubjectId">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Subject Name *</label>
-                    <input type="text" id="subjectName" required class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g., Database Management Systems">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="sm:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Subject Name *</label>
+                        <input type="text" id="subjectName" required class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g., Database Management Systems">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Subject Code</label>
+                        <input type="text" id="subjectCode" class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g., CS301">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Credits</label>
+                        <input type="number" id="subjectCredits" min="0" max="12" step="1" class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g., 4">
+                    </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Department *</label>
                         <select id="subjectDepartment" required class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
@@ -157,6 +174,10 @@
                             <option value="7">7</option>
                             <option value="8">8</option>
                         </select>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Short Description</label>
+                        <textarea id="subjectDescription" rows="3" class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Key topics, contact hours, etc."></textarea>
                     </div>
                 </div>
                 <div class="flex gap-3 pt-4">
@@ -258,35 +279,42 @@
 
         // Load subjects from API
         async function loadSubjects() {
+            console.log('📚 Loading subjects...');
             document.getElementById('loading').classList.remove('hidden');
             document.getElementById('subjectsGrid').classList.add('hidden');
             document.getElementById('noSubjects').classList.add('hidden');
 
             try {
                 const token = localStorage.getItem('faculty_token');
+                console.log('🔑 Token found:', !!token);
+                console.log('💡 All localStorage keys:', Object.keys(localStorage));
                 
-                if (!token) {
-                    console.error('No faculty token found in localStorage');
-                    showToast('Authentication token not found. Please login again.', 'error');
-                    document.getElementById('loading').classList.add('hidden');
-                    document.getElementById('noSubjects').classList.remove('hidden');
-                    return;
+                // Try with token first, fall back to session-based auth
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
                 }
 
+                console.log('📡 Fetching /api/faculty/subjects...');
                 const response = await fetch('/api/faculty/subjects', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+                    method: 'GET',
+                    headers: headers,
+                    credentials: 'include' // Include session cookies
                 });
+
+                console.log('📥 Response status:', response.status);
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-                    console.error('API Error:', response.status, errorData);
+                    console.error('❌ API Error:', response.status, errorData);
                     throw new Error(errorData.error || `HTTP ${response.status}`);
                 }
 
                 const data = await response.json();
+                console.log('✅ Data received:', data);
                 allSubjects = data.subjects || [];
 
                 // Populate department filter
@@ -330,6 +358,7 @@
                                 <h3 class="text-xl font-semibold text-gray-800">${s.subject_code || 'SUB' + s.subject_id}: ${s.subject_name}</h3>
                                 <p class="text-gray-600">Semester ${s.semester || 'N/A'} • ${s.department || 'N/A'}</p>
                                 <p class="text-sm text-gray-500">${s.credits || 0} Credits</p>
+                                ${s.description ? `<p class="text-sm text-gray-500 mt-1">${s.description}</p>` : ''}
                             </div>
                             <span class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">Active</span>
                         </div>
@@ -379,8 +408,11 @@
             document.getElementById('modalTitle').textContent = 'Edit Subject';
             document.getElementById('editSubjectId').value = id;
             document.getElementById('subjectName').value = subject.subject_name || '';
+            document.getElementById('subjectCode').value = subject.subject_code || '';
+            document.getElementById('subjectCredits').value = subject.credits ?? '';
             document.getElementById('subjectDepartment').value = subject.department || '';
             document.getElementById('subjectSemester').value = subject.semester || '';
+            document.getElementById('subjectDescription').value = subject.description || '';
             document.getElementById('subjectModal').classList.remove('hidden');
         }
 
@@ -391,12 +423,19 @@
         // Handle form submit
         async function handleSubjectSubmit(e) {
             e.preventDefault();
+            console.log('💾 Submitting subject form...');
+            
             const id = document.getElementById('editSubjectId').value;
             const data = {
                 subject_name: document.getElementById('subjectName').value,
+                subject_code: document.getElementById('subjectCode').value || null,
+                credits: parseInt(document.getElementById('subjectCredits').value) || 0,
                 department: document.getElementById('subjectDepartment').value,
-                semester: parseInt(document.getElementById('subjectSemester').value)
+                semester: parseInt(document.getElementById('subjectSemester').value),
+                description: document.getElementById('subjectDescription').value || ''
             };
+
+            console.log('📝 Form data:', data);
 
             try {
                 const token = localStorage.getItem('faculty_token');
@@ -410,16 +449,26 @@
                     method = 'POST';
                 }
 
+                console.log('📡 Sending to:', url);
+
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+
                 const response = await fetch(url, {
                     method,
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
+                    headers: headers,
+                    credentials: 'include',
                     body: JSON.stringify(data)
                 });
 
+                console.log('📥 Response status:', response.status);
                 const result = await response.json();
+                console.log('📦 Response data:', result);
 
                 if (result.success || result.subject_id || response.ok) {
                     closeSubjectModal();
@@ -429,8 +478,8 @@
                     showToast(result.error || 'Failed to save subject', 'error');
                 }
             } catch (error) {
-                console.error('Error saving subject:', error);
-                showToast('Failed to save subject', 'error');
+                console.error('❌ Error saving subject:', error);
+                showToast('Failed to save subject: ' + error.message, 'error');
             }
         }
 
@@ -461,6 +510,12 @@
                             <p class="font-semibold text-lg">${subject.credits || 0}</p>
                         </div>
                     </div>
+                    ${subject.description ? `
+                        <div class="glass-card rounded-lg p-4">
+                            <p class="text-sm text-gray-500">Description</p>
+                            <p class="text-gray-700 leading-relaxed">${subject.description}</p>
+                        </div>
+                    ` : ''}
                     <div class="glass-card rounded-lg p-4">
                         <p class="text-sm text-gray-500">Total Students Enrolled</p>
                         <p class="font-semibold text-2xl text-indigo-600">${subject.total_students || 0}</p>
@@ -678,7 +733,27 @@
                 setTimeout(() => toast.classList.add('hidden'), 300);
             }, 3000);
         }
+
+        // Load pending enrollment requests count
+        async function loadPendingEnrollmentCount() {
+            try {
+                const response = await fetch('/api/faculty/enrollment-requests');
+                const data = await response.json();
+                
+                if (data.success && data.total_requests > 0) {
+                    const badge = document.getElementById('pendingBadge');
+                    badge.textContent = data.total_requests;
+                    badge.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error loading pending enrollment count:', error);
+            }
+        }
+
+        // Load pending count on page load and refresh every 30 seconds
+        loadPendingEnrollmentCount();
+        setInterval(loadPendingEnrollmentCount, 30000);
+
     </script>
 </body>
 </html>
-

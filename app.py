@@ -402,7 +402,7 @@ def register_main_routes(app):
         Serve the student dashboard page with real database data
         Requires active session authentication
         """
-        from dashboard_data import get_student_dashboard_data
+        from utils.dashboard_helpers import get_student_dashboard_data
         
         if 'user_id' not in session or session.get('user_type') != 'student':
             flash('Please log in to access the student dashboard', 'error')
@@ -422,7 +422,7 @@ def register_main_routes(app):
         Serve the faculty dashboard page with real database data
         Requires active session authentication
         """
-        from dashboard_data import get_faculty_dashboard_data
+        from utils.dashboard_helpers import get_faculty_dashboard_data
         
         if 'user_id' not in session or session.get('user_type') != 'faculty':
             flash('Please log in to access the faculty dashboard', 'error')
@@ -472,7 +472,7 @@ def register_main_routes(app):
     def serve_student_attendance():
         """Serve student attendance page with database data"""
         from flask import session, redirect, url_for, flash
-        from dashboard_data import get_student_attendance_data
+        from utils.dashboard_helpers import get_student_attendance_data
         
         if 'user_id' not in session or session.get('user_type') != 'student':
             flash('Please log in to access this page', 'error')
@@ -565,11 +565,22 @@ def register_main_routes(app):
         # New page uses client-side API calls, no server-side data needed
         return render_template('faculty/students_subject_view.html')
 
+    @app.route('/faculty/enrollments')
+    def serve_faculty_enrollments():
+        """Serve faculty enrollment requests management page"""
+        from flask import session, redirect, url_for, flash
+        
+        if 'user_id' not in session or session.get('user_type') != 'faculty':
+            flash('Please log in to access this page', 'error')
+            return redirect(url_for('serve_login', user_type='faculty'))
+        
+        return render_template('faculty/enrollments.html')
+
     @app.route('/faculty/assignments')
     def serve_faculty_assignments():
         """Serve faculty assignments page with database data"""
         from flask import session, redirect, url_for, flash
-        from dashboard_data import get_faculty_assignments_data
+        from utils.dashboard_helpers import get_faculty_assignments_data
         
         if 'user_id' not in session or session.get('user_type') != 'faculty':
             flash('Please log in to access this page', 'error')

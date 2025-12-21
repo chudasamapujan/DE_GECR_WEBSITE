@@ -57,11 +57,10 @@ def debug_all_subjects():
 
 # ==================== STUDENT ENROLLMENT ROUTES ====================
 
-@enrollment_bp.route('/student/available-subjects', methods=['GET'])
-def get_available_subjects():
+@enrollment_bp.route('/student/info', methods=['GET'])
+def get_student_info():
     """
-    Get all available subjects for student enrollment
-    Shows subjects based on student's department and semester
+    Get current student information for enrollment page header
     """
     try:
         if 'user_id' not in session or session.get('user_type') != 'student':
@@ -71,36 +70,64 @@ def get_available_subjects():
         if not student:
             return jsonify({'error': 'Student not found'}), 404
         
-        # Get all subjects for student's department and semester
-        # Using case-insensitive and flexible matching
-        query = Subject.query
+        # Count enrolled subjects
+        enrolled_count = StudentEnrollment.query.filter_by(
+            student_id=student.student_id,
+            status='active'
+        ).count()
         
-        # If student has department and semester, filter by them
-        if student.department and student.semester:
-            # Case-insensitive department match
-            available_subjects = query.filter(
-                db.func.lower(Subject.department) == db.func.lower(student.department),
-                Subject.semester == student.semester
-            ).all()
-        else:
-            # If student doesn't have department/semester set, show all subjects
-            available_subjects = query.all()
+        return jsonify({
+            'success': True,
+            'student': {
+                'student_id': student.student_id,
+                'name': student.name,
+                'roll_no': student.roll_no,
+                'email': student.email,
+                'department': student.department,
+                'semester': student.semester,
+                'enrolled_count': enrolled_count
+            }
+        }), 200
         
-        # Get already enrolled subject IDs
-        enrolled_subject_ids = [
-            e.subject_id for e in StudentEnrollment.query.filter_by(
-                student_id=student.student_id,
-                status='active'
-            ).all()
-        ]
+    except Exception as e:
+        return jsonify({'error': f'Failed to fetch student info: {str(e)}'}), 500
+
+
+@enrollment_bp.route('/student/available-subjects', methods=['GET'])
+def get_available_subjects():
+    """
+    Get ALL available subjects for student enrollment requests
+    Students can request to enroll in any subject, faculty approval required
+    """
+    try:
+        if 'user_id' not in session or session.get('user_type') != 'student':
+            return jsonify({'error': 'Unauthorized - Student login required'}), 401
+        
+        student = Student.query.get(session['user_id'])
+        if not student:
+            return jsonify({'error': 'Student not found'}), 404
+        
+        # Get ALL subjects from database
+        available_subjects = Subject.query.all()
+        
+        # Get enrollment status for all subjects
+        enrollments = StudentEnrollment.query.filter_by(
+            student_id=student.student_id
+        ).all()
+        
+        # Create mapping of subject_id to enrollment status
+        enrollment_status_map = {
+            e.subject_id: e.status for e in enrollments
+        }
         
         subjects_data = []
         for subject in available_subjects:
-            is_enrolled = subject.subject_id in enrolled_subject_ids
+            enrollment_status = enrollment_status_map.get(subject.subject_id, None)
             
             subjects_data.append({
                 'subject_id': subject.subject_id,
                 'subject_name': subject.subject_name,
+                'subject_code': subject.subject_code or f'SUB{subject.subject_id}',
                 'department': subject.department,
                 'semester': subject.semester,
                 'faculty_name': subject.faculty.name if subject.faculty else 'Not Assigned',
@@ -109,7 +136,7 @@ def get_available_subjects():
                     subject_id=subject.subject_id,
                     status='active'
                 ).count(),
-                'is_enrolled': is_enrolled
+                'enrollment_status': enrollment_status  # None, 'pending', 'active', 'rejected'
             })
         
         return jsonify({
@@ -121,11 +148,8 @@ def get_available_subjects():
                 'semester': student.semester
             },
             'subjects': subjects_data,
-            'debug_info': {
-                'total_subjects_in_db': Subject.query.count(),
-                'filtered_subjects': len(available_subjects),
-                'student_filter': f"Department: {student.department}, Semester: {student.semester}"
-            }
+            'total_subjects': len(available_subjects),
+            'message': 'Showing all available subjects. Request enrollment for any subject.'
         }), 200
         
     except Exception as e:
@@ -135,7 +159,7 @@ def get_available_subjects():
 @enrollment_bp.route('/student/enroll', methods=['POST'])
 def enroll_in_subject():
     """
-    Enroll student in a subject
+    Request enrollment in a subject (requires faculty approval)
     Expects JSON: {"subject_id": int}
     """
     try:
@@ -154,7 +178,7 @@ def enroll_in_subject():
         if not student or not subject:
             return jsonify({'error': 'Student or Subject not found'}), 404
         
-        # Check if already enrolled
+        # Check if already has an enrollment/request
         existing = StudentEnrollment.query.filter_by(
             student_id=student.student_id,
             subject_id=subject_id
@@ -163,32 +187,39 @@ def enroll_in_subject():
         if existing:
             if existing.status == 'active':
                 return jsonify({'error': 'Already enrolled in this subject'}), 400
+            elif existing.status == 'pending':
+                return jsonify({'error': 'Enrollment request already pending approval'}), 400
+            elif existing.status == 'rejected':
+                # Allow re-request if previously rejected
+                existing.status = 'pending'
+                existing.enrollment_date = datetime.utcnow()
+                message = 'Enrollment request resubmitted for approval'
             else:
                 # Reactivate enrollment
-                existing.status = 'active'
+                existing.status = 'pending'
                 existing.enrollment_date = datetime.utcnow()
-                message = 'Re-enrolled successfully'
+                message = 'Enrollment request submitted for approval'
         else:
-            # Create new enrollment
+            # Create new enrollment request with pending status
             new_enrollment = StudentEnrollment(
                 student_id=student.student_id,
                 subject_id=subject_id,
                 enrollment_date=datetime.utcnow(),
                 academic_year=f"{datetime.now().year}-{datetime.now().year + 1}",
-                status='active'
+                status='pending'  # Pending faculty approval
             )
             db.session.add(new_enrollment)
-            message = 'Enrolled successfully'
+            message = 'Enrollment request sent to faculty for approval'
         
         # Create notification for faculty
         if subject.faculty_id:
             notification = Notification(
                 user_id=subject.faculty_id,
                 user_type='faculty',
-                title='New Student Enrollment',
-                message=f'{student.name} ({student.roll_no}) has enrolled in {subject.subject_name}',
-                notification_type='enrollment',
-                link=f'/faculty/subjects',
+                title='New Enrollment Request',
+                message=f'{student.name} ({student.roll_no}) has requested to enroll in {subject.subject_name}',
+                notification_type='enrollment_request',
+                link=f'/faculty/enrollments',
                 read=False,
                 created_at=datetime.utcnow()
             )
@@ -289,6 +320,7 @@ def get_my_enrollments():
                 'enrollment_id': enrollment.enrollment_id,
                 'subject_id': subject.subject_id,
                 'subject_name': subject.subject_name,
+                'subject_code': subject.subject_code or f'SUB{subject.subject_id}',
                 'department': subject.department,
                 'semester': subject.semester,
                 'faculty_name': subject.faculty.name if subject.faculty else 'Not Assigned',

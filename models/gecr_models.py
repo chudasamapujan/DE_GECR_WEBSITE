@@ -157,8 +157,11 @@ class Subject(db.Model):
     
     subject_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     subject_name = db.Column(db.String(50), nullable=False)
+    subject_code = db.Column(db.String(20))
     department = db.Column(db.String(50))
     semester = db.Column(db.Integer)
+    credits = db.Column(db.Integer, default=0)
+    description = db.Column(db.String(500))
     faculty_id = db.Column(db.Integer, db.ForeignKey('faculty.faculty_id'))
     
     # Relationships
@@ -192,8 +195,11 @@ class Subject(db.Model):
         return {
             'subject_id': self.subject_id,
             'subject_name': self.subject_name,
+            'subject_code': self.subject_code,
             'department': self.department,
             'semester': self.semester,
+            'credits': self.credits,
+            'description': self.description,
             'faculty_id': self.faculty_id,
             'faculty_name': self.faculty.name if self.faculty else None,
             'enrollment_count': self.get_enrollment_count()
