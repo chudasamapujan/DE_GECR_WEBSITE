@@ -2,6 +2,56 @@
 
 A comprehensive web application for the AI & Data Science department at Government Engineering College, Rajkot. Features separate portals for students and faculty with modern design, QR-based attendance system, and robust backend functionality.
 
+## ⚡ Quick Start
+
+### Automated Setup (Recommended)
+
+```powershell
+# 1. Clone or download the project
+# 2. Open PowerShell in project directory
+# 3. Allow script execution (first time only)
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# 4. Run setup script
+.\setup.ps1
+
+# 5. Configure environment
+# Edit .env file with your settings
+
+# 6. Run the application
+.\run.ps1
+
+# 7. Open browser
+# Navigate to http://localhost:5000
+```
+
+### Manual Setup
+
+```powershell
+# Create and activate virtual environment
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure environment
+Copy-Item .env.example .env
+# Edit .env with your settings
+
+# Run application
+python app.py
+```
+
+### Verify Installation
+
+```powershell
+# Check environment setup
+.\check-env.ps1
+```
+
+📖 **Full installation guide**: See [INSTALLATION.md](INSTALLATION.md)
+
 ## 🚀 Features
 
 - **Modern Responsive Design** - Beautiful UI with Tailwind CSS and glass morphism effects

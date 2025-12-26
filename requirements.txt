@@ -1,5 +1,10 @@
+# ==========================================
 # GEC Rajkot Backend Dependencies
-# Flask Framework and Extensions
+# ==========================================
+# Installation: pip install -r requirements.txt
+# Python Version: 3.8+
+
+# Core Flask Framework
 Flask==2.3.3
 Flask-SQLAlchemy==3.0.5
 Flask-Migrate==4.0.5
@@ -15,7 +20,7 @@ Werkzeug==2.3.7
 PyJWT==2.8.0
 bcrypt==4.0.1
 
-# Email and OTP
+# Email and Validation
 email-validator==2.0.0
 
 # Google API for Email Notifications
@@ -28,21 +33,26 @@ google-api-python-client==2.103.0
 python-dateutil==2.8.2
 python-dotenv==1.0.0
 
-# Development Dependencies (optional)
+# Image Processing
+Pillow==10.1.0
+
+# Excel File Processing
+openpyxl==3.1.2
+pandas==2.1.1
+
+# QR Code Generation
+qrcode==7.4.2
+
+# Development Dependencies
 pytest==7.4.2
 pytest-flask==1.2.0
 coverage==7.3.2
 
-# Production Dependencies (optional)
+# Production Server
 gunicorn==21.2.0
-psycopg2-binary==2.9.7  # For PostgreSQL in production
+
+# PostgreSQL Support (Production)
+psycopg2-binary==2.9.7
+
+# Alternative Email Service (Production)
 sendgrid==6.11.0
-Pillow==10.1.0
-
-# Excel file processing
-openpyxl==3.1.2
-pandas==2.1.1
-
-# QR Code Generation and Image Processing
-qrcode==7.4.2
-Pillow==10.1.0

@@ -694,6 +694,135 @@ def register_main_routes(app):
         
         return render_template('faculty/settings.html', faculty=faculty)
 
+    @app.route('/faculty/upload-photo', methods=['POST'])
+    def faculty_upload_photo():
+        """Handle faculty profile photo upload from settings page"""
+        if 'user_id' not in session or session.get('user_type') != 'faculty':
+            flash('Please log in to upload a photo', 'error')
+            return redirect(url_for('serve_login', user_type='faculty'))
+
+        if 'photo' not in request.files:
+            flash('No file provided', 'error')
+            return redirect(url_for('serve_faculty_settings'))
+
+        file = request.files['photo']
+        if file.filename == '':
+            flash('No file selected', 'error')
+            return redirect(url_for('serve_faculty_settings'))
+
+        filename = secure_filename(file.filename)
+        _, ext = os.path.splitext(filename)
+        dest_name = f"faculty_{session['user_id']}{ext}"
+
+        upload_dir = os.path.join(app.root_path, app.config.get('UPLOAD_FOLDER', 'uploads'))
+        os.makedirs(upload_dir, exist_ok=True)
+
+        dest_path = os.path.join(upload_dir, dest_name)
+        try:
+            # Save original
+            file.save(dest_path)
+
+            # Create thumbnail using Pillow if available
+            try:
+                from PIL import Image
+                thumb_size = (300, 300)
+                img = Image.open(dest_path)
+                img = img.convert('RGB')
+                img.thumbnail(thumb_size)
+                base, _ = os.path.splitext(dest_name)
+                thumb_name = f"{base}_thumb.jpg"
+                thumb_path = os.path.join(upload_dir, thumb_name)
+                img.save(thumb_path, format='JPEG', quality=85)
+            except Exception as e:
+                # Pillow may not be installed or image processing failed; continue gracefully
+                app.logger.info(f"Thumbnail creation skipped or failed: {e}")
+
+            flash('Profile photo uploaded successfully', 'success')
+        except Exception as e:
+            app.logger.error(f"Failed to save uploaded photo: {e}")
+            flash('Failed to upload photo', 'error')
+
+        return redirect(url_for('serve_faculty_settings'))
+
+    @app.route('/faculty/update-profile', methods=['POST'])
+    def faculty_update_profile():
+        """Handle faculty profile update from settings page"""
+        if 'user_id' not in session or session.get('user_type') != 'faculty':
+            return jsonify({'success': False, 'message': 'Please log in to update your profile'}), 401
+
+        from models.gecr_models import Faculty
+        from database import db
+        
+        faculty = Faculty.query.get(session['user_id'])
+        if not faculty:
+            return jsonify({'success': False, 'message': 'Faculty not found'}), 404
+
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'message': 'No data provided'}), 400
+
+        try:
+            # Update allowed fields
+            if 'name' in data and data['name'].strip():
+                faculty.name = data['name'].strip()
+            if 'phone' in data:
+                faculty.phone = data['phone'].strip() if data['phone'] else None
+            if 'department' in data:
+                faculty.department = data['department'].strip() if data['department'] else None
+            if 'designation' in data:
+                faculty.designation = data['designation'].strip() if data['designation'] else None
+
+            db.session.commit()
+            return jsonify({'success': True, 'message': 'Profile updated successfully'})
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Failed to update faculty profile: {e}")
+            return jsonify({'success': False, 'message': 'Failed to update profile'}), 500
+
+    @app.route('/faculty/change-password', methods=['POST'])
+    def faculty_change_password():
+        """Handle faculty password change from settings page"""
+        if 'user_id' not in session or session.get('user_type') != 'faculty':
+            return jsonify({'success': False, 'message': 'Please log in to change your password'}), 401
+
+        from models.gecr_models import Faculty
+        from database import db
+        
+        faculty = Faculty.query.get(session['user_id'])
+        if not faculty:
+            return jsonify({'success': False, 'message': 'Faculty not found'}), 404
+
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'message': 'No data provided'}), 400
+
+        current_password = data.get('current_password', '')
+        new_password = data.get('new_password', '')
+        confirm_password = data.get('confirm_password', '')
+
+        # Validate inputs
+        if not current_password or not new_password or not confirm_password:
+            return jsonify({'success': False, 'message': 'All password fields are required'}), 400
+
+        if new_password != confirm_password:
+            return jsonify({'success': False, 'message': 'New passwords do not match'}), 400
+
+        if len(new_password) < 6:
+            return jsonify({'success': False, 'message': 'Password must be at least 6 characters long'}), 400
+
+        # Verify current password
+        if not faculty.check_password(current_password):
+            return jsonify({'success': False, 'message': 'Current password is incorrect'}), 400
+
+        try:
+            faculty.set_password(new_password)
+            db.session.commit()
+            return jsonify({'success': True, 'message': 'Password changed successfully'})
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Failed to change faculty password: {e}")
+            return jsonify({'success': False, 'message': 'Failed to change password'}), 500
+
     @app.route('/student/settings')
     def serve_student_settings():
         """Serve student settings page"""

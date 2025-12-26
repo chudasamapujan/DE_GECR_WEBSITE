@@ -1595,6 +1595,86 @@ def list_announcements():
         return jsonify({'error': 'Internal server error'}), 500
 
 
+@faculty_bp.route('/announcements/<int:announcement_id>', methods=['PUT'])
+@require_faculty_auth()
+def update_announcement(announcement_id):
+    """
+    Update an existing announcement
+    """
+    try:
+        from database import db
+        from models.gecr_models import Announcement, Faculty
+        
+        user_email = get_current_user_email()
+        faculty = Faculty.find_by_email(user_email) if user_email else None
+        faculty_id = faculty.faculty_id if faculty else get_current_faculty_id()
+        
+        announcement = Announcement.query.get(announcement_id)
+        if not announcement:
+            return jsonify({'error': 'Announcement not found'}), 404
+        
+        # Check if faculty is the author
+        if announcement.author_id != faculty_id:
+            return jsonify({'error': 'Unauthorized - You can only edit your own announcements'}), 403
+        
+        data = request.get_json() or {}
+        
+        # Update fields
+        if 'title' in data:
+            announcement.title = data['title']
+        if 'message' in data:
+            announcement.message = data['message']
+        if 'expires_at' in data:
+            announcement.expires_at = datetime.fromisoformat(data['expires_at']) if data['expires_at'] else None
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Announcement updated successfully',
+            'announcement': announcement.to_dict()
+        }), 200
+        
+    except Exception as e:
+        current_app.logger.error(f"Update announcement error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+@faculty_bp.route('/announcements/<int:announcement_id>', methods=['DELETE'])
+@require_faculty_auth()
+def delete_announcement(announcement_id):
+    """
+    Delete an announcement
+    """
+    try:
+        from database import db
+        from models.gecr_models import Announcement, Faculty
+        
+        user_email = get_current_user_email()
+        faculty = Faculty.find_by_email(user_email) if user_email else None
+        faculty_id = faculty.faculty_id if faculty else get_current_faculty_id()
+        
+        announcement = Announcement.query.get(announcement_id)
+        if not announcement:
+            return jsonify({'error': 'Announcement not found'}), 404
+        
+        # Check if faculty is the author
+        if announcement.author_id != faculty_id:
+            return jsonify({'error': 'Unauthorized - You can only delete your own announcements'}), 403
+        
+        db.session.delete(announcement)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Announcement deleted successfully'
+        }), 200
+        
+    except Exception as e:
+        current_app.logger.error(f"Delete announcement error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
 @faculty_bp.route('/events', methods=['POST'])
 @require_faculty_auth()
 def create_event():
@@ -1681,6 +1761,138 @@ def list_events():
         return jsonify({'events': events_with_counts, 'events_count': len(events_with_counts)}), 200
     except Exception as e:
         current_app.logger.error(f"List events error: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+@faculty_bp.route('/events/<int:event_id>', methods=['PUT'])
+@require_faculty_auth()
+def update_event(event_id):
+    """Update an event (faculty can only update their own events)"""
+    try:
+        from database import db
+        from models.gecr_models import Event
+
+        faculty_id = get_current_faculty_id()
+        if not faculty_id:
+            return jsonify({'error': 'Faculty not authenticated'}), 401
+
+        event = Event.query.get(event_id)
+        if not event:
+            return jsonify({'error': 'Event not found'}), 404
+
+        if event.created_by != faculty_id:
+            return jsonify({'error': 'Access denied - you can only update your own events'}), 403
+
+        data = request.get_json() or {}
+
+        # Update fields
+        if 'title' in data:
+            event.title = data['title']
+        if 'description' in data:
+            event.description = data['description']
+        if 'start_time' in data:
+            event.start_time = datetime.fromisoformat(data['start_time'])
+        if 'end_time' in data:
+            event.end_time = datetime.fromisoformat(data['end_time']) if data['end_time'] else None
+        if 'location' in data:
+            event.location = data['location']
+
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': 'Event updated successfully',
+            'event': event.to_dict()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Update event error: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+@faculty_bp.route('/events/<int:event_id>', methods=['DELETE'])
+@require_faculty_auth()
+def delete_event(event_id):
+    """Delete an event (faculty can only delete their own events)"""
+    try:
+        from database import db
+        from models.gecr_models import Event, EventRegistration
+
+        faculty_id = get_current_faculty_id()
+        if not faculty_id:
+            return jsonify({'error': 'Faculty not authenticated'}), 401
+
+        event = Event.query.get(event_id)
+        if not event:
+            return jsonify({'error': 'Event not found'}), 404
+
+        if event.created_by != faculty_id:
+            return jsonify({'error': 'Access denied - you can only delete your own events'}), 403
+
+        # Delete all registrations first
+        EventRegistration.query.filter_by(event_id=event_id).delete()
+
+        # Delete the event
+        db.session.delete(event)
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': 'Event deleted successfully'
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Delete event error: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+@faculty_bp.route('/events/<int:event_id>/registrations/download', methods=['GET'])
+@require_faculty_auth()
+def download_event_registrations(event_id):
+    """Download event registrations as CSV"""
+    try:
+        from models.gecr_models import Event, EventRegistration
+        import csv
+        from io import StringIO
+        from flask import make_response
+
+        faculty_id = get_current_faculty_id()
+        if not faculty_id:
+            return jsonify({'error': 'Faculty not authenticated'}), 401
+
+        event = Event.query.get(event_id)
+        if not event:
+            return jsonify({'error': 'Event not found'}), 404
+
+        if event.created_by != faculty_id:
+            return jsonify({'error': 'Access denied'}), 403
+
+        registrations = EventRegistration.query.filter_by(event_id=event_id).order_by(EventRegistration.registered_at.desc()).all()
+
+        # Create CSV
+        si = StringIO()
+        writer = csv.writer(si)
+        writer.writerow(['Roll No', 'Name', 'Email', 'Department', 'Semester', 'Registered At'])
+
+        for reg in registrations:
+            writer.writerow([
+                reg.student.roll_no if reg.student else '-',
+                reg.student.name if reg.student else '-',
+                reg.student.email if reg.student else '-',
+                reg.student.department if reg.student else '-',
+                reg.student.semester if reg.student else '-',
+                reg.registered_at.strftime('%Y-%m-%d %H:%M:%S') if reg.registered_at else '-'
+            ])
+
+        output = make_response(si.getvalue())
+        output.headers["Content-Disposition"] = f"attachment; filename=event_{event_id}_registrations.csv"
+        output.headers["Content-type"] = "text/csv"
+        return output
+
+    except Exception as e:
+        current_app.logger.error(f"Download registrations error: {e}")
         return jsonify({'error': 'Internal server error'}), 500
 
 
