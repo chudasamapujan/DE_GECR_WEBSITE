@@ -5,7 +5,7 @@ Functions to fetch and aggregate data for student and faculty dashboards
 
 from models.gecr_models import (
     Student, Faculty, Subject, Timetable, Attendance, 
-    Assignment, Submission, Message, Fee, Salary
+    Assignment, Submission, Message, Fee, Salary, StudentEnrollment
 )
 from database import db
 from sqlalchemy import func, desc
@@ -44,15 +44,26 @@ def get_student_dashboard_data(student_id):
             student_id=student_id
         ).order_by(desc(Submission.submitted_at)).limit(5).all()
         
-        # Get current subjects (based on semester)
-        current_subjects = Subject.query.filter_by(semester=student.semester).all()
+        # Get enrolled subjects (using StudentEnrollment table)
+        enrolled_subjects = []
+        enrollments = StudentEnrollment.query.filter_by(
+            student_id=student_id,
+            status='active'
+        ).all()
         
-        # Get today's schedule
+        for enrollment in enrollments:
+            if enrollment.subject:
+                enrolled_subjects.append(enrollment.subject)
+        
+        # Get today's schedule (based on enrolled subjects)
         today = datetime.now().strftime('%A')
-        today_schedule = Timetable.query.join(Subject).filter(
-            Subject.semester == student.semester,
-            Timetable.day_of_week == today
-        ).order_by(Timetable.time_slot).all()
+        enrolled_subject_ids = [s.subject_id for s in enrolled_subjects]
+        today_schedule = []
+        if enrolled_subject_ids:
+            today_schedule = Timetable.query.filter(
+                Timetable.subject_id.in_(enrolled_subject_ids),
+                Timetable.day_of_week == today
+            ).order_by(Timetable.time_slot).all()
         
         # Get recent messages/announcements
         recent_messages = Message.query.filter_by(
@@ -82,7 +93,7 @@ def get_student_dashboard_data(student_id):
             'pending_assignments': pending_assignments,
             'pending_assignments_count': len(pending_assignments),
             'recent_submissions': recent_submissions,
-            'current_subjects': current_subjects,
+            'current_subjects': enrolled_subjects,
             'today_schedule': today_schedule,
             'recent_messages': recent_messages,
             'fees_paid': fees_paid,

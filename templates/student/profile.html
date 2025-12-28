@@ -433,7 +433,7 @@
                     </div>
                     <div>
                         <p class="text-sm text-gray-500">Enrolled Subjects</p>
-                        <p class="text-2xl font-bold text-gray-800" id="enrolledCount">-</p>
+                        <p class="text-2xl font-bold text-gray-800" id="enrolledCount">{{ total_subjects or 0 }}</p>
                     </div>
                 </div>
             </div>
@@ -446,7 +446,7 @@
                     </div>
                     <div>
                         <p class="text-sm text-gray-500">Overall Attendance</p>
-                        <p class="text-2xl font-bold text-gray-800" id="attendanceRate">-</p>
+                        <p class="text-2xl font-bold text-gray-800" id="attendanceRate">{{ overall_attendance or 0 }}%</p>
                     </div>
                 </div>
             </div>
@@ -459,7 +459,7 @@
                     </div>
                     <div>
                         <p class="text-sm text-gray-500">Classes Attended</p>
-                        <p class="text-2xl font-bold text-gray-800" id="classesAttended">-</p>
+                        <p class="text-2xl font-bold text-gray-800" id="classesAttended">{{ classes_attended or 0 }}</p>
                     </div>
                 </div>
             </div>

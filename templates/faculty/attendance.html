@@ -101,29 +101,84 @@
             <p class="text-gray-600 mt-1">Mark and manage student attendance</p>
         </div>
 
-        <div class="glass-card rounded-xl overflow-hidden">
-            <div class="border-b">
-                <nav class="flex">
-                    <button onclick="switchTab('manual')" id="tab-manual" class="px-6 py-4 font-medium border-b-2 border-indigo-600 text-indigo-600">Manual Marking</button>
-                    <button onclick="switchTab('upload')" id="tab-upload" class="px-6 py-4 font-medium text-gray-500 hover:text-gray-700">Excel Upload</button>
-                </nav>
-            </div>
-
-            <div id="content-manual" class="p-6">
-                <h2 class="text-xl font-semibold mb-4">Mark Attendance Manually</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <!-- Subject Selection Card -->
+        <div class="glass-card rounded-xl overflow-hidden mb-6">
+            <div class="p-6">
+                <h2 class="text-xl font-semibold mb-4 flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                    Select Subject & Session
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Select Subject</label>
-                        <select id="subject-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" onchange="loadStudents()">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                        <select id="subject-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" onchange="loadSchedule()">
                             <option value="">-- Select Subject --</option>
                             {% for subject in subjects %}
-                            <option value="{{ subject.subject_id }}">{{ subject.subject_name }}</option>
+                            <option value="{{ subject.subject_id }}" data-code="{{ subject.subject_code }}" data-credits="{{ subject.credits }}">{{ subject.subject_name }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
-                        <input type="date" id="attendance-date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        <input type="date" id="attendance-date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" onchange="loadSchedule()">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Session Type</label>
+                        <select id="session-type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" onchange="filterSchedule()">
+                            <option value="">All Sessions</option>
+                            <option value="Lecture">Lecture</option>
+                            <option value="Lab">Lab</option>
+                            <option value="Tutorial">Tutorial</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Time Slot</label>
+                        <select id="time-slot" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" onchange="loadStudents()">
+                            <option value="">-- Select Time --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Subject Info Card -->
+                <div id="subject-info" class="hidden mt-6 p-4 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg border border-indigo-200">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold text-indigo-900" id="subject-name-display"></h3>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-3">
+                                <div class="flex items-center text-sm text-gray-700">
+                                    <svg class="w-4 h-4 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
+                                    <span class="font-medium">Code:</span>&nbsp;<span id="subject-code-display"></span>
+                                </div>
+                                <div class="flex items-center text-sm text-gray-700">
+                                    <svg class="w-4 h-4 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    <span class="font-medium">Time:</span>&nbsp;<span id="session-time-display"></span>
+                                </div>
+                                <div class="flex items-center text-sm text-gray-700">
+                                    <svg class="w-4 h-4 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                                    <span class="font-medium">Room:</span>&nbsp;<span id="session-room-display"></span>
+                                </div>
+                                <div class="flex items-center text-sm text-gray-700">
+                                    <svg class="w-4 h-4 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                    <span class="font-medium">Type:</span>&nbsp;<span id="session-type-display" class="px-2 py-0.5 rounded-full text-xs font-semibold"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Marking Card -->
+        <div class="glass-card rounded-xl overflow-hidden">
+            <div class="p-6">
+                <!-- Already Marked Warning -->
+                <div id="attendance-marked-warning" class="hidden mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 text-yellow-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-yellow-800">Attendance Already Marked</h4>
+                            <p class="text-sm text-yellow-700 mt-1">Attendance for this session has already been recorded. You can view or update it below.</p>
+                        </div>
                     </div>
                 </div>
 
@@ -154,34 +209,10 @@
                 </div>
 
                 <div id="students-empty" class="text-center py-12 text-gray-500">
-                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-                    <p>Select a subject to view students</p>
+                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <p class="text-lg font-medium">Select subject, date and time slot</p>
+                    <p class="text-sm mt-2">Choose a scheduled session to mark attendance</p>
                 </div>
-            </div>
-
-            <div id="content-upload" class="p-6 hidden">
-                <h2 class="text-xl font-semibold mb-4">Upload Attendance via Excel</h2>
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                    <h3 class="font-semibold text-blue-800 mb-2">Excel Format:</h3>
-                    <ul class="text-sm text-blue-700 space-y-1">
-                        <li>• Required columns: student_id or roll_no, subject_id or subject_name, date, status</li>
-                        <li>• Date format: YYYY-MM-DD</li>
-                        <li>• Status: Present, Absent, or Late</li>
-                    </ul>
-                </div>
-                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-indigo-400 transition cursor-pointer" onclick="document.getElementById('excel-file').click()">
-                    <input type="file" id="excel-file" accept=".xlsx,.xls" class="hidden" onchange="handleFileSelect(event)">
-                    <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-                    <p class="text-lg mb-2 text-gray-700">Click to select Excel file</p>
-                    <p class="text-sm text-gray-500">XLSX, XLS up to 10MB</p>
-                </div>
-                <div id="file-selected" class="mt-4 hidden bg-green-50 border border-green-200 rounded-lg p-4">
-                    <p class="font-medium text-green-800" id="selected-filename"></p>
-                </div>
-                <div class="mt-6">
-                    <button onclick="uploadExcel()" id="upload-btn" class="w-full bg-gradient-to-r from-indigo-600 to-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50" disabled>Upload</button>
-                </div>
-                <div id="upload-result" class="mt-4 hidden"></div>
             </div>
         </div>
     </main>
@@ -191,40 +222,147 @@
     <script>
         document.getElementById('attendance-date').value = new Date().toISOString().split('T')[0];
         let currentStudents = [];
-        let selectedFile = null;
+        let scheduleData = [];
+        let currentSchedule = null;
 
         document.getElementById('mobileMenuButton').addEventListener('click', () => {
             document.querySelector('.sidebar').classList.toggle('open');
         });
 
-        function switchTab(tab) {
-            ['manual', 'upload'].forEach(t => {
-                document.getElementById('content-' + t).classList.toggle('hidden', t !== tab);
-                const tabEl = document.getElementById('tab-' + t);
-                tabEl.classList.toggle('border-indigo-600', t === tab);
-                tabEl.classList.toggle('text-indigo-600', t === tab);
-                tabEl.classList.toggle('border-b-2', t === tab);
-                tabEl.classList.toggle('text-gray-500', t !== tab);
+        async function loadSchedule() {
+            const subjectId = document.getElementById('subject-select').value;
+            const date = document.getElementById('attendance-date').value;
+            
+            // Hide warning when changing subjects/dates
+            document.getElementById('attendance-marked-warning').classList.add('hidden');
+            
+            if (!subjectId || !date) {
+                document.getElementById('time-slot').innerHTML = '<option value="">-- Select Time --</option>';
+                document.getElementById('subject-info').classList.add('hidden');
+                return;
+            }
+
+            // Get day of week from date
+            const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const selectedDate = new Date(date + 'T00:00:00');
+            const dayOfWeek = dayNames[selectedDate.getDay()];
+
+            try {
+                const response = await fetch(`/api/timetable/subject/${subjectId}?day=${dayOfWeek}`);
+                const data = await response.json();
+                
+                if (data.success && data.schedule && data.schedule.length > 0) {
+                    scheduleData = data.schedule;
+                    filterSchedule();
+                    
+                    // Show subject info
+                    const subjectSelect = document.getElementById('subject-select');
+                    const selectedOption = subjectSelect.options[subjectSelect.selectedIndex];
+                    document.getElementById('subject-name-display').textContent = selectedOption.text;
+                    document.getElementById('subject-code-display').textContent = selectedOption.dataset.code || 'N/A';
+                    document.getElementById('subject-info').classList.remove('hidden');
+                } else {
+                    showAlert(`No classes scheduled for ${dayOfWeek}`, 'info');
+                    document.getElementById('time-slot').innerHTML = '<option value="">No sessions available</option>';
+                    document.getElementById('subject-info').classList.add('hidden');
+                }
+            } catch (error) {
+                showAlert('Failed to load schedule', 'error');
+            }
+        }
+
+        function filterSchedule() {
+            const sessionType = document.getElementById('session-type').value;
+            let filtered = scheduleData;
+            
+            if (sessionType) {
+                filtered = scheduleData.filter(s => s.class_type === sessionType);
+            }
+
+            const timeSlotSelect = document.getElementById('time-slot');
+            timeSlotSelect.innerHTML = '<option value="">-- Select Time --</option>';
+            
+            filtered.forEach(schedule => {
+                const option = document.createElement('option');
+                option.value = schedule.timetable_id;
+                option.textContent = `${schedule.time_slot} - ${schedule.class_type} ${schedule.room ? '(Room: ' + schedule.room + ')' : ''}`;
+                option.dataset.schedule = JSON.stringify(schedule);
+                timeSlotSelect.appendChild(option);
             });
+
+            if (filtered.length === 0) {
+                timeSlotSelect.innerHTML = '<option value="">No sessions available</option>';
+            }
         }
 
         async function loadStudents() {
             const subjectId = document.getElementById('subject-select').value;
-            if (!subjectId) {
+            const timeSlotSelect = document.getElementById('time-slot');
+            const selectedOption = timeSlotSelect.options[timeSlotSelect.selectedIndex];
+            
+            if (!subjectId || !selectedOption.value) {
                 document.getElementById('students-container').classList.add('hidden');
                 document.getElementById('students-empty').classList.remove('hidden');
                 return;
             }
+
+            // Update session info display
+            currentSchedule = JSON.parse(selectedOption.dataset.schedule);
+            document.getElementById('session-time-display').textContent = currentSchedule.time_slot;
+            document.getElementById('session-room-display').textContent = currentSchedule.room || 'N/A';
+            const typeDisplay = document.getElementById('session-type-display');
+            typeDisplay.textContent = currentSchedule.class_type;
+            
+            // Color code the session type
+            const typeColors = {
+                'Lecture': 'bg-blue-100 text-blue-800',
+                'Lab': 'bg-green-100 text-green-800',
+                'Tutorial': 'bg-purple-100 text-purple-800'
+            };
+            typeDisplay.className = `px-2 py-0.5 rounded-full text-xs font-semibold ${typeColors[currentSchedule.class_type] || 'bg-gray-100 text-gray-800'}`;
+
             try {
+                // First check if attendance already marked for this session
+                const date = document.getElementById('attendance-date').value;
+                const checkUrl = `/api/attendance/faculty/check?subject_id=${subjectId}&date=${date}&time_slot=${encodeURIComponent(currentSchedule.time_slot)}`;
+                console.log('Checking attendance:', checkUrl);
+                
+                const checkResponse = await fetch(checkUrl);
+                const checkData = await checkResponse.json();
+                console.log('Attendance check result:', checkData);
+                
+                // Show/hide warning message
+                const warningDiv = document.getElementById('attendance-marked-warning');
+                if (checkData.already_marked) {
+                    console.log('Showing warning - attendance already marked');
+                    warningDiv.classList.remove('hidden');
+                } else {
+                    console.log('Hiding warning - no attendance marked yet');
+                    warningDiv.classList.add('hidden');
+                }
+
+                // Load students
                 const response = await fetch('/api/attendance/faculty/students/' + subjectId);
                 const data = await response.json();
                 if (data.success) {
                     currentStudents = data.students;
+                    
+                    // If attendance already marked, pre-populate the statuses
+                    if (checkData.already_marked && checkData.attendance) {
+                        checkData.attendance.forEach(att => {
+                            const student = currentStudents.find(s => s.student_id === att.student_id);
+                            if (student) {
+                                student.attendance_status = att.status;
+                            }
+                        });
+                    }
+                    
                     renderStudentsTable();
                     document.getElementById('students-empty').classList.add('hidden');
                     document.getElementById('students-container').classList.remove('hidden');
                 }
             } catch (error) {
+                console.error('Load students error:', error);
                 showAlert('Failed to load students', 'error');
             }
         }
@@ -236,16 +374,21 @@
             currentStudents.forEach(student => {
                 const row = document.createElement('tr');
                 row.className = 'border-b hover:bg-gray-50';
-                row.innerHTML = `<td class="px-4 py-3">${student.roll_no}</td><td class="px-4 py-3 font-medium">${student.name}</td><td class="px-4 py-3 text-gray-600">${student.department}</td><td class="px-4 py-3 text-center"><div class="inline-flex space-x-2"><button onclick="setStatus(${student.student_id},'Present')" class="status-btn px-3 py-1 rounded-lg text-sm bg-gray-200" data-student="${student.student_id}" data-status="Present">P</button><button onclick="setStatus(${student.student_id},'Absent')" class="status-btn px-3 py-1 rounded-lg text-sm bg-gray-200" data-student="${student.student_id}" data-status="Absent">A</button><button onclick="setStatus(${student.student_id},'Late')" class="status-btn px-3 py-1 rounded-lg text-sm bg-gray-200" data-student="${student.student_id}" data-status="Late">L</button></div></td>`;
+                
+                // Pre-select button if status already set
+                const presentClass = student.attendance_status === 'Present' ? 'bg-green-500 text-white' : 'bg-gray-200 hover:bg-green-500 hover:text-white';
+                const absentClass = student.attendance_status === 'Absent' ? 'bg-red-500 text-white' : 'bg-gray-200 hover:bg-red-500 hover:text-white';
+                
+                row.innerHTML = `<td class="px-4 py-3">${student.roll_no}</td><td class="px-4 py-3 font-medium">${student.name}</td><td class="px-4 py-3 text-gray-600">${student.department}</td><td class="px-4 py-3 text-center"><div class="inline-flex space-x-2"><button onclick="setStatus(${student.student_id},'Present')" class="status-btn px-4 py-2 rounded-lg text-sm font-medium ${presentClass} transition" data-student="${student.student_id}" data-status="Present">Present</button><button onclick="setStatus(${student.student_id},'Absent')" class="status-btn px-4 py-2 rounded-lg text-sm font-medium ${absentClass} transition" data-student="${student.student_id}" data-status="Absent">Absent</button></div></td>`;
                 tbody.appendChild(row);
             });
         }
 
         function setStatus(studentId, status) {
-            document.querySelectorAll(`[data-student="${studentId}"]`).forEach(btn => btn.className = 'status-btn px-3 py-1 rounded-lg text-sm bg-gray-200');
+            document.querySelectorAll(`[data-student="${studentId}"]`).forEach(btn => btn.className = 'status-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 hover:bg-gray-300 transition');
             const btn = document.querySelector(`[data-student="${studentId}"][data-status="${status}"]`);
-            const colors = { Present: 'bg-green-500 text-white', Absent: 'bg-red-500 text-white', Late: 'bg-yellow-500 text-white' };
-            btn.className = `status-btn px-3 py-1 rounded-lg text-sm ${colors[status]}`;
+            const colors = { Present: 'bg-green-500 text-white hover:bg-green-600', Absent: 'bg-red-500 text-white hover:bg-red-600' };
+            btn.className = `status-btn px-4 py-2 rounded-lg text-sm font-medium ${colors[status]}`;
             const student = currentStudents.find(s => s.student_id === studentId);
             if (student) student.attendance_status = status;
         }
@@ -256,41 +399,37 @@
             const subjectId = document.getElementById('subject-select').value;
             const date = document.getElementById('attendance-date').value;
             const attendance = currentStudents.map(s => ({student_id: s.student_id, status: s.attendance_status || 'Absent'}));
+            
+            if (!currentSchedule) {
+                showAlert('Please select a time slot', 'error');
+                return;
+            }
+
             try {
                 const response = await fetch('/api/attendance/faculty/mark', {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({subject_id: parseInt(subjectId), date: date, attendance: attendance})
+                    body: JSON.stringify({
+                        subject_id: parseInt(subjectId), 
+                        date: date, 
+                        attendance: attendance,
+                        class_type: currentSchedule.class_type,
+                        time_slot: currentSchedule.time_slot,
+                        room: currentSchedule.room
+                    })
                 });
                 const data = await response.json();
-                if (data.success) { showAlert('Attendance marked successfully!', 'success'); document.getElementById('subject-select').value = ''; loadStudents(); }
+                if (data.success) { 
+                    showAlert('Attendance marked successfully!', 'success'); 
+                    setTimeout(() => {
+                        document.getElementById('subject-select').value = ''; 
+                        document.getElementById('time-slot').innerHTML = '<option value="">-- Select Time --</option>';
+                        document.getElementById('subject-info').classList.add('hidden');
+                        document.getElementById('students-container').classList.add('hidden');
+                        document.getElementById('students-empty').classList.remove('hidden');
+                    }, 1500);
+                }
                 else { showAlert('Error: ' + data.error, 'error'); }
             } catch (error) { showAlert('Failed to submit attendance', 'error'); }
-        }
-
-        function handleFileSelect(event) {
-            selectedFile = event.target.files[0];
-            if (selectedFile) {
-                document.getElementById('file-selected').classList.remove('hidden');
-                document.getElementById('selected-filename').textContent = '📄 ' + selectedFile.name;
-                document.getElementById('upload-btn').disabled = false;
-            }
-        }
-
-        async function uploadExcel() {
-            if (!selectedFile) return;
-            const formData = new FormData();
-            formData.append('file', selectedFile);
-            try {
-                const response = await fetch('/api/attendance/faculty/upload', {method: 'POST', body: formData});
-                const data = await response.json();
-                if (data.success) {
-                    document.getElementById('upload-result').innerHTML = `<div class="bg-green-50 border border-green-200 rounded-lg p-4 text-green-800">Upload complete: ${data.inserted} new, ${data.updated} updated</div>`;
-                    document.getElementById('upload-result').classList.remove('hidden');
-                    selectedFile = null; document.getElementById('excel-file').value = '';
-                    document.getElementById('file-selected').classList.add('hidden');
-                    document.getElementById('upload-btn').disabled = true;
-                } else { showAlert('Upload failed: ' + data.error, 'error'); }
-            } catch (error) { showAlert('Failed to upload', 'error'); }
         }
 
         function showAlert(message, type) {

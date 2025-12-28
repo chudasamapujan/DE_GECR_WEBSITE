@@ -1,6 +1,6 @@
 """
 Authentication Routes for GEC Rajkot Website
-Handles login, registration, OTP verification, and password reset
+Handles login, registration, and password reset
 Author: GEC Rajkot Development Team
 """
 
@@ -12,7 +12,6 @@ import re
 # Import models and db
 from models import Student, Faculty
 from database import db
-from utils.send_email import send_email
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
@@ -303,22 +302,12 @@ def register():
         if existing_user:
             return jsonify({'error': 'User with this email already exists'}), 409
 
-        # Create OTP (imported lazily to avoid circular import if OTP model missing)
-        from models import OTP
-        otp = OTP.create_otp(email, 'registration', user_type, expiry_minutes=10)
-
-        # Send OTP via SendGrid/Flask-Mail/logger via helper
-        try:
-            subject = 'GEC Rajkot - OTP Verification'
-            html = f"<p>Your verification code is: <strong>{otp.otp_code}</strong></p><p>It expires in {otp.time_remaining()} seconds.</p>"
-            send_email(email, subject, html_content=html)
-        except Exception as e:
-            current_app.logger.error(f"Failed to send OTP email via helper: {e}")
+        # Registration without OTP - directly allow registration
+        current_app.logger.info(f"Registration initiated for {email} as {user_type}")
 
         return jsonify({
-            'message': 'OTP sent to email for verification',
-            'email': email,
-            'otp_expires_in': otp.time_remaining()
+            'message': 'Registration initiated. Proceed to complete your profile.',
+            'email': email
         }), 200
         
         # Uncomment when models are available:
@@ -521,19 +510,12 @@ def resend_otp():
         
         if purpose not in ['registration', 'forgot_password']:
             return jsonify({'error': 'Invalid purpose'}), 400
-            from models import OTP
-            otp = OTP.create_otp(email, purpose, user_type, expiry_minutes=10)
 
-        try:
-            subject = 'GEC Rajkot - OTP Verification (resend)'
-            html = f"<p>Your verification code is: <strong>{otp.otp_code}</strong></p><p>It expires in {otp.time_remaining()} seconds.</p>"
-            send_email(email, subject, html_content=html)
-        except Exception as e:
-            current_app.logger.error(f"Failed to resend OTP email via helper: {e}")
-
+        # OTP resend disabled - registration does not require OTP
+        current_app.logger.info(f"OTP resend attempted for {email} (OTP system disabled)")
+        
         return jsonify({
-            'message': 'OTP resent successfully',
-            'otp_expires_in': otp.time_remaining()
+            'message': 'OTP system has been disabled. Please proceed with registration directly.',
         }), 200
         
         # Uncomment when models are available:
@@ -584,20 +566,11 @@ def forgot_password():
         if not validate_email(email):
             return jsonify({'error': 'Invalid email format'}), 400
         
-        # Generate and send OTP for password reset (do not reveal whether user exists)
-            from models import OTP
-            otp = OTP.create_otp(email, 'forgot_password', user_type, expiry_minutes=10)
-
-        try:
-            subject = 'GEC Rajkot - Password Reset OTP'
-            html = f"<p>Your password reset code is: <strong>{otp.otp_code}</strong></p><p>It expires in {otp.time_remaining()} seconds.</p>"
-            send_email(email, subject, html_content=html)
-        except Exception as e:
-            current_app.logger.error(f"Failed to send password reset OTP email via helper: {e}")
+        # Password reset without OTP - direct reset allowed
+        current_app.logger.info(f"Password reset requested for {email} as {user_type}")
 
         return jsonify({
-            'message': 'If the email exists, an OTP has been sent for password reset',
-            'otp_expires_in': otp.time_remaining()
+            'message': 'Password reset initiated. You can now proceed with resetting your password.',
         }), 200
         
         # Uncomment when models are available:

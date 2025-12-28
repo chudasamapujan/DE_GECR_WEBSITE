@@ -50,77 +50,8 @@ def create_notifications_for_students(title, message, notification_type, link=No
         return 0
 
 
-def send_announcement_email_notifications(title, message, faculty_name):
-    """
-    Send email notifications for announcements to students who have email enabled
-    """
-    try:
-        from models.gecr_models import Student
-        from utils.email_notification import send_announcement_emails_bulk
-        
-        # Get all students with email notifications enabled
-        students = Student.query.filter_by(email_notifications_enabled=True).all()
-        
-        if not students:
-            current_app.logger.info("No students with email notifications enabled")
-            return {'sent': 0, 'failed': 0}
-        
-        student_emails = [s.email for s in students]
-        
-        current_app.logger.info(f"Sending announcement emails to {len(student_emails)} students")
-        
-        # Send bulk emails
-        results = send_announcement_emails_bulk(
-            student_emails=student_emails,
-            announcement_title=title,
-            announcement_message=message,
-            faculty_name=faculty_name
-        )
-        
-        current_app.logger.info(f"Email results: {results['sent']} sent, {results['failed']} failed")
-        return results
-        
-    except Exception as e:
-        current_app.logger.error(f"Send announcement emails error: {str(e)}")
-        return {'sent': 0, 'failed': 0}
 
-
-def send_event_email_notifications(title, description, start_time, end_time, location, faculty_name):
-    """
-    Send email notifications for events to students who have email enabled
-    """
-    try:
-        from models.gecr_models import Student
-        from utils.email_notification import send_event_emails_bulk
-        
-        # Get all students with email notifications enabled
-        students = Student.query.filter_by(email_notifications_enabled=True).all()
-        
-        if not students:
-            current_app.logger.info("No students with email notifications enabled")
-            return {'sent': 0, 'failed': 0}
-        
-        student_emails = [s.email for s in students]
-        
-        current_app.logger.info(f"Sending event emails to {len(student_emails)} students")
-        
-        # Send bulk emails
-        results = send_event_emails_bulk(
-            student_emails=student_emails,
-            event_title=title,
-            event_description=description,
-            start_time=start_time,
-            end_time=end_time,
-            location=location,
-            faculty_name=faculty_name
-        )
-        
-        current_app.logger.info(f"Email results: {results['sent']} sent, {results['failed']} failed")
-        return results
-        
-    except Exception as e:
-        current_app.logger.error(f"Send event emails error: {str(e)}")
-        return {'sent': 0, 'failed': 0}
+# Email notification functions removed - no longer sending emails
 
 
 def get_current_user_email():
@@ -600,6 +531,135 @@ def remove_student_enrollment(subject_id, enrollment_id):
         db.session.rollback()
         current_app.logger.error(f"Remove student enrollment error: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
+
+
+@faculty_bp.route('/subjects/<int:subject_id>/enrollments/bulk-upload', methods=['POST'])
+@require_faculty_auth()
+def bulk_upload_enrollments(subject_id):
+    """
+    Bulk upload students to a subject from Excel or CSV file
+    Expects file with columns: enrollment_no or roll_no (required), name (optional)
+    """
+    try:
+        from database import db
+        from models.gecr_models import Faculty, Subject, Student, StudentEnrollment
+        from sqlalchemy import or_
+        import pandas as pd
+        from werkzeug.utils import secure_filename
+        import os
+        
+        current_user_email = get_current_user_email()
+        faculty = Faculty.find_by_email(current_user_email) if current_user_email else None
+        faculty_id = faculty.faculty_id if faculty else get_current_faculty_id()
+        
+        if not faculty_id:
+            return jsonify({'error': 'Faculty not found'}), 404
+        
+        # Verify faculty teaches this subject
+        subject = Subject.query.get(subject_id)
+        if not subject:
+            return jsonify({'error': 'Subject not found'}), 404
+        
+        if subject.faculty_id != faculty_id:
+            return jsonify({'error': 'You are not authorized to manage enrollments for this subject'}), 403
+        
+        # Check if file is present
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file uploaded'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        # Validate file extension
+        allowed_extensions = {'.xlsx', '.xls', '.csv'}
+        filename = secure_filename(file.filename)
+        file_ext = os.path.splitext(filename)[1].lower()
+        
+        if file_ext not in allowed_extensions:
+            return jsonify({'error': 'Invalid file format. Only Excel (.xlsx, .xls) and CSV (.csv) files are allowed'}), 400
+        
+        # Read file into pandas DataFrame
+        try:
+            if file_ext == '.csv':
+                df = pd.read_csv(file)
+            else:
+                df = pd.read_excel(file)
+        except Exception as e:
+            return jsonify({'error': f'Failed to read file: {str(e)}'}), 400
+        
+        # Validate required columns
+        enrollment_col = None
+        for col in df.columns:
+            col_lower = col.lower().strip()
+            if col_lower in ['enrollment_no', 'enrollment', 'enroll_no', 'roll_no', 'rollno', 'roll no']:
+                enrollment_col = col
+                break
+        
+        if not enrollment_col:
+            return jsonify({'error': 'File must contain an "enrollment_no" or "roll_no" column'}), 400
+        
+        # Process enrollments
+        added_count = 0
+        skipped_count = 0
+        not_found = []
+        
+        for index, row in df.iterrows():
+            enrollment_no = str(row[enrollment_col]).strip()
+            
+            if pd.isna(enrollment_no) or not enrollment_no or enrollment_no.lower() == 'nan':
+                continue
+            
+            # Find student by enrollment number
+            student = Student.query.filter(
+                or_(
+                    Student.enrollment_no == enrollment_no,
+                    Student.roll_no == enrollment_no
+                )
+            ).first()
+            
+            if not student:
+                not_found.append(enrollment_no)
+                continue
+            
+            # Check if already enrolled
+            existing = StudentEnrollment.query.filter_by(
+                student_id=student.student_id,
+                subject_id=subject_id
+            ).first()
+            
+            if existing:
+                # If dropped, reactivate
+                if existing.status == 'dropped':
+                    existing.status = 'active'
+                    added_count += 1
+                else:
+                    skipped_count += 1
+                continue
+            
+            # Create new enrollment
+            new_enrollment = StudentEnrollment(
+                student_id=student.student_id,
+                subject_id=subject_id,
+                status='active'
+            )
+            db.session.add(new_enrollment)
+            added_count += 1
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'added': added_count,
+            'skipped': skipped_count,
+            'not_found': not_found,
+            'message': f'Successfully added {added_count} students'
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Bulk upload enrollments error: {str(e)}")
+        return jsonify({'error': f'Failed to process upload: {str(e)}'}), 500
 
 
 @faculty_bp.route('/enrollment-requests', methods=['GET'])
@@ -1545,15 +1605,32 @@ def create_announcement():
         data = request.get_json() or {}
         title = data.get('title')
         message = data.get('message')
+        expires_at_str = data.get('expires_at')
+        
         if not title or not message:
             return jsonify({'error': 'Title and message are required'}), 400
 
         from database import db
         from models.gecr_models import Faculty, Announcement
+        from datetime import datetime
+        
         faculty = Faculty.find_by_email(current_user_email) if current_user_email else None
         author_id = faculty.faculty_id if faculty else get_current_faculty_id()
 
-        ann = Announcement(title=title, message=message, author_id=author_id)
+        # Parse expires_at if provided
+        expires_at = None
+        if expires_at_str:
+            try:
+                expires_at = datetime.fromisoformat(expires_at_str.replace('Z', '+00:00'))
+            except:
+                pass
+
+        ann = Announcement(
+            title=title, 
+            message=message, 
+            author_id=author_id,
+            expires_at=expires_at
+        )
         db.session.add(ann)
         db.session.commit()
 
@@ -1565,16 +1642,7 @@ def create_announcement():
             link='/student/dashboard'
         )
 
-        # Send email notifications (async, non-blocking)
-        try:
-            send_announcement_email_notifications(
-                title=title,
-                message=message,
-                faculty_name=faculty.name if faculty else "Faculty"
-            )
-        except Exception as email_error:
-            current_app.logger.warning(f"Email notification failed: {email_error}")
-            # Don't fail the request if email fails
+        # Email notifications removed - no longer sending emails
 
         return jsonify({'message': 'Announcement created', 'announcement_id': ann.announcement_id, 'announcement': ann.to_dict()}), 201
 
@@ -1718,18 +1786,7 @@ def create_event():
             link='/student/events'
         )
 
-        # Send email notifications (async, non-blocking)
-        try:
-            send_event_email_notifications(
-                title=title,
-                description=description,
-                start_time=start_dt,
-                end_time=end_dt or start_dt,
-                location=location or "TBA",
-                faculty_name=faculty.name if faculty else "Faculty"
-            )
-        except Exception as email_error:
-            current_app.logger.warning(f"Email notification failed: {email_error}")
+        # Email notifications removed - no longer sending emails
 
         return jsonify({'message': 'Event created', 'event_id': ev.event_id, 'event': ev.to_dict()}), 201
 
@@ -2735,6 +2792,45 @@ def delete_subject(subject_id):
         db.session.rollback()
         current_app.logger.error(f"Delete subject error: {str(e)}")
         return jsonify({'error': f'Failed to delete subject: {str(e)}'}), 500
+
+
+@faculty_bp.route('/timetable/subject/<int:subject_id>', methods=['GET'])
+def get_subject_timetable(subject_id):
+    """
+    Get timetable for a specific subject
+    Optional query param: day (e.g., Monday, Tuesday)
+    """
+    try:
+        from models.gecr_models import Timetable, Subject
+        from database import db
+        
+        # Get optional day filter
+        day = request.args.get('day')
+        
+        # Build query
+        query = Timetable.query.filter_by(subject_id=subject_id)
+        
+        if day:
+            query = query.filter_by(day_of_week=day)
+        
+        # Get schedule
+        schedule = query.all()
+        
+        if not schedule:
+            return jsonify({
+                'success': False,
+                'message': 'No schedule found'
+            }), 404
+        
+        return jsonify({
+            'success': True,
+            'schedule': [s.to_dict() for s in schedule]
+        }), 200
+        
+    except Exception as e:
+        current_app.logger.error(f"Get timetable error: {str(e)}")
+        return jsonify({'error': f'Failed to fetch timetable: {str(e)}'}), 500
+
 
 # Error handlers for the faculty blueprint
 @faculty_bp.errorhandler(403)

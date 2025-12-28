@@ -739,7 +739,8 @@
                 });
                 
                 if (response.ok) {
-                    const data = await response.json();
+                    const result = await response.json();
+                    const data = result.student || result; // Handle both {student: {...}} and direct response
                     
                     // Update department info
                     const dept = data.department || 'Not Set';

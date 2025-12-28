@@ -362,6 +362,70 @@ def faculty_get_subjects():
         return jsonify({'error': f'Failed to fetch subjects: {str(e)}'}), 500
 
 
+@attendance_bp.route('/faculty/check', methods=['GET'])
+def faculty_check_attendance():
+    """
+    Check if attendance has already been marked for a specific session
+    Query params: subject_id, date, time_slot (optional)
+    """
+    try:
+        # Check if user is faculty
+        if 'user_id' not in session or session.get('user_type') != 'faculty':
+            return jsonify({'error': 'Unauthorized - Faculty login required'}), 401
+        
+        subject_id = request.args.get('subject_id', type=int)
+        date_str = request.args.get('date')
+        time_slot = request.args.get('time_slot')
+        
+        if not subject_id or not date_str:
+            return jsonify({'error': 'subject_id and date are required'}), 400
+        
+        # Parse date
+        try:
+            attendance_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD'}), 400
+        
+        # Verify faculty teaches this subject
+        subject = Subject.query.get(subject_id)
+        if not subject or subject.faculty_id != session['user_id']:
+            return jsonify({'error': 'Unauthorized'}), 403
+        
+        # Check if attendance exists
+        query = Attendance.query.filter_by(
+            subject_id=subject_id,
+            date=attendance_date
+        )
+        
+        # Filter by time slot if provided
+        if time_slot:
+            query = query.filter_by(time_slot=time_slot)
+        
+        existing_attendance = query.all()
+        
+        if existing_attendance:
+            # Return existing attendance data
+            attendance_data = []
+            for att in existing_attendance:
+                attendance_data.append({
+                    'student_id': att.student_id,
+                    'status': att.status
+                })
+            
+            return jsonify({
+                'already_marked': True,
+                'count': len(existing_attendance),
+                'attendance': attendance_data
+            }), 200
+        else:
+            return jsonify({
+                'already_marked': False
+            }), 200
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to check attendance: {str(e)}'}), 500
+
+
 @attendance_bp.route('/faculty/students/<int:subject_id>', methods=['GET'])
 def faculty_get_students_for_subject(subject_id):
     """

@@ -22,7 +22,6 @@ load_dotenv()
 # Import configurations and routes
 from database import init_database, create_tables
 from routes import auth_bp, student_bp, faculty_bp, attendance_bp, enrollment_bp, subject_bp
-from routes.qr_attendance_routes import qr_attendance_bp
 
 def create_app(config_name='development'):
     """
@@ -71,15 +70,6 @@ def get_config(config_name):
         'JWT_ACCESS_TOKEN_EXPIRES': timedelta(hours=24),
         'JWT_REFRESH_TOKEN_EXPIRES': timedelta(days=30),
         'JWT_ALGORITHM': 'HS256',
-        
-        # Mail configuration (for OTP emails)
-        'MAIL_SERVER': os.environ.get('MAIL_SERVER', 'smtp.gmail.com'),
-        'MAIL_PORT': int(os.environ.get('MAIL_PORT', 587)),
-        'MAIL_USE_TLS': True,
-        'MAIL_USE_SSL': False,
-        'MAIL_USERNAME': os.environ.get('MAIL_USERNAME', ''),
-        'MAIL_PASSWORD': os.environ.get('MAIL_PASSWORD', ''),
-        'MAIL_DEFAULT_SENDER': os.environ.get('MAIL_DEFAULT_SENDER', 'noreply@gecrajkot.ac.in'),
         
         # CORS configuration
         'CORS_ORIGINS': ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:8080'],
@@ -169,9 +159,6 @@ def register_blueprints(app):
     
     # Subject management routes
     app.register_blueprint(subject_bp)
-    
-    # QR-based attendance routes
-    app.register_blueprint(qr_attendance_bp)
 
 def register_error_handlers(app):
     """
@@ -313,7 +300,7 @@ def register_main_routes(app):
                 'auth': {
                     'login': 'POST /api/auth/login',
                     'register': 'POST /api/auth/register',
-                    'verify_otp': 'POST /api/auth/verify-otp',
+
                     'forgot_password': 'POST /api/auth/forgot-password',
                     'reset_password': 'POST /api/auth/reset-password',
                     'profile': 'GET /api/auth/profile',
@@ -349,6 +336,44 @@ def register_main_routes(app):
                 'website': app.config['COLLEGE_WEBSITE']
             }
         })
+
+    @app.route('/api/timetable/subject/<int:subject_id>', methods=['GET'])
+    def get_subject_timetable(subject_id):
+        """
+        Get timetable for a specific subject
+        Optional query param: day (e.g., Monday, Tuesday)
+        """
+        try:
+            from models.gecr_models import Timetable, Subject
+            from database import db
+            
+            # Get optional day filter
+            day = request.args.get('day')
+            
+            # Build query
+            query = Timetable.query.filter_by(subject_id=subject_id)
+            
+            if day:
+                query = query.filter_by(day_of_week=day)
+            
+            # Get schedule
+            schedule = query.all()
+            
+            if not schedule:
+                return jsonify({
+                    'success': False,
+                    'message': 'No schedule found',
+                    'schedule': []
+                }), 200
+            
+            return jsonify({
+                'success': True,
+                'schedule': [s.to_dict() for s in schedule]
+            }), 200
+            
+        except Exception as e:
+            app.logger.error(f"Get timetable error: {str(e)}")
+            return jsonify({'success': False, 'error': f'Failed to fetch timetable: {str(e)}'}), 500
 
     # Static file serving for frontend
     @app.route('/frontend/<path:filename>')
@@ -391,10 +416,6 @@ def register_main_routes(app):
         else:
             return "Not found", 404
         return render_template(tpl)
-
-    @app.route('/auth/verify')
-    def serve_verify():
-        return render_template('otp_verification.html')
 
     @app.route('/student/dashboard')
     def serve_student_dashboard():
@@ -446,8 +467,30 @@ def register_main_routes(app):
             flash('Please log in to access this page', 'error')
             return redirect(url_for('serve_login', user_type='student'))
         
-        from models.gecr_models import Student
+        from models.gecr_models import Student, StudentEnrollment, Attendance
         student = Student.query.get(session['user_id'])
+
+        # Calculate stats
+        # Total enrolled subjects
+        total_subjects = StudentEnrollment.query.filter_by(
+            student_id=student.student_id,
+            status='active'
+        ).count()
+        
+        # Total classes attended
+        classes_attended = Attendance.query.filter_by(
+            student_id=student.student_id,
+            status='Present'
+        ).count()
+        
+        # Calculate overall attendance percentage
+        total_attendance_records = Attendance.query.filter_by(
+            student_id=student.student_id
+        ).count()
+        
+        overall_attendance = 0
+        if total_attendance_records > 0:
+            overall_attendance = round((classes_attended / total_attendance_records) * 100, 1)
 
         # Try to find an uploaded profile photo for this student in UPLOAD_FOLDER
         upload_dir = os.path.join(app.root_path, app.config.get('UPLOAD_FOLDER', 'uploads'))
@@ -466,7 +509,12 @@ def register_main_routes(app):
         except Exception:
             photo_filename = None
 
-        return render_template('student/profile.html', student=student, photo_filename=photo_filename)
+        return render_template('student/profile.html', 
+                             student=student, 
+                             photo_filename=photo_filename,
+                             total_subjects=total_subjects,
+                             classes_attended=classes_attended,
+                             overall_attendance=overall_attendance)
 
     @app.route('/student/attendance')
     def serve_student_attendance():
@@ -517,11 +565,8 @@ def register_main_routes(app):
         student = Student.query.get(session['user_id'])
         return render_template('student/events.html', student=student)
 
-    @app.route('/student/mark-attendance')
-    def serve_student_mark_attendance():
-        """Serve QR scanning attendance page for students"""
-        # This page doesn't require login - students access via QR scan
-        return render_template('student/mark_attendance.html')
+    # Note: Student attendance is marked by faculty, students can view their attendance records
+    # at /student/attendance. QR-based attendance has been removed.
 
     # ==================== Faculty Pages ====================
 
@@ -530,14 +575,39 @@ def register_main_routes(app):
     def serve_faculty_profile():
         """Serve faculty profile page with database data"""
         from flask import session, redirect, url_for, flash
-        from models.gecr_models import Faculty
+        from models.gecr_models import Faculty, Subject, StudentEnrollment, Timetable
+        from datetime import datetime
         
         if 'user_id' not in session or session.get('user_type') != 'faculty':
             flash('Please log in to access this page', 'error')
             return redirect(url_for('serve_login', user_type='faculty'))
         
         faculty = Faculty.query.get(session['user_id'])
-        return render_template('faculty/profile.html', faculty=faculty)
+        
+        # Calculate stats
+        # Total subjects teaching
+        total_subjects = Subject.query.filter_by(faculty_id=faculty.faculty_id).count()
+        
+        # Total students across all subjects
+        subjects = Subject.query.filter_by(faculty_id=faculty.faculty_id).all()
+        subject_ids = [s.subject_id for s in subjects]
+        total_students = StudentEnrollment.query.filter(
+            StudentEnrollment.subject_id.in_(subject_ids),
+            StudentEnrollment.status == 'active'
+        ).count() if subject_ids else 0
+        
+        # Today's classes
+        today = datetime.now().strftime('%A')
+        today_classes_count = Timetable.query.filter_by(
+            faculty_id=faculty.faculty_id,
+            day_of_week=today
+        ).count()
+        
+        return render_template('faculty/profile.html', 
+                             faculty=faculty,
+                             total_subjects=total_subjects,
+                             total_students=total_students,
+                             today_classes_count=today_classes_count)
 
     @app.route('/faculty/subjects')
     def serve_faculty_subjects():
@@ -593,31 +663,6 @@ def register_main_routes(app):
         
         return render_template('faculty/assignments.html', **assignments_data)
 
-    @app.route('/faculty/attendance')
-    def serve_faculty_attendance():
-        """Serve faculty attendance page with database data"""
-        from flask import session, redirect, url_for, flash
-        from models.gecr_models import Faculty, Subject, Student, Attendance
-        from database import db
-        
-        if 'user_id' not in session or session.get('user_type') != 'faculty':
-            flash('Please log in to access this page', 'error')
-            return redirect(url_for('serve_login', user_type='faculty'))
-        
-        faculty = Faculty.query.get(session['user_id'])
-        subjects = Subject.query.filter_by(faculty_id=session['user_id']).all()
-        
-        # Get attendance records for faculty's subjects
-        attendance_records = []
-        for subject in subjects:
-            records = db.session.query(Attendance, Student).join(
-                Student, Attendance.student_id == Student.student_id
-            ).filter(Attendance.subject_id == subject.subject_id).all()
-            attendance_records.extend([(record[0], record[1], subject) for record in records])
-        
-        return render_template('faculty/attendance.html', 
-                             faculty=faculty, subjects=subjects, attendance_records=attendance_records)
-
     @app.route('/faculty/schedule')
     def serve_faculty_schedule():
         """Serve faculty schedule page with database data"""
@@ -660,27 +705,18 @@ def register_main_routes(app):
         
         return render_template('faculty/manage-announcements.html')
 
-    @app.route('/faculty/qr-attendance')
-    def serve_faculty_qr_attendance():
-        """Serve QR-based attendance page"""
+    @app.route('/faculty/attendance')
+    def serve_faculty_attendance():
+        """Serve faculty attendance page"""
         if 'user_id' not in session or session.get('user_type') != 'faculty':
             flash('Please log in to access this page', 'error')
             return redirect(url_for('serve_login', user_type='faculty'))
         
-        return render_template('faculty/qr_attendance.html')
-
-    # Redirect old attendance pages to new QR system
-    @app.route('/attendance/faculty/page')
-    def redirect_faculty_attendance():
-        """Redirect old faculty attendance page to new QR system"""
-        flash('Attendance system has been upgraded to QR-based system!', 'info')
-        return redirect('/faculty/qr-attendance')
-    
-    @app.route('/attendance/student/page')
-    def redirect_student_attendance():
-        """Redirect old student attendance page to new QR system"""
-        flash('Attendance system has been upgraded to QR-based system!', 'info')
-        return redirect('/student/mark-attendance')
+        from models.gecr_models import Subject, Faculty
+        faculty = Faculty.query.get(session['user_id'])
+        subjects = Subject.query.filter_by(faculty_id=faculty.faculty_id).all()
+        
+        return render_template('faculty/attendance.html', subjects=subjects)
 
     @app.route('/faculty/settings')
     def serve_faculty_settings():

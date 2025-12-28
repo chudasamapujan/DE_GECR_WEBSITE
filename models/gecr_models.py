@@ -363,7 +363,7 @@ class Announcement(db.Model):
     title = db.Column(db.String(200), nullable=False)
     message = db.Column(db.Text, nullable=False)
     author_id = db.Column(db.Integer, db.ForeignKey('faculty.faculty_id'), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
     expires_at = db.Column(db.DateTime, nullable=True)
 
     def to_dict(self):

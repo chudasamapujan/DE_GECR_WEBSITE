@@ -289,53 +289,44 @@
         </div>
 
         <!-- Quick Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="glass-card p-6 rounded-lg">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-600">Total Subjects</p>
-                        <h2 class="text-2xl font-bold gradient-text">{{ total_subjects }}</h2>
-                    </div>
-                    <div class="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center">
-                        <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="glass-card p-6 rounded-xl hover:shadow-xl transition-all duration-300">
+                <div class="flex items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center shadow-lg">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                         </svg>
                     </div>
-                </div>
-                <div class="mt-4">
-                    <p class="text-sm text-gray-600">Active this semester</p>
+                    <div class="ml-4 flex-1">
+                        <p class="text-sm font-medium text-gray-600 mb-1">Total Subjects</p>
+                        <p class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-indigo-400 bg-clip-text text-transparent">{{ total_subjects }}</p>
+                    </div>
                 </div>
             </div>
-            <div class="glass-card p-6 rounded-lg">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-600">Total Students</p>
-                        <h2 class="text-2xl font-bold gradient-text">{{ total_students }}</h2>
-                    </div>
-                    <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
-                        <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="glass-card p-6 rounded-xl hover:shadow-xl transition-all duration-300">
+                <div class="flex items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                         </svg>
                     </div>
-                </div>
-                <div class="mt-4">
-                    <p class="text-sm text-gray-600">Across all subjects</p>
+                    <div class="ml-4 flex-1">
+                        <p class="text-sm font-medium text-gray-600 mb-1">Total Students</p>
+                        <p class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">{{ total_students }}</p>
+                    </div>
                 </div>
             </div>
-            <div class="glass-card p-6 rounded-lg">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-600">Today's Classes</p>
-                        <h2 class="text-2xl font-bold gradient-text">{{ today_classes_count }}</h2>
-                    </div>
-                    <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
-                        <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="glass-card p-6 rounded-xl hover:shadow-xl transition-all duration-300">
+                <div class="flex items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                     </div>
-                </div>
-                <div class="mt-4">
-                    <p class="text-sm text-gray-600">{% if today_schedule and today_schedule|length > 0 %}Next: {{ today_schedule[0].time_slot }}{% else %}No classes today{% endif %}</p>
+                    <div class="ml-4 flex-1">
+                        <p class="text-sm font-medium text-gray-600 mb-1">Today's Classes</p>
+                        <p class="text-3xl font-bold bg-gradient-to-r from-green-600 to-green-400 bg-clip-text text-transparent">{{ today_classes_count }}</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -424,14 +415,19 @@
 
         async function loadFacultySubjects() {
             try {
-                const response = await fetch('/api/faculty/subjects');
+                const response = await fetch('/api/faculty/subjects', {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
                 const data = await response.json();
                 
                 const container = document.getElementById('faculty-subjects-list');
                 
-                if (data && data.length > 0) {
-                    container.innerHTML = data.slice(0, 6).map(subject => {
-                        const studentCount = subject.enrolled_count || 0;
+                if (data && data.subjects && data.subjects.length > 0) {
+                    container.innerHTML = data.subjects.slice(0, 6).map(subject => {
+                        const studentCount = subject.total_students || 0;
                         
                         return `
                             <div class="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition duration-150 ease-in-out border border-gray-100">
@@ -475,7 +471,12 @@
 
         async function loadFacultyAnnouncements() {
             try {
-                const response = await fetch('/api/faculty/announcements');
+                const response = await fetch('/api/faculty/announcements', {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
                 const data = await response.json();
                 
                 const container = document.getElementById('faculty-announcements-widget');
@@ -508,7 +509,12 @@
 
         async function loadFacultyEvents() {
             try {
-                const response = await fetch('/api/faculty/upcoming-events');
+                const response = await fetch('/api/faculty/events', {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
                 const data = await response.json();
                 
                 const container = document.getElementById('faculty-events-widget');
@@ -550,13 +556,34 @@
         }
 
         function getTimeAgo(date) {
-            const seconds = Math.floor((new Date() - date) / 1000);
+            // Parse the ISO date string and get the time difference
+            const announcementDate = new Date(date);
+            const now = new Date();
+            const seconds = Math.floor((now - announcementDate) / 1000);
             
+            if (seconds < 0) {
+                // Future date, just show the actual date
+                return announcementDate.toLocaleDateString();
+            }
             if (seconds < 60) return 'just now';
-            if (seconds < 3600) return Math.floor(seconds / 60) + ' minutes ago';
-            if (seconds < 86400) return Math.floor(seconds / 3600) + ' hours ago';
-            if (seconds < 604800) return Math.floor(seconds / 86400) + ' days ago';
-            return Math.floor(seconds / 604800) + ' weeks ago';
+            if (seconds < 3600) {
+                const mins = Math.floor(seconds / 60);
+                return mins + (mins === 1 ? ' minute ago' : ' minutes ago');
+            }
+            if (seconds < 86400) {
+                const hrs = Math.floor(seconds / 3600);
+                return hrs + (hrs === 1 ? ' hour ago' : ' hours ago');
+            }
+            if (seconds < 2592000) {
+                const days = Math.floor(seconds / 86400);
+                return days + (days === 1 ? ' day ago' : ' days ago');
+            }
+            if (seconds < 31536000) {
+                const months = Math.floor(seconds / 2592000);
+                return months + (months === 1 ? ' month ago' : ' months ago');
+            }
+            const years = Math.floor(seconds / 31536000);
+            return years + (years === 1 ? ' year ago' : ' years ago');
         }
     </script>
     <!-- Browser Notifications & Badge Updater -->

@@ -633,6 +633,40 @@
                 }
             }
         });
+
+        // Load profile photo
+        async function loadProfilePhoto() {
+            const facultyId = {{ faculty.faculty_id }};
+            const extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            
+            for (const ext of extensions) {
+                const url = `/uploads/faculty_${facultyId}.${ext}`;
+                try {
+                    const response = await fetch(url, { method: 'HEAD' });
+                    if (response.ok) {
+                        const profileImg = document.getElementById('profileAvatarImg');
+                        const avatarPlaceholder = document.getElementById('avatarPlaceholder');
+                        const headerAvatar = document.getElementById('headerAvatar');
+                        
+                        if (profileImg && avatarPlaceholder) {
+                            profileImg.src = url;
+                            profileImg.classList.remove('hidden');
+                            avatarPlaceholder.classList.add('hidden');
+                        }
+                        
+                        if (headerAvatar) {
+                            headerAvatar.innerHTML = `<img src="${url}" alt="Profile" class="w-full h-full object-cover rounded-full">`;
+                        }
+                        return;
+                    }
+                } catch (e) {
+                    // Continue to next extension
+                }
+            }
+        }
+
+        // Load profile photo on page load
+        document.addEventListener('DOMContentLoaded', loadProfilePhoto);
     </script>
 </body>
 </html>
