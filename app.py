@@ -71,6 +71,15 @@ def get_config(config_name):
         'JWT_REFRESH_TOKEN_EXPIRES': timedelta(days=30),
         'JWT_ALGORITHM': 'HS256',
         
+        # Gmail SMTP Email configuration for OTP
+        'MAIL_SERVER': os.environ.get('MAIL_SERVER', 'smtp.gmail.com'),
+        'MAIL_PORT': int(os.environ.get('MAIL_PORT', 587)),
+        'MAIL_USE_TLS': True,
+        'MAIL_USE_SSL': False,
+        'MAIL_USERNAME': os.environ.get('MAIL_USERNAME', ''),
+        'MAIL_PASSWORD': os.environ.get('MAIL_PASSWORD', ''),
+        'MAIL_DEFAULT_SENDER': os.environ.get('MAIL_DEFAULT_SENDER', 'noreply@gecrajkot.ac.in'),
+        
         # CORS configuration
         'CORS_ORIGINS': ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:8080'],
         
@@ -118,6 +127,10 @@ def init_extensions(app):
     
     # Initialize JWT
     jwt = JWTManager(app)
+    
+    # Initialize Flask-Mail for OTP emails
+    mail = Mail(app)
+    app.mail = mail  # Store on app for easy access
     
     # JWT error handlers
     @jwt.expired_token_loader
@@ -417,6 +430,13 @@ def register_main_routes(app):
             return "Not found", 404
         return render_template(tpl)
 
+    @app.route('/auth/verify')
+    def serve_verify():
+        """
+        Serve OTP verification page
+        """
+        return render_template('auth/verify-otp.html')
+
     @app.route('/student/dashboard')
     def serve_student_dashboard():
         """
@@ -588,13 +608,20 @@ def register_main_routes(app):
         # Total subjects teaching
         total_subjects = Subject.query.filter_by(faculty_id=faculty.faculty_id).count()
         
-        # Total students across all subjects
+        # Total unique students across all subjects
         subjects = Subject.query.filter_by(faculty_id=faculty.faculty_id).all()
         subject_ids = [s.subject_id for s in subjects]
-        total_students = StudentEnrollment.query.filter(
-            StudentEnrollment.subject_id.in_(subject_ids),
-            StudentEnrollment.status == 'active'
-        ).count() if subject_ids else 0
+        
+        # Get unique student IDs from all enrollments
+        if subject_ids:
+            enrollments = StudentEnrollment.query.filter(
+                StudentEnrollment.subject_id.in_(subject_ids),
+                StudentEnrollment.status == 'active'
+            ).all()
+            unique_student_ids = set(e.student_id for e in enrollments)
+            total_students = len(unique_student_ids)
+        else:
+            total_students = 0
         
         # Today's classes
         today = datetime.now().strftime('%A')

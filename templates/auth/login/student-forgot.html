@@ -1,180 +1,169 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Forgot Password - Student - GEC Rajkot</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root {
-            --primary: #4F46E5;
-            --accent: #3B82F6;
-            --bg: #ffffff;
-            --text: #1f2937;
+        :root { --primary: #4F46E5; --accent: #3B82F6; --success: #10b981; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; }
+        .auth-wrapper { display: flex; min-height: 100vh; }
+        .auth-image-panel {
+            display: none; width: 50%; position: relative;
+            background: url('https://gecrajkot.ac.in/wp-content/uploads/2023/01/IMG-20230130-WA0004.jpg') center/cover no-repeat;
         }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(--bg) 0%, #f3f4f6 100%);
-            min-height: 100vh;
-            color: var(--text);
+        .auth-image-panel::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(79,70,229,0.88) 0%, rgba(59,130,246,0.82) 50%, rgba(79,70,229,0.92) 100%);
         }
-        .forgot-container {
-            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #581c87 100%);
-            min-height: 100vh;
-            padding: 40px 0;
+        .image-content {
+            position: relative; z-index: 2; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; height: 100%;
+            padding: 3rem; text-align: center; color: white;
         }
-        .glass-card {
-            background: rgba(255,255,255, 0.95);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
+        .image-content .college-name { font-family: 'Playfair Display', serif; font-size: 2.2rem; line-height: 1.2; margin-bottom: 0.5rem; }
+        .image-content .college-sub { font-size: 0.95rem; opacity: 0.85; font-weight: 300; }
+        .auth-form-panel {
+            width: 100%; display: flex; flex-direction: column; justify-content: center;
+            align-items: center; padding: 2rem 1.5rem; background: #f8fafc;
+            position: relative; overflow-y: auto;
         }
-        .gradient-text {
-            background: linear-gradient(45deg, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .form-container { width: 100%; max-width: 460px; animation: slideUp 0.5s ease-out; }
+        .form-header { text-align: center; margin-bottom: 2rem; }
+        .form-header img { width: 48px; height: 48px; object-fit: contain; margin: 0 auto 0.75rem; }
+        .form-header h1 { font-size: 1.6rem; font-weight: 700; color: #1e293b; margin-bottom: 0.25rem; }
+        .form-header p { color: #64748b; font-size: 0.9rem; }
+        /* Steps */
+        .steps-bar { display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; gap: 0.5rem; }
+        .step-dot { width: 36px; height: 36px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; color: #9ca3af; transition: all 0.3s; }
+        .step-dot.active { background: var(--primary); color: white; box-shadow: 0 4px 14px rgba(79,70,229,0.3); }
+        .step-dot.completed { background: var(--success); color: white; }
+        .step-line { width: 40px; height: 3px; background: #e5e7eb; border-radius: 2px; transition: background 0.3s; }
+        .step-line.completed { background: var(--success); }
+        .step-label { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
+        .step-label span { font-size: 0.7rem; color: #9ca3af; font-weight: 500; }
+        .step-label.active span { color: var(--primary); }
+        /* Inputs */
+        .input-group { margin-bottom: 1.25rem; }
+        .input-group label { display: block; font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        .input-wrapper .input-icon { position: absolute; left: 14px; color: #9ca3af; font-size: 1rem; pointer-events: none; }
+        .input-wrapper input, .input-wrapper select {
+            width: 100%; padding: 0.8rem 1rem 0.8rem 2.75rem; border: 2px solid #e5e7eb;
+            border-radius: 12px; font-size: 0.95rem; font-family: 'Inter', sans-serif;
+            background: white; transition: all 0.3s; color: #1e293b;
         }
-        
-        .step-indicator {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 2rem;
-        }
-        
-        .step {
-            display: flex;
-            align-items: center;
-            margin: 0 1rem;
-        }
-        
-        .step-number {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            margin-right: 0.5rem;
-            transition: all 0.3s ease;
-            font-size: 14px;
-        }
-        
-        .step-number.active {
-            background: var(--primary);
-            color: white;
-        }
-        
-        .step-number.completed {
-            background: var(--success);
-            color: white;
-        }
-        
-        .step-line {
-            width: 60px;
-            height: 2px;
-            background: rgba(255, 255, 255, 0.2);
-            margin: 0 1rem;
-        }
-        
-        .step-line.completed {
-            background: var(--success);
-        }
-        
-        .reset-step {
-            display: none;
-        }
-        
-        .reset-step.active {
-            display: block;
-            animation: fadeIn 0.5s ease-in-out;
-        }
-        
+        .input-wrapper input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79,70,229,0.1); }
+        .toggle-password { position: absolute; right: 14px; background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 1rem; padding: 4px; }
+        /* OTP */
+        .otp-container { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1.5rem; }
         .otp-input {
-            width: 50px;
-            height: 50px;
-            text-align: center;
-            font-size: 20px;
-            font-weight: bold;
-            border: 2px solid var(--border-light);
-            border-radius: 8px;
-            margin: 0 4px;
+            width: 48px; height: 56px; text-align: center; font-size: 1.3rem; font-weight: 700;
+            border: 2px solid #e5e7eb; border-radius: 12px; font-family: 'Inter', sans-serif;
+            transition: all 0.3s; color: #1e293b;
         }
-        
-        .otp-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        .otp-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79,70,229,0.1); }
+        /* Buttons */
+        .btn-primary {
+            width: 100%; padding: 0.85rem; border: none; border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white; font-size: 1rem; font-weight: 600; font-family: 'Inter', sans-serif;
+            cursor: pointer; transition: all 0.3s; display: flex; align-items: center;
+            justify-content: center; gap: 0.5rem;
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(79,70,229,0.35); }
+        .btn-success { background: linear-gradient(135deg, #059669 0%, #10b981 100%); }
+        .btn-success:hover { box-shadow: 0 8px 25px rgba(16,185,129,0.35); }
+        .btn-outline {
+            width: 100%; padding: 0.85rem; border: 2px solid #e5e7eb; border-radius: 12px;
+            background: white; color: #374151; font-size: 1rem; font-weight: 500;
+            font-family: 'Inter', sans-serif; cursor: pointer; transition: all 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+        .reset-step { display: none; }
+        .reset-step.active { display: block; animation: fadeIn 0.4s ease; }
+        .back-link { display: inline-flex; align-items: center; gap: 0.4rem; color: #64748b; font-size: 0.85rem; text-decoration: none; margin-top: 1.5rem; transition: color 0.2s; }
+        .back-link:hover { color: var(--primary); }
+        .blob-1, .blob-2 { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.08; pointer-events: none; }
+        .blob-1 { width: 300px; height: 300px; background: var(--primary); top: -100px; right: -80px; }
+        .blob-2 { width: 250px; height: 250px; background: var(--accent); bottom: -80px; left: -60px; }
+        .mobile-brand { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem; padding: 0.75rem 1rem; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 12px; color: white; }
+        .mobile-brand img { width: 32px; height: 32px; object-fit: contain; filter: brightness(0) invert(1); }
+        .mobile-brand span { font-weight: 600; font-size: 0.85rem; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @media (min-width: 1024px) {
+            .auth-image-panel { display: block; }
+            .auth-form-panel { width: 50%; padding: 3rem; }
+            .mobile-brand { display: none; }
         }
     </style>
 </head>
 <body>
-    <div class="forgot-container flex-center">
-        <div class="container mx-auto px-4">
-            <!-- Header -->
-            <div class="text-center mb-8">
-                <img src="{{ url_for('serve_logo') }}" alt="GEC Rajkot Logo" class="w-16 h-16 mx-auto object-contain mb-4">
-                <h1 class="text-4xl font-bold text-white mb-2">Reset Password</h1>
-                <p class="text-blue-100">Student Portal - GEC Rajkot</p>
-            </div>
-
-            <!-- Step Indicator -->
-            <div class="step-indicator">
-                <div class="step">
-                    <div class="step-number active" id="step1-indicator">1</div>
-                    <span class="text-white text-sm">Verify Identity</span>
-                </div>
-                <div class="step-line" id="line1"></div>
-                <div class="step">
-                    <div class="step-number" id="step2-indicator">2</div>
-                    <span class="text-white text-sm">Verify OTP</span>
-                </div>
-                <div class="step-line" id="line2"></div>
-                <div class="step">
-                    <div class="step-number" id="step3-indicator">3</div>
-                    <span class="text-white text-sm">New Password</span>
+    <div class="auth-wrapper">
+        <div class="auth-image-panel">
+            <div class="image-content">
+                <img src="{{ url_for('serve_logo') }}" alt="GEC Logo" style="width:72px;height:72px;object-fit:contain;margin-bottom:1.5rem;filter:brightness(0) invert(1);">
+                <h2 class="college-name">Government Engineering<br>College, Rajkot</h2>
+                <p class="college-sub">Student Password Recovery</p>
+                <div style="margin-top:3rem;background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);border-radius:16px;padding:1.5rem;max-width:280px;">
+                    <i class="fas fa-shield-halved" style="font-size:2rem;margin-bottom:0.75rem;display:block;"></i>
+                    <p style="font-size:0.9rem;line-height:1.5;">Your account security is our priority. We use OTP verification to ensure only you can reset your password.</p>
                 </div>
             </div>
-
-            <!-- Reset Password Form -->
-            <div class="glass-card p-8 rounded-lg max-w-md mx-auto animate-scale-in">
+        </div>
+        <div class="auth-form-panel">
+            <div class="blob-1"></div>
+            <div class="blob-2"></div>
+            <div class="form-container">
+                <div class="mobile-brand">
+                    <img src="{{ url_for('serve_logo') }}" alt="Logo">
+                    <span>GEC Rajkot &middot; Reset Password</span>
+                </div>
+                <div class="form-header">
+                    <img src="{{ url_for('serve_logo') }}" alt="GEC Rajkot Logo">
+                    <h1>Reset Password</h1>
+                    <p>Student Portal - GEC Rajkot</p>
+                </div>
+                <div class="steps-bar">
+                    <div class="step-label active" id="sl1"><div class="step-dot active" id="step1-indicator">1</div><span>Verify</span></div>
+                    <div class="step-line" id="line1"></div>
+                    <div class="step-label" id="sl2"><div class="step-dot" id="step2-indicator">2</div><span>OTP</span></div>
+                    <div class="step-line" id="line2"></div>
+                    <div class="step-label" id="sl3"><div class="step-dot" id="step3-indicator">3</div><span>Reset</span></div>
+                </div>
                 <form id="forgotPasswordForm">
-                    <!-- Step 1: Identity Verification -->
                     <div class="reset-step active" id="step1">
-                        <h3 class="text-2xl font-bold mb-6 gradient-text text-center">Verify Your Identity</h3>
-                        
-                        <div>
-                            <label for="enrollment" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-id-card mr-2 text-indigo-600"></i>Enrollment Number
-                            </label>
-                            <input type="text" id="enrollment" name="enrollment" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300" required>
+                        <div class="input-group">
+                            <label for="enrollment">Enrollment Number</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-id-card input-icon"></i>
+                                <input type="text" id="enrollment" name="enrollment" placeholder="Enter your enrollment number" required>
+                            </div>
                         </div>
-                        
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-envelope mr-2 text-indigo-600"></i>Registered Email
-                            </label>
-                            <input type="email" id="email" name="email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300" required>
+                        <div class="input-group">
+                            <label for="email">Registered Email</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-envelope input-icon"></i>
+                                <input type="email" id="email" name="email" placeholder="Enter your registered email" required>
+                            </div>
                         </div>
-                        
-                        <button type="button" class="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 w-full" onclick="sendOTP()">
-                            <i class="fas fa-paper-plane mr-2"></i>Send OTP
-                        </button>
+                        <button type="button" class="btn-primary" onclick="sendOTP()"><i class="fas fa-paper-plane"></i>Send OTP</button>
                     </div>
-
-                    <!-- Step 2: OTP Verification -->
                     <div class="reset-step" id="step2">
-                        <h3 class="text-2xl font-bold mb-6 gradient-text text-center">Enter OTP</h3>
-                        
-                        <div class="text-center mb-6">
-                            <p class="text-gray-600 mb-4">We've sent a 6-digit code to your email</p>
-                            <p class="text-sm text-gray-500" id="emailDisplay"></p>
+                        <div style="text-align:center;margin-bottom:1.5rem;">
+                            <div style="width:56px;height:56px;border-radius:50%;background:#eef2ff;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+                                <i class="fas fa-envelope-open-text" style="font-size:1.5rem;color:var(--primary);"></i>
+                            </div>
+                            <p style="color:#64748b;font-size:0.9rem;">We sent a 6-digit code to</p>
+                            <p style="font-weight:600;color:#1e293b;" id="emailDisplay"></p>
                         </div>
-                        
-                        <div class="flex justify-center mb-6">
+                        <div class="otp-container">
                             <input type="text" class="otp-input" maxlength="1" id="otp1">
                             <input type="text" class="otp-input" maxlength="1" id="otp2">
                             <input type="text" class="otp-input" maxlength="1" id="otp3">
@@ -182,322 +171,179 @@
                             <input type="text" class="otp-input" maxlength="1" id="otp5">
                             <input type="text" class="otp-input" maxlength="1" id="otp6">
                         </div>
-                        
-                        <div class="text-center mb-6">
-                            <p class="text-sm text-gray-600">Didn't receive the code?</p>
-                            <button type="button" class="text-indigo-600 hover:text-indigo-800 text-sm" onclick="resendOTP()" id="resendBtn">
+                        <div style="text-align:center;margin-bottom:1.5rem;">
+                            <button type="button" id="resendBtn" style="background:none;border:none;color:var(--primary);font-size:0.85rem;cursor:pointer;font-family:'Inter',sans-serif;" onclick="resendOTP()">
                                 Resend OTP (<span id="timer">60</span>s)
                             </button>
                         </div>
-                        
-                        <div class="flex space-x-4">
-                            <button type="button" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 px-6 rounded-lg transition-all duration-300 flex-1" onclick="goBackToStep1()">
-                                <i class="fas fa-arrow-left mr-2"></i>Back
-                            </button>
-                            <button type="button" class="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 flex-1" onclick="verifyOTP()">
-                                <i class="fas fa-check mr-2"></i>Verify
-                            </button>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+                            <button type="button" class="btn-outline" onclick="goBackToStep1()"><i class="fas fa-arrow-left"></i>Back</button>
+                            <button type="button" class="btn-primary" onclick="verifyOTP()"><i class="fas fa-check"></i>Verify</button>
                         </div>
                     </div>
-
-                    <!-- Step 3: New Password -->
                     <div class="reset-step" id="step3">
-                        <h3 class="text-2xl font-bold mb-6 gradient-text text-center">Set New Password</h3>
-                        
-                        <div>
-                            <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-lock mr-2 text-indigo-600"></i>New Password
-                            </label>
-                            <div class="relative">
-                                <input type="password" id="newPassword" name="newPassword" class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300" required>
-                                <button type="button" id="toggleNewPassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
-                                    <i class="fas fa-eye"></i>
-                                </button>
+                        <div class="input-group">
+                            <label for="newPassword">New Password</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" id="newPassword" name="newPassword" placeholder="Enter new password" required>
+                                <button type="button" id="toggleNewPassword" class="toggle-password"><i class="fas fa-eye"></i></button>
                             </div>
                         </div>
-                        
-                        <div>
-                            <label for="confirmNewPassword" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-lock mr-2 text-indigo-600"></i>Confirm New Password
-                            </label>
-                            <input type="password" id="confirmNewPassword" name="confirmNewPassword" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300" required>
+                        <div class="input-group">
+                            <label for="confirmNewPassword">Confirm New Password</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" id="confirmNewPassword" name="confirmNewPassword" placeholder="Repeat new password" required>
+                            </div>
                         </div>
-                        
-                        <button type="submit" class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 w-full">
-                            <i class="fas fa-key mr-2"></i>Reset Password
-                        </button>
+                        <button type="submit" class="btn-primary btn-success"><i class="fas fa-key"></i>Reset Password</button>
                     </div>
                 </form>
-                
-                <!-- Login Link -->
-                <div class="mt-6 text-center border-t pt-6">
-                    <p class="text-gray-600">Remember your password?</p>
-                    <a href="{{ url_for('serve_login', user_type='student') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-all duration-300 mt-2 inline-block">
-                        <i class="fas fa-sign-in-alt mr-2"></i>Back to Login
-                    </a>
+                <div style="text-align:center;">
+                    <a href="{{ url_for('serve_login', user_type='student') }}" class="back-link"><i class="fas fa-arrow-left"></i>Back to Login</a>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Scripts -->
     <script src="{{ url_for('static', filename='js/validations.js') }}"></script>
     <script src="{{ url_for('static', filename='js/api.js') }}"></script>
     <script>
         let currentStep = 1;
         let otpTimer = 60;
         let timerInterval;
-
         function sendOTP() {
             const enrollment = document.getElementById('enrollment').value.trim();
             const email = document.getElementById('email').value.trim();
             const validator = new GECUtils.FormValidator(document.getElementById('forgotPasswordForm'));
             let isValid = true;
-
-            // Validate enrollment
-            if (!enrollment) {
-                validator.showError('enrollment', 'Enrollment number is required');
-                isValid = false;
-            } else if (!validator.validateEnrollment(enrollment)) {
-                validator.showError('enrollment', 'Please enter a valid enrollment number');
-                isValid = false;
-            } else {
-                validator.showSuccess('enrollment');
-            }
-
-            // Validate email
-            if (!email) {
-                validator.showError('email', 'Email is required');
-                isValid = false;
-            } else if (!validator.validateEmail(email)) {
-                validator.showError('email', 'Please enter a valid email address');
-                isValid = false;
-            } else {
-                validator.showSuccess('email');
-            }
-
+            if (!enrollment) { validator.showError('enrollment', 'Enrollment number is required'); isValid = false; }
+            else if (!validator.validateEnrollment(enrollment)) { validator.showError('enrollment', 'Please enter a valid enrollment number'); isValid = false; }
+            else { validator.showSuccess('enrollment'); }
+            if (!email) { validator.showError('email', 'Email is required'); isValid = false; }
+            else if (!validator.validateEmail(email)) { validator.showError('email', 'Please enter a valid email address'); isValid = false; }
+            else { validator.showSuccess('email'); }
             if (isValid) {
-                    const btn = event.target;
-                    GECUtils.LoadingManager.setLoading(btn, true);
-
-                    fetch('/api/auth/forgot-password', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, user_type: 'student' })
-                    }).then(r => r.json().then(j => ({ ok: r.ok, status: r.status, body: j })))
-                    .then(resp => {
-                        GECUtils.LoadingManager.setLoading(btn, false);
-                        if (!resp.ok) {
-                            GECUtils.toast.error(resp.body.error || 'Failed to send OTP');
-                            return;
-                        }
-
-                        // Move to step 2
-                        document.getElementById('step1').classList.remove('active');
-                        document.getElementById('step2').classList.add('active');
-                        document.getElementById('step1-indicator').classList.add('completed');
-                        document.getElementById('step2-indicator').classList.add('active');
-                        document.getElementById('line1').classList.add('completed');
-
-                        // Show masked email
-                        const maskedEmail = email.replace(/(.{2})(.*)(@.*)/, '$1***$3');
-                        document.getElementById('emailDisplay').textContent = maskedEmail;
-
-                        // Start timer
-                        startResendTimer();
-
-                        GECUtils.toast.success(resp.body.message || 'OTP sent successfully to your email!');
-                        currentStep = 2;
-                    }).catch(err => {
-                        GECUtils.LoadingManager.setLoading(btn, false);
-                        console.error(err);
-                        GECUtils.toast.error('Network error sending OTP');
-                    });
+                const btn = event.target;
+                GECUtils.LoadingManager.setLoading(btn, true);
+                fetch('/api/auth/forgot-password', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, user_type: 'student' })
+                }).then(r => r.json().then(j => ({ ok: r.ok, body: j })))
+                .then(resp => {
+                    GECUtils.LoadingManager.setLoading(btn, false);
+                    if (!resp.ok) { GECUtils.toast.error(resp.body.error || 'Failed to send OTP'); return; }
+                    document.getElementById('step1').classList.remove('active');
+                    document.getElementById('step2').classList.add('active');
+                    document.getElementById('step1-indicator').classList.remove('active');
+                    document.getElementById('step1-indicator').classList.add('completed');
+                    document.getElementById('step1-indicator').innerHTML = '<i class="fas fa-check" style="font-size:0.8rem;"></i>';
+                    document.getElementById('step2-indicator').classList.add('active');
+                    document.getElementById('line1').classList.add('completed');
+                    document.getElementById('sl2').classList.add('active');
+                    const maskedEmail = email.replace(/(.{2})(.*)(@.*)/, '***');
+                    document.getElementById('emailDisplay').textContent = maskedEmail;
+                    startResendTimer();
+                    GECUtils.toast.success(resp.body.message || 'OTP sent successfully!');
+                    currentStep = 2;
+                }).catch(err => { GECUtils.LoadingManager.setLoading(btn, false); GECUtils.toast.error('Network error sending OTP'); });
             }
         }
-
         function startResendTimer() {
             otpTimer = 60;
             const resendBtn = document.getElementById('resendBtn');
             const timerSpan = document.getElementById('timer');
-            
-            resendBtn.disabled = true;
-            resendBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            
+            resendBtn.disabled = true; resendBtn.style.opacity = '0.5';
             timerInterval = setInterval(() => {
-                otpTimer--;
-                timerSpan.textContent = otpTimer;
-                
-                if (otpTimer <= 0) {
-                    clearInterval(timerInterval);
-                    resendBtn.disabled = false;
-                    resendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    resendBtn.innerHTML = 'Resend OTP';
-                }
+                otpTimer--; timerSpan.textContent = otpTimer;
+                if (otpTimer <= 0) { clearInterval(timerInterval); resendBtn.disabled = false; resendBtn.style.opacity = '1'; resendBtn.innerHTML = 'Resend OTP'; }
             }, 1000);
         }
-
         function resendOTP() {
             if (otpTimer <= 0) {
                 const email = document.getElementById('email').value.trim();
                 const btn = document.getElementById('resendBtn');
                 GECUtils.LoadingManager.setLoading(btn, true);
-
-                fetch('/api/auth/resend-otp', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, purpose: 'forgot_password', user_type: 'student' })
-                }).then(r => r.json().then(j => ({ ok: r.ok, body: j })))
-                .then(resp => {
-                    GECUtils.LoadingManager.setLoading(btn, false);
-                    if (!resp.ok) {
-                        GECUtils.toast.error(resp.body.error || 'Failed to resend OTP');
-                        return;
-                    }
-                    GECUtils.toast.info(resp.body.message || 'OTP resent successfully');
-                    startResendTimer();
-                }).catch(err => {
-                    GECUtils.LoadingManager.setLoading(btn, false);
-                    console.error(err);
-                    GECUtils.toast.error('Network error while resending OTP');
-                });
+                fetch('/api/auth/resend-otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, purpose: 'forgot_password', user_type: 'student' }) })
+                .then(r => r.json().then(j => ({ ok: r.ok, body: j })))
+                .then(resp => { GECUtils.LoadingManager.setLoading(btn, false); if (!resp.ok) { GECUtils.toast.error(resp.body.error || 'Failed to resend OTP'); return; } GECUtils.toast.info(resp.body.message || 'OTP resent'); startResendTimer(); })
+                .catch(err => { GECUtils.LoadingManager.setLoading(btn, false); GECUtils.toast.error('Network error'); });
             }
         }
-
         function verifyOTP() {
             const otpInputs = document.querySelectorAll('.otp-input');
-            let otp = '';
-            
-            otpInputs.forEach(input => {
-                otp += input.value;
-            });
-            
-            if (otp.length !== 6) {
-                GECUtils.toast.error('Please enter the complete 6-digit OTP');
-                return;
-            }
-            const email = document.getElementById('email').value.trim();
-            const btn = event.target;
-            GECUtils.LoadingManager.setLoading(btn, true);
-
-            fetch('/api/auth/verify-otp', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, otp, purpose: 'forgot_password', user_type: 'student' })
-            }).then(r => r.json().then(j => ({ ok: r.ok, status: r.status, body: j })))
-            .then(resp => {
-                GECUtils.LoadingManager.setLoading(btn, false);
-                if (!resp.ok) {
-                    GECUtils.toast.error(resp.body.error || 'OTP verification failed');
-                    return;
-                }
-
-                // Move to step 3
-                document.getElementById('step2').classList.remove('active');
-                document.getElementById('step3').classList.add('active');
-                document.getElementById('step2-indicator').classList.add('completed');
-                document.getElementById('step3-indicator').classList.add('active');
-                document.getElementById('line2').classList.add('completed');
-
-                clearInterval(timerInterval);
-                GECUtils.toast.success(resp.body.message || 'OTP verified successfully!');
-                currentStep = 3;
-            }).catch(err => {
-                GECUtils.LoadingManager.setLoading(btn, false);
-                console.error(err);
-                GECUtils.toast.error('Network error verifying OTP');
-            });
+            let otp = ''; otpInputs.forEach(input => { otp += input.value; });
+            if (otp.length !== 6) { GECUtils.toast.error('Please enter the complete 6-digit OTP'); return; }
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step3').classList.add('active');
+            document.getElementById('step2-indicator').classList.remove('active');
+            document.getElementById('step2-indicator').classList.add('completed');
+            document.getElementById('step2-indicator').innerHTML = '<i class="fas fa-check" style="font-size:0.8rem;"></i>';
+            document.getElementById('step3-indicator').classList.add('active');
+            document.getElementById('line2').classList.add('completed');
+            document.getElementById('sl3').classList.add('active');
+            clearInterval(timerInterval);
+            GECUtils.toast.success('Please enter your new password');
+            currentStep = 3;
         }
-
         function goBackToStep1() {
             document.getElementById('step2').classList.remove('active');
             document.getElementById('step1').classList.add('active');
+            document.getElementById('step1-indicator').classList.add('active');
             document.getElementById('step1-indicator').classList.remove('completed');
+            document.getElementById('step1-indicator').innerHTML = '1';
             document.getElementById('step2-indicator').classList.remove('active');
             document.getElementById('line1').classList.remove('completed');
-            
-            clearInterval(timerInterval);
-            currentStep = 1;
+            document.getElementById('sl2').classList.remove('active');
+            clearInterval(timerInterval); currentStep = 1;
         }
-
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('forgotPasswordForm');
+            const toggleNewPassword = document.getElementById('toggleNewPassword');
             const newPasswordField = document.getElementById('newPassword');
             const confirmNewPasswordField = document.getElementById('confirmNewPassword');
-            const toggleNewPassword = document.getElementById('toggleNewPassword');
-
-            // Password visibility toggle
             toggleNewPassword?.addEventListener('click', function() {
                 const type = newPasswordField.getAttribute('type') === 'password' ? 'text' : 'password';
                 newPasswordField.setAttribute('type', type);
-                
-                const icon = toggleNewPassword.querySelector('i');
-                icon.classList.toggle('fa-eye');
-                icon.classList.toggle('fa-eye-slash');
+                toggleNewPassword.querySelector('i').classList.toggle('fa-eye');
+                toggleNewPassword.querySelector('i').classList.toggle('fa-eye-slash');
             });
-
-            // OTP input handling
             const otpInputs = document.querySelectorAll('.otp-input');
             otpInputs.forEach((input, index) => {
-                input.addEventListener('input', function() {
-                    if (this.value.length === 1 && index < otpInputs.length - 1) {
-                        otpInputs[index + 1].focus();
-                    }
-                });
-                
-                input.addEventListener('keydown', function(e) {
-                    if (e.key === 'Backspace' && this.value === '' && index > 0) {
-                        otpInputs[index - 1].focus();
-                    }
-                });
+                input.addEventListener('input', function() { if (this.value.length === 1 && index < otpInputs.length - 1) otpInputs[index + 1].focus(); });
+                input.addEventListener('keydown', function(e) { if (e.key === 'Backspace' && this.value === '' && index > 0) otpInputs[index - 1].focus(); });
             });
-
-            // Form submission
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
-                
                 const newPassword = newPasswordField.value;
                 const confirmNewPassword = confirmNewPasswordField.value;
                 const validator = new GECUtils.FormValidator(form);
                 let isValid = true;
-
-                // Validate new password
-                if (!newPassword) {
-                    validator.showError('newPassword', 'New password is required');
-                    isValid = false;
-                } else if (newPassword.length < 6) {
-                    validator.showError('newPassword', 'Password must be at least 6 characters long');
-                    isValid = false;
-                } else {
-                    validator.showSuccess('newPassword');
-                }
-
-                // Validate confirm password
-                if (!confirmNewPassword) {
-                    validator.showError('confirmNewPassword', 'Please confirm your new password');
-                    isValid = false;
-                } else if (newPassword !== confirmNewPassword) {
-                    validator.showError('confirmNewPassword', 'Passwords do not match');
-                    isValid = false;
-                } else {
-                    validator.showSuccess('confirmNewPassword');
-                }
-
+                if (!newPassword) { validator.showError('newPassword', 'New password is required'); isValid = false; }
+                else if (newPassword.length < 6) { validator.showError('newPassword', 'Password must be at least 6 characters'); isValid = false; }
+                else { validator.showSuccess('newPassword'); }
+                if (!confirmNewPassword) { validator.showError('confirmNewPassword', 'Please confirm your new password'); isValid = false; }
+                else if (newPassword !== confirmNewPassword) { validator.showError('confirmNewPassword', 'Passwords do not match'); isValid = false; }
+                else { validator.showSuccess('confirmNewPassword'); }
                 if (isValid) {
+                    const email = document.getElementById('email').value.trim();
+                    const otpInputs = document.querySelectorAll('.otp-input');
+                    let otp = ''; otpInputs.forEach(input => { otp += input.value; });
                     const submitBtn = form.querySelector('button[type="submit"]');
                     GECUtils.LoadingManager.setLoading(submitBtn, true);
-                    
-                    setTimeout(() => {
+                    fetch('/api/auth/reset-password', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email, new_password: newPassword, reset_token: otp, user_type: 'student' })
+                    }).then(r => r.json().then(j => ({ ok: r.ok, body: j })))
+                    .then(resp => {
                         GECUtils.LoadingManager.setLoading(submitBtn, false);
-                        GECUtils.toast.success('Password reset successfully! You can now login with your new password.');
-                        
-                        setTimeout(() => {
-                            window.location.href = 'student.html';
-                        }, 2000);
-                    }, 2000);
+                        if (!resp.ok) { GECUtils.toast.error(resp.body.error || 'Password reset failed'); return; }
+                        GECUtils.toast.success('Password reset successfully! Redirecting...');
+                        setTimeout(() => { window.location.href = '{{ url_for("serve_login", user_type="student") }}'; }, 2000);
+                    }).catch(err => { GECUtils.LoadingManager.setLoading(submitBtn, false); GECUtils.toast.error('Network error resetting password'); });
                 }
             });
         });
     </script>
 </body>
-</html> 
+</html>

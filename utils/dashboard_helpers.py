@@ -119,15 +119,18 @@ def get_faculty_dashboard_data(faculty_id):
         # Get subjects taught by faculty
         faculty_subjects = Subject.query.filter_by(faculty_id=faculty_id).all()
         
-        # Count total students across all subjects
-        total_students = 0
+        # Count unique students enrolled in faculty's subjects
+        from models import StudentEnrollment
+        unique_student_ids = set()
         for subject in faculty_subjects:
-            # Students in the subject's semester and department
-            subject_students = Student.query.filter_by(
-                semester=subject.semester,
-                department=faculty.department
-            ).count()
-            total_students += subject_students
+            enrollments = StudentEnrollment.query.filter_by(
+                subject_id=subject.subject_id,
+                status='active'
+            ).all()
+            for enrollment in enrollments:
+                unique_student_ids.add(enrollment.student_id)
+        
+        total_students = len(unique_student_ids)
         
         # Get pending assignments to grade
         pending_assignments = Assignment.query.filter_by(faculty_id=faculty_id).all()

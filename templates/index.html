@@ -5,10 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Government Engineering College, Rajkot</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/3.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
             --primary: #4F46E5;
@@ -17,500 +16,1273 @@
             --text: #1f2937;
             --card-bg: #f9fafb;
         }
-        body {
-            font-family: 'Inter', sans-serif,-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue';
-            background: linear-gradient(135deg, var(--bg) 0%, #f3f4f6 100%);
-            min-height: 100vh;
-            color: var(--text);
-        }
-        .glass-card {
-            background: rgba(255,255,255, 0.9);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-        }
-        .hover-scale {
-            transition: all 0.3s ease;
-        }
-        .hover-scale:hover {
-            transform: scale(1.05) translateY(-5px);
-            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
-        }
-        .animate-float {
-            animation: float 6s ease-in-out infinite;
-        }
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-            100% { transform: translateY(0px); }
-        }
-        .animate-slide-in {
-            animation: slideIn 1s ease-out;
-        }
-        @keyframes slideIn {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .gradient-text {
-            background: linear-gradient(45deg, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .portal-card {
-            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(59, 130, 246, 0.1));
-            border: 1px solid rgba(79, 70, 229, 0.2);
-            transform-style: preserve-3d;
-            perspective: 1000px;
-        }
-        .portal-card:hover {
-            transform: rotateY(5deg) rotateX(5deg);
-        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        placement-section {
-            padding: 50px 0;
-            background-color: rgba(8, 103, 236, 0.863);
+        html {
+            scroll-behavior: smooth;
         }
 
-        .section-title {
-            text-align: center;
-            margin-bottom: 40px;
+        body {
+            font-family: 'Inter', sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue';
+            background: var(--bg);
+            min-height: 100vh;
+            color: var(--text);
+            overflow-x: hidden;
         }
 
-        .section-title h3 {
-            color:#4F46E5;
-            font-size: 32px;
+        /* Gradient text */
+        .gradient-text {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Navigation */
+        .nav-glass {
+            background: transparent;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            border-bottom: 1px solid transparent;
+            transition: all 0.4s ease;
+        }
+        .nav-glass .nav-link,
+        .nav-glass .nav-logo-text {
+            transition: color 0.4s ease;
+        }
+        /* Before scroll: light text on dark hero */
+        .nav-glass:not(.scrolled) .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .nav-glass:not(.scrolled) .nav-link:hover {
+            color: white;
+        }
+        .nav-glass:not(.scrolled) .nav-logo-sub {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .nav-glass:not(.scrolled) #menuBtn {
+            color: white;
+        }
+        .nav-glass.scrolled {
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
+            border-bottom-color: rgba(79, 70, 229, 0.08);
+        }
+        .nav-link {
+            position: relative;
+            font-weight: 500;
+            font-size: 0.925rem;
+            letter-spacing: -0.01em;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Mobile menu */
+        .mobile-menu {
+            transform: translateX(100%);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .mobile-menu.open {
+            transform: translateX(0);
+        }
+
+        /* Hero section */
+        .hero-section {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 4rem;
+            overflow: hidden;
+        }
+        .hero-bg-img {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+        .hero-bg-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 30%;
+        }
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(15, 23, 42, 0.35) 0%,
+                rgba(15, 23, 42, 0.5) 40%,
+                rgba(15, 23, 42, 0.85) 75%,
+                rgba(15, 23, 42, 0.95) 100%
+            );
+            z-index: 1;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 64rem;
+            width: 100%;
+            padding: 0 1rem;
+        }
+        .hero-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-weight: 800;
+            color: white;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.75rem;
+        }
+        .hero-subtitle {
+            font-family: 'Inter', sans-serif;
+            font-weight: 300;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .hero-desc {
+            color: rgba(255, 255, 255, 0.55);
+            max-width: 540px;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            color: rgba(255, 255, 255, 0.85);
             font-weight: 600;
-            margin-bottom: 15px;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 8px 18px;
+            border-radius: 100px;
+        }
+        .hero-divider {
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 3px;
+        }
+        /* Hero portal cards on dark bg */
+        .hero-portal-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(16px);
+            border-radius: 18px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-portal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .hero-portal-card:hover {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: rgba(255, 255, 255, 0.22);
+            transform: translateY(-6px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+        .hero-portal-card:hover::before {
+            opacity: 1;
+        }
+        .hero-portal-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.25), rgba(59, 130, 246, 0.25));
+            color: #a5b4fc;
+            transition: all 0.3s ease;
+        }
+        .hero-portal-card:hover .hero-portal-icon {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            transform: scale(1.08);
+        }
+
+        @media (max-width: 640px) {
+            .hero-section {
+                align-items: center;
+                padding-bottom: 2rem;
+            }
+            .hero-title {
+                font-size: 2.5rem !important;
+            }
+        }
+
+        /* Portal cards */
+        .portal-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(79, 70, 229, 0.12);
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .portal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .portal-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(79, 70, 229, 0.15);
+            border-color: rgba(79, 70, 229, 0.25);
+        }
+        .portal-card:hover::before {
+            opacity: 1;
+        }
+        .portal-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+            font-size: 1.75rem;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(59, 130, 246, 0.1));
+            color: var(--primary);
+            transition: all 0.3s ease;
+        }
+        .portal-card:hover .portal-icon {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            transform: scale(1.08);
+        }
+        .portal-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 12px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.25);
+        }
+        .portal-btn:hover {
+            box-shadow: 0 6px 25px rgba(79, 70, 229, 0.35);
+            transform: translateY(-2px);
+        }
+
+        /* Section styling */
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+        .section-header h2 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 1rem;
+        }
+        .section-header p {
+            color: #6b7280;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+        .section-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(59, 130, 246, 0.08));
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.8rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 6px 16px;
+            border-radius: 100px;
+            margin-bottom: 1rem;
+        }
+
+        /* Feature cards */
+        .feature-card {
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .feature-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+            border-color: rgba(79, 70, 229, 0.15);
+        }
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            margin-bottom: 1.25rem;
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1);
+        }
+
+        /* Department cards */
+        .dept-card {
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 16px;
+            padding: 1.75rem;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: flex-start;
+            gap: 1.25rem;
+        }
+        .dept-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+            border-color: rgba(79, 70, 229, 0.18);
+        }
+        .dept-icon {
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(59, 130, 246, 0.1));
+            color: var(--primary);
+            transition: all 0.3s ease;
+        }
+        .dept-card:hover .dept-icon {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+        }
+
+        /* Stats bar */
+        .stats-bar {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .stats-bar::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .stats-bar::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .stat-item {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.85;
+            font-weight: 500;
+        }
+
+        /* Placement section */
+        .placement-section {
+            padding: 5rem 0;
         }
 
         .swiper {
             width: 100%;
-            padding: 20px 0;
+            padding: 20px 0 40px;
         }
 
         .swiper-slide {
             text-align: center;
             background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            padding: 24px 20px;
+            border-radius: 14px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            transition: all 0.35s ease;
         }
 
         .swiper-slide:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+            border-color: rgba(79, 70, 229, 0.15);
         }
 
         .company-logo {
             width: 100%;
-            height: 120px;
+            height: 80px;
             object-fit: contain;
-            transition: transform 0.3s ease;
+            transition: transform 0.35s ease;
+            filter: grayscale(30%);
         }
 
         .swiper-slide:hover .company-logo {
-            transform: scale(1.05);
+            transform: scale(1.08);
+            filter: grayscale(0%);
         }
 
         .swiper-button-next,
         .swiper-button-prev {
-            color: #3c434a;
-            background: rgba(255, 255, 255, 0.9);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            color: var(--primary);
+            background: rgba(255, 255, 255, 0.95);
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
         }
 
         .swiper-button-next:after,
         .swiper-button-prev:after {
-            font-size: 20px;
+            font-size: 16px;
+            font-weight: bold;
         }
 
         .swiper-button-next:hover,
         .swiper-button-prev:hover {
-            background: #fff;
-            transform: scale(1.1);
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.3);
         }
 
-        @media (max-width: 768px) {
-            .swiper-slide {
-                padding: 15px;
-            }
-            
-            .company-logo {
-                height: 100px;
+        /* Contact cards */
+        .contact-card {
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+        .contact-card:hover {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+        }
+        .contact-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(59, 130, 246, 0.1));
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        /* Footer */
+        .site-footer {
+            background: #0f172a;
+            color: #94a3b8;
+            border-top: 1px solid rgba(79, 70, 229, 0.2);
+        }
+        .site-footer a {
+            color: #94a3b8;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .site-footer a:hover {
+            color: #818cf8;
+        }
+        .footer-social-link {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+            color: #94a3b8;
+            font-size: 1rem;
+        }
+        .footer-social-link:hover {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-color: transparent;
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        /* Campus gallery */
+        .campus-img-card {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            min-height: 200px;
+            cursor: pointer;
+        }
+        .campus-img-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            display: block;
+        }
+        .campus-img-card:hover img {
+            transform: scale(1.08);
+        }
+        .campus-img-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1.5rem 1.25rem 1rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+        .campus-img-card:hover .campus-img-overlay {
+            opacity: 1;
+        }
+        .campus-img-label {
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+        }
+        @media (min-width: 1024px) {
+            .campus-img-card.lg\\:row-span-2 {
+                min-height: 420px;
             }
         }
-          
-   
+
+        /* Scroll reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .section-header h2 {
+                font-size: 1.75rem;
+            }
+            .stat-number {
+                font-size: 1.75rem;
+            }
+            .company-logo {
+                height: 60px;
+            }
+            .swiper-slide {
+                padding: 16px;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- 3D Logo -->
-    <div id="logo-container" class="fixed top-4 left-4 w-16 h-16"></div>
 
     <!-- Navigation -->
-    <nav class="glass-card fixed w-full z-50">
-        <div class="container mx-auto px-4 py-4">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-3">
-                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="GEC Rajkot Logo" class="w-11 h-11 object-contain">
-                    <div class="text-2xl font-bold gradient-text">GEC Rajkot</div>
+    <nav class="nav-glass fixed w-full z-50" id="mainNav">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <a href="#home" class="flex items-center space-x-3 flex-shrink-0 group">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="GEC Rajkot Logo" class="w-9 h-9 object-contain transition-transform group-hover:scale-110">
+                    <div class="flex flex-col leading-none">
+                        <span class="text-sm font-bold gradient-text tracking-tight">GEC Rajkot</span>
+                        <span class="text-[10px] nav-logo-sub text-gray-400 font-medium hidden sm:block">Government Engineering College</span>
+                    </div>
+                </a>
+
+                <!-- Desktop nav -->
+                <div class="hidden md:flex items-center space-x-7">
+                    <a href="#home" class="nav-link text-gray-600 hover:text-indigo-600 transition-colors">Home</a>
+                    <a href="#about" class="nav-link text-gray-600 hover:text-indigo-600 transition-colors">About</a>
+                    <a href="#campus" class="nav-link text-gray-600 hover:text-indigo-600 transition-colors">Campus</a>
+                    <a href="#departments" class="nav-link text-gray-600 hover:text-indigo-600 transition-colors">Departments</a>
+                    <a href="#facilities" class="nav-link text-gray-600 hover:text-indigo-600 transition-colors">Facilities</a>
+                    <a href="#placements" class="nav-link text-gray-600 hover:text-indigo-600 transition-colors">Placements</a>
+                    <a href="#contact" class="nav-link text-gray-600 hover:text-indigo-600 transition-colors">Contact</a>
                 </div>
-                <div class="hidden md:flex space-x-6">
-                    <a href="#home" class="text-gray-600 hover:text-indigo-600 transition-colors">Home</a>
-                    <a href="#about" class="text-gray-600 hover:text-indigo-600 transition-colors">About</a>
-                    <a href="#departments" class="text-gray-600 hover:text-indigo-600 transition-colors">Departments</a>
-                    <a href="#facilities" class="text-gray-600 hover:text-indigo-600 transition-colors">Facilities</a>
-                   
-                    <a href="#contact" class="text-gray-600 hover:text-indigo-600 transition-colors">Contact</a>
-                </div>
+
+                <!-- Mobile menu button -->
+                <button id="menuBtn" class="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path id="menuIcon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile menu -->
+        <div id="mobileMenu" class="mobile-menu fixed top-16 right-0 bottom-0 w-72 bg-white shadow-2xl p-6 md:hidden z-50">
+            <div class="flex flex-col space-y-4">
+                <a href="#home" class="mobile-nav-link text-gray-700 hover:text-indigo-600 font-medium py-2 border-b border-gray-100" onclick="closeMobileMenu()">Home</a>
+                <a href="#about" class="mobile-nav-link text-gray-700 hover:text-indigo-600 font-medium py-2 border-b border-gray-100" onclick="closeMobileMenu()">About</a>
+                <a href="#campus" class="mobile-nav-link text-gray-700 hover:text-indigo-600 font-medium py-2 border-b border-gray-100" onclick="closeMobileMenu()">Campus</a>
+                <a href="#departments" class="mobile-nav-link text-gray-700 hover:text-indigo-600 font-medium py-2 border-b border-gray-100" onclick="closeMobileMenu()">Departments</a>
+                <a href="#facilities" class="mobile-nav-link text-gray-700 hover:text-indigo-600 font-medium py-2 border-b border-gray-100" onclick="closeMobileMenu()">Facilities</a>
+                <a href="#placements" class="mobile-nav-link text-gray-700 hover:text-indigo-600 font-medium py-2 border-b border-gray-100" onclick="closeMobileMenu()">Placements</a>
+                <a href="#contact" class="mobile-nav-link text-gray-700 hover:text-indigo-600 font-medium py-2" onclick="closeMobileMenu()">Contact</a>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section id="home" class="min-h-screen flex items-center justify-center px-4 pt-20">
-        <div class="container mx-auto text-center">
-            <h1 class="text-5xl md:text-7xl font-bold mb-6 animate-slide-in gradient-text">
-                Government Engineering College
-            </h1>
-            <p class="text-xl md:text-2xl mb-12 animate-slide-in text-gray-600" style="animation-delay: 0.2s">
-                Rajkot, Gujarat
-            </p>
-            
-           
-            <!-- Login Portals -->
-             
-            <div class="  justify center  grid grid-cols-2 md:grid-cols-2 gap-6 max-w-4xl  mx-auto">
-                <div class="portal-card p-6 rounded-lg hover-scale animate-float" style="animation-delay: 0.6s">
-                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Student Portal</h3>
-                    <a href="{{ url_for('serve_login', user_type='student') }}" class="inline-block bg-gradient-to-r from-indigo-800 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-6 py-2 rounded-md transition-all duration-300">
-                        Login
-                    </a>
-                </div>
-            
-                <div class="portal-card p-6 rounded-lg hover-scale animate-float" style="animation-delay: 0.6s">
-                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Faculty Portal</h3>
-                    <a href="{{ url_for('serve_login', user_type='faculty') }}" class="inline-block bg-gradient-to-r from-indigo-800 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-6 py-2 rounded-md transition-all duration-300">
-                        Login
-                    </a>
+    <section id="home" class="hero-section">
+        <!-- Background Image -->
+        <div class="hero-bg-img">
+            <img src="https://gecrajkot.ac.in/wp-content/uploads/2023/02/IMG-20230130-WA0007.jpg" alt="GEC Rajkot Campus">
+        </div>
+        <div class="hero-overlay"></div>
+
+        <!-- Hero Content -->
+        <div class="hero-content mx-auto">
+            <div class="flex flex-col lg:flex-row items-end lg:items-end justify-between gap-10">
+                <!-- Left: Text -->
+                <div class="max-w-2xl">
+                    <div class="reveal mb-5">
+                        <span class="hero-badge">
+                            <i class="fas fa-graduation-cap text-xs"></i>
+                            Established 2004
+                        </span>
+                    </div>
+
+                    <h1 class="reveal hero-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl" style="transition-delay: 0.1s">
+                        Government<br>Engineering College
+                    </h1>
+
+                    <div class="reveal flex items-center gap-4 mb-5" style="transition-delay: 0.15s">
+                        <div class="hero-divider"></div>
+                        <p class="hero-subtitle text-sm sm:text-base">Rajkot, Gujarat</p>
+                    </div>
+
+                    <p class="reveal hero-desc text-sm sm:text-base leading-relaxed mb-8" style="transition-delay: 0.2s">
+                        Empowering future engineers with excellence in education, innovation, and research. A 40+ acre campus with 100+ GPSC-qualified faculty.
+                    </p>
+
+                    <!-- Scroll indicator -->
+                    <div class="reveal hidden lg:flex items-center gap-3 text-white/30" style="transition-delay: 0.5s">
+                        <div class="w-px h-8 bg-white/20"></div>
+                        <span class="text-[11px] uppercase tracking-[0.2em] font-medium">Scroll to explore</span>
+                        <i class="fas fa-arrow-down text-xs animate-bounce"></i>
+                    </div>
                 </div>
 
+                <!-- Right: Login Portals -->
+                <div class="reveal w-full lg:w-auto flex flex-col sm:flex-row lg:flex-col gap-4 lg:min-w-[260px]" style="transition-delay: 0.35s">
+                    <a href="{{ url_for('serve_login', user_type='student') }}" class="hero-portal-card flex-1 block no-underline">
+                        <div class="hero-portal-icon mx-auto">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-white mb-1">Student Portal</h3>
+                        <p class="text-xs text-white/40 mb-3">Dashboard, grades & more</p>
+                        <span class="portal-btn text-sm">
+                            Login <i class="fas fa-arrow-right text-xs"></i>
+                        </span>
+                    </a>
+
+                    <a href="{{ url_for('serve_login', user_type='faculty') }}" class="hero-portal-card flex-1 block no-underline">
+                        <div class="hero-portal-icon mx-auto">
+                            <i class="fas fa-chalkboard-user"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-white mb-1">Faculty Portal</h3>
+                        <p class="text-xs text-white/40 mb-3">Classes, attendance & more</p>
+                        <span class="portal-btn text-sm">
+                            Login <i class="fas fa-arrow-right text-xs"></i>
+                        </span>
+                    </a>
+                </div>
             </div>
-        
+        </div>
+    </section>
+
+    <!-- Stats Bar -->
+    <section class="px-4 py-16 relative z-10 bg-white">
+        <div class="max-w-5xl mx-auto">
+            <div class="stats-bar reveal">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                    <div class="stat-item">
+                        <div class="stat-number">20+</div>
+                        <div class="stat-label">Years of Excellence</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">8</div>
+                        <div class="stat-label">Departments</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">3000+</div>
+                        <div class="stat-label">Students</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">150+</div>
+                        <div class="stat-label">Faculty Members</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
     <!-- About Section -->
     <section id="about" class="py-20 px-4">
-        <div class="container mx-auto">
-            <h2 class="text-4xl font-bold text-center mb-16 gradient-text">About GEC Rajkot</h2>
+        <div class="max-w-6xl mx-auto">
+            <div class="section-header reveal">
+                <span class="section-badge">
+                    <i class="fas fa-info-circle text-xs"></i>
+                    About Us
+                </span>
+                <h2 class="gradient-text">About GEC Rajkot</h2>
+                <p>Pioneering technical education in Gujarat for over two decades.</p>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="glass-card p-8 rounded-lg hover-scale animate-slide-in">
-                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Our History</h3>
-                    <p class="text-gray-600">Established in 2004, Government Engineering College, Rajkot has been a pioneer in technical education in Gujarat. We have consistently maintained high academic standards and produced skilled engineers who contribute to the nation's development.</p>
+                <div class="feature-card reveal">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(59, 130, 246, 0.1)); color: var(--primary);">
+                        <i class="fas fa-landmark"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Our History</h3>
+                    <p class="text-gray-500 leading-relaxed">Established in 2004, Government Engineering College, Rajkot has been a pioneer in technical education in Gujarat. We have consistently maintained high academic standards and produced skilled engineers who contribute to the nation's development.</p>
                 </div>
-                <div class="glass-card p-8 rounded-lg hover-scale animate-slide-in" style="animation-delay: 0.2s">
-                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Vision & Mission</h3>
-                    <p class="text-gray-600">To be a center of excellence in technical education and research, producing competent engineers with strong ethical values and leadership qualities, contributing to the technological advancement of society.</p>
+                <div class="feature-card reveal" style="transition-delay: 0.1s">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(6, 182, 212, 0.1)); color: var(--accent);">
+                        <i class="fas fa-bullseye"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Vision & Mission</h3>
+                    <p class="text-gray-500 leading-relaxed">To be a center of excellence in technical education and research, producing competent engineers with strong ethical values and leadership qualities, contributing to the technological advancement of society.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Campus Gallery Section -->
+    <section id="campus" class="py-20 px-4 bg-gray-50/70">
+        <div class="max-w-6xl mx-auto">
+            <div class="section-header reveal">
+                <span class="section-badge">
+                    <i class="fas fa-images text-xs"></i>
+                    Our Campus
+                </span>
+                <h2 class="gradient-text">Campus Life at GEC Rajkot</h2>
+                <p>A 40+ acre environment-friendly campus with modern infrastructure and vibrant student life.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 reveal">
+                <!-- Image 1 - Main College Building -->
+                <div class="campus-img-card lg:col-span-2 lg:row-span-2">
+                    <img src="https://gecrajkot.ac.in/wp-content/uploads/2023/02/IMG-20230130-WA0007.jpg" alt="GEC Rajkot Main Building" loading="lazy">
+                    <div class="campus-img-overlay">
+                        <span class="campus-img-label">Main Campus Building</span>
+                    </div>
+                </div>
+                <!-- Image 2 -->
+                <div class="campus-img-card">
+                    <img src="https://gecrajkot.ac.in/wp-content/uploads/2023/02/WhatsApp-Image-2023-02-02-at-13.06.36.jpg" alt="GEC Rajkot Campus" loading="lazy">
+                    <div class="campus-img-overlay">
+                        <span class="campus-img-label">College Campus</span>
+                    </div>
+                </div>
+                <!-- Image 3 -->
+                <div class="campus-img-card">
+                    <img src="https://gecrajkot.ac.in/wp-content/uploads/2023/02/IMG-20210925-WA0022.jpg" alt="GEC Rajkot Campus View" loading="lazy">
+                    <div class="campus-img-overlay">
+                        <span class="campus-img-label">Campus View</span>
+                    </div>
+                </div>
+                <!-- Image 4 -->
+                <div class="campus-img-card">
+                    <img src="https://gecrajkot.ac.in/wp-content/uploads/2023/01/IMG-20230130-WA0004.jpg" alt="GEC Rajkot" loading="lazy">
+                    <div class="campus-img-overlay">
+                        <span class="campus-img-label">College Premises</span>
+                    </div>
+                </div>
+                <!-- Highlights card -->
+                <div class="campus-img-card sm:col-span-2 lg:col-span-2" style="background: linear-gradient(135deg, var(--primary), var(--accent)); display: flex; align-items: center; justify-content: center; min-height: 200px;">
+                    <div class="text-center text-white p-8">
+                        <h3 class="text-2xl font-bold mb-3">Why GEC Rajkot?</h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 mt-6">
+                            <div>
+                                <div class="text-2xl font-extrabold">1st</div>
+                                <div class="text-xs opacity-80 mt-1">College in Rajkot<br>with Super Computer</div>
+                            </div>
+                            <div>
+                                <div class="text-2xl font-extrabold">40+</div>
+                                <div class="text-xs opacity-80 mt-1">Acres Eco-Friendly<br>Campus</div>
+                            </div>
+                            <div>
+                                <div class="text-2xl font-extrabold">100+</div>
+                                <div class="text-xs opacity-80 mt-1">GPSC Qualified<br>Faculty</div>
+                            </div>
+                            <div>
+                                <div class="text-2xl font-extrabold"><i class="fas fa-chart-line text-xl"></i></div>
+                                <div class="text-xs opacity-80 mt-1">Consistent<br>Placement Records</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Departments Section -->
-    <section id="departments" class="py-20 px-4 bg-gray-50">
-        <div class="container mx-auto">
-            <h2 class="text-4xl font-bold text-center mb-16 gradient-text">Our Departments</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="glass-card p-8 rounded-lg hover-scale">
-                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Computer Engineering</h3>
-                    <p class="text-gray-600">State-of-the-art labs and experienced faculty providing cutting-edge education in software development, AI, and computer systems.</p>
+    <section id="departments" class="py-20 px-4">
+        <div class="max-w-6xl mx-auto">
+            <div class="section-header reveal">
+                <span class="section-badge">
+                    <i class="fas fa-building-columns text-xs"></i>
+                    Academics
+                </span>
+                <h2 class="gradient-text">Our Departments</h2>
+                <p>Eight specialized departments offering world-class engineering education.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div class="dept-card reveal">
+                    <div class="dept-icon"><i class="fas fa-laptop-code"></i></div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 mb-1">Computer Engineering</h3>
+                        <p class="text-sm text-gray-500 leading-relaxed">Software development, AI, and computer systems.</p>
+                    </div>
                 </div>
-                <div class="glass-card p-8 rounded-lg hover-scale">
-                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Electronics & Communication</h3>
-                    <p class="text-gray-600">Comprehensive training in analog and digital electronics, communication systems, and signal processing with modern laboratories.</p>
+                <div class="dept-card reveal" style="transition-delay: 0.05s">
+                    <div class="dept-icon"><i class="fas fa-microchip"></i></div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 mb-1">Electronics & Communication</h3>
+                        <p class="text-sm text-gray-500 leading-relaxed">Digital electronics and signal processing.</p>
+                    </div>
                 </div>
-                <div class="glass-card p-8 rounded-lg hover-scale">
-                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Robotics & Automation</h3>
-                    <p class="text-gray-600">Focus on Robotics, database management, and network security with industry-aligned curriculum and practical .</p>
+                <div class="dept-card reveal" style="transition-delay: 0.1s">
+                    <div class="dept-icon"><i class="fas fa-robot"></i></div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 mb-1">Robotics & Automation</h3>
+                        <p class="text-sm text-gray-500 leading-relaxed">Robotics and industry-aligned automation.</p>
+                    </div>
                 </div>
-                <div class="glass-card p-8 rounded-lg hover-scale">
-                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Mechanical Engineering</h3>
-                    <p class="text-gray-600">Comprehensive training in design, manufacturing, and thermal sciences with modern workshops and laboratories.</p>
+                <div class="dept-card reveal" style="transition-delay: 0.15s">
+                    <div class="dept-icon"><i class="fas fa-gears"></i></div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 mb-1">Mechanical Engineering</h3>
+                        <p class="text-sm text-gray-500 leading-relaxed">Design, manufacturing, and thermal sciences.</p>
+                    </div>
                 </div>
-                <div class="glass-card p-8 rounded-lg hover-scale">
-                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Electrical Engineering</h3>
-                    <p class="text-gray-600">Advanced training in power systems, control systems, and electrical machines with state-of-the-art power labs.</p>
+                <div class="dept-card reveal" style="transition-delay: 0.2s">
+                    <div class="dept-icon"><i class="fas fa-bolt"></i></div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 mb-1">Electrical Engineering</h3>
+                        <p class="text-sm text-gray-500 leading-relaxed">Power systems and control systems.</p>
+                    </div>
                 </div>
-                <div class="glass-card p-8 rounded-lg hover-scale">
-                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Civil Engineering</h3>
-                    <p class="text-gray-600">Focus on infrastructure development, structural design, and environmental engineering with practical training facilities.</p>
+                <div class="dept-card reveal" style="transition-delay: 0.25s">
+                    <div class="dept-icon"><i class="fas fa-hard-hat"></i></div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 mb-1">Civil Engineering</h3>
+                        <p class="text-sm text-gray-500 leading-relaxed">Infrastructure and structural design.</p>
+                    </div>
                 </div>
-                <div class="glass-card p-8 rounded-lg hover-scale">
-                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Artificial Intelligence & Data Science</h3>
-                    <p class="text-gray-600">Cutting-edge education in machine learning, data analytics, and AI applications with modern computing facilities.</p>
+                <div class="dept-card reveal" style="transition-delay: 0.3s">
+                    <div class="dept-icon"><i class="fas fa-brain"></i></div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 mb-1">AI & Data Science</h3>
+                        <p class="text-sm text-gray-500 leading-relaxed">Machine learning and data analytics.</p>
+                    </div>
                 </div>
-                <div class="glass-card p-8 rounded-lg hover-scale">
-                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Instrumentation & Control</h3>
-                    <p class="text-gray-600">Specialized training in process control, automation, and instrumentation systems with advanced control labs.</p>
+                <div class="dept-card reveal" style="transition-delay: 0.35s">
+                    <div class="dept-icon"><i class="fas fa-gauge-high"></i></div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 mb-1">Instrumentation & Control</h3>
+                        <p class="text-sm text-gray-500 leading-relaxed">Process control and instrumentation.</p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Facilities Section -->
-    <section id="facilities" class="py-20 px-4">
-        <div class="container mx-auto">
-            <h2 class="text-4xl font-bold text-center mb-16 gradient-text">Our Facilities</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="glass-card p-8 rounded-lg hover-scale">
-                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Library</h3>
-                    <p class="text-gray-600">Well-stocked library with over 50,000 books, e-resources, and reading rooms. Open 24/7 for students.</p>
+    <section id="facilities" class="py-20 px-4 bg-gray-50/70">
+        <div class="max-w-6xl mx-auto">
+            <div class="section-header reveal">
+                <span class="section-badge">
+                    <i class="fas fa-star text-xs"></i>
+                    Campus Life
+                </span>
+                <h2 class="gradient-text">Our Facilities</h2>
+                <p>Modern infrastructure to support learning, research, and holistic development.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="feature-card reveal text-center">
+                    <div class="feature-icon mx-auto" style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(59, 130, 246, 0.1)); color: var(--primary);">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Library</h3>
+                    <p class="text-sm text-gray-500 leading-relaxed">50,000+ books, e-resources, and reading rooms open 24/7.</p>
                 </div>
-                <div class="glass-card p-8 rounded-lg hover-scale">
-                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Laboratories</h3>
-                    <p class="text-gray-600">Modern laboratories equipped with latest technology and equipment for practical learning and research.</p>
+                <div class="feature-card reveal text-center" style="transition-delay: 0.1s">
+                    <div class="feature-icon mx-auto" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1)); color: #10B981;">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Laboratories</h3>
+                    <p class="text-sm text-gray-500 leading-relaxed">Modern labs with latest technology for practical learning.</p>
                 </div>
-                <div class="glass-card p-8 rounded-lg hover-scale">
-                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Sports Complex</h3>
-                    <p class="text-gray-600">State-of-the-art sports facilities including cricket ground, basketball court, and indoor games facilities.</p>
+                <div class="feature-card reveal text-center" style="transition-delay: 0.2s">
+                    <div class="feature-icon mx-auto" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(239, 68, 68, 0.1)); color: #F59E0B;">
+                        <i class="fas fa-futbol"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Sports Complex</h3>
+                    <p class="text-sm text-gray-500 leading-relaxed">Cricket ground, basketball court, and indoor games.</p>
                 </div>
-                <div class="glass-card p-8 rounded-lg hover-scale">
-                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Hostel</h3>
-                    <p class="text-gray-600">Comfortable hostel accommodation with 24/7 security, mess facilities, and recreational areas.</p>
+                <div class="feature-card reveal text-center" style="transition-delay: 0.3s">
+                    <div class="feature-icon mx-auto" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(79, 70, 229, 0.1)); color: #8B5CF6;">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Hostel</h3>
+                    <p class="text-sm text-gray-500 leading-relaxed">24/7 security, mess facilities, and recreation areas.</p>
                 </div>
             </div>
         </div>
     </section>
 
-       
-<!--placement-section-->
-<section class="placement-section">
-    <div class="section-title">
-        <h3>Placement Companies</h3>
-    </div>
-    
-    <div class="swiper placement-swiper">
-        <div class="swiper-wrapper">
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Bacancy.png.webp" alt="Bacancy" class="company-logo">
+    <!-- Placement Section -->
+    <section id="placements" class="placement-section py-20 px-4">
+        <div class="max-w-6xl mx-auto">
+            <div class="section-header reveal">
+                <span class="section-badge">
+                    <i class="fas fa-briefcase text-xs"></i>
+                    Careers
+                </span>
+                <h2 class="gradient-text">Placement Partners</h2>
+                <p>Our students are recruited by leading companies across the industry.</p>
             </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Blitz-Jobs.jpg.webp" alt="Blitz Jobs" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/bolt-iot.png.webp" alt="Bolt IoT" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/cybercom.jpg.webp" alt="Cybercom" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/cypherox.jpg.webp" alt="Cypherox" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/easy-local-tech.jpg.webp" alt="Easy Local Tech" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/esparkbiz.png.webp" alt="Esparkbiz" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/eTech-Mavens.png.webp" alt="eTech Mavens" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Kevalam.png.webp" alt="Kevalam" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Kevit.png.webp" alt="Kevit" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/La-Net.png.webp" alt="La Net" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Meditab.jpg.webp" alt="Meditab" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/nishtha.png.webp" alt="Nishtha" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/radixweb.png.webp" alt="Radixweb" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Rao.png.webp" alt="Rao" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/RKIT.png.webp" alt="RKIT" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Scanpoint.png.webp" alt="Scanpoint" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/silent-infotech.png.webp" alt="Silent Infotech" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/simform.png.webp" alt="Simform" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/tatvasoft.png.webp" alt="Tatvasoft" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/TCS.png.webp" alt="TCS" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/weboccult.png.webp" alt="Weboccult" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/WeyBee.png.webp" alt="WeyBee" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/valens_datalabs_blue.png.webp" alt="Valens Datalabs" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Unitech-workholding-sys.png.webp" alt="Unitech Workholding" class="company-logo">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Hermit-Labs.png.webp" alt="Hermit Labs" class="company-logo">
+
+            <div class="swiper placement-swiper reveal">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Bacancy.png.webp" alt="Bacancy" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Blitz-Jobs.jpg.webp" alt="Blitz Jobs" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/bolt-iot.png.webp" alt="Bolt IoT" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/cybercom.jpg.webp" alt="Cybercom" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/cypherox.jpg.webp" alt="Cypherox" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/easy-local-tech.jpg.webp" alt="Easy Local Tech" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/esparkbiz.png.webp" alt="Esparkbiz" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/eTech-Mavens.png.webp" alt="eTech Mavens" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Kevalam.png.webp" alt="Kevalam" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Kevit.png.webp" alt="Kevit" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/La-Net.png.webp" alt="La Net" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Meditab.jpg.webp" alt="Meditab" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/nishtha.png.webp" alt="Nishtha" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/radixweb.png.webp" alt="Radixweb" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Rao.png.webp" alt="Rao" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/RKIT.png.webp" alt="RKIT" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Scanpoint.png.webp" alt="Scanpoint" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/silent-infotech.png.webp" alt="Silent Infotech" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/simform.png.webp" alt="Simform" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/tatvasoft.png.webp" alt="Tatvasoft" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/TCS.png.webp" alt="TCS" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/weboccult.png.webp" alt="Weboccult" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/WeyBee.png.webp" alt="WeyBee" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/valens_datalabs_blue.png.webp" alt="Valens Datalabs" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Unitech-workholding-sys.png.webp" alt="Unitech Workholding" class="company-logo">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://gecrajkot.ac.in/wp-content/uploads/2017/01/Hermit-Labs.png.webp" alt="Hermit Labs" class="company-logo">
+                    </div>
+                </div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
             </div>
         </div>
-        <div class="swiper-button-next"></div>
-        <div class="swiper-button-prev"></div>
-    </div>
-</section>
-
-    
+    </section>
 
     <!-- Contact Section -->
-    <section id="contact" class="py-20 px-4 bg-gray-50">
-        <div class="container mx-auto">
-            <h2 class="text-4xl font-bold text-center mb-16 gradient-text">Contact Us</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="glass-card p-8 rounded-lg">
-                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Address</h3>
-                    <p class="text-gray-600">Government Engineering College</p>
-                    <p class="text-gray-600">Rajkot - 360003</p>
-                    <p class="text-gray-600">Gujarat, India</p>
+    <section id="contact" class="py-20 px-4">
+        <div class="max-w-6xl mx-auto">
+            <div class="section-header reveal">
+                <span class="section-badge">
+                    <i class="fas fa-envelope text-xs"></i>
+                    Get in Touch
+                </span>
+                <h2 class="gradient-text">Contact Us</h2>
+                <p>We'd love to hear from you. Reach out for any inquiries.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 reveal">
+                <div class="contact-card text-center">
+                    <div class="contact-icon mx-auto">
+                        <i class="fas fa-location-dot"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Address</h3>
+                    <p class="text-sm text-gray-500 leading-relaxed">Mavadi-Kankot Road,<br>Near Hanuman Mandir,<br>Rajkot - 360003, Gujarat</p>
                 </div>
-                <div class="glass-card p-8 rounded-lg">
-                    <h3 class="text-2xl font-semibold mb-4 gradient-text">Contact Information</h3>
-                    <p class="text-gray-600">Phone: +91-XXXXXXXXXX</p>
-                    <p class="text-gray-600">Email: info@gecrajkot.ac.in</p>
-                    <p class="text-gray-600">Website: www.gecrajkot.ac.in</p>
+                <div class="contact-card text-center">
+                    <div class="contact-icon mx-auto">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Phone & Email</h3>
+                    <p class="text-sm text-gray-500 leading-relaxed">+91-9409755268<br>info@gecrajkot.ac.in</p>
+                </div>
+                <div class="contact-card text-center sm:col-span-2 lg:col-span-1">
+                    <div class="contact-icon mx-auto">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Website</h3>
+                    <p class="text-sm text-gray-500 leading-relaxed">
+                        <a href="https://www.gecrajkot.ac.in" target="_blank" class="text-indigo-600 hover:underline">www.gecrajkot.ac.in</a>
+                    </p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="glass-card mt-20">
-        <div class="container mx-auto px-4 py-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div>
-                    <h3 class="text-xl font-semibold mb-4 gradient-text">Quick Links</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#home" class="text-gray-600 hover:text-indigo-600 transition-colors">Home</a></li>
-                        <li><a href="#about" class="text-gray-600 hover:text-indigo-600 transition-colors">About</a></li>
-                        <li><a href="#departments" class="text-gray-600 hover:text-indigo-600 transition-colors">Departments</a></li>
-                        <li><a href="#facilities" class="text-gray-600 hover:text-indigo-600 transition-colors">Facilities</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-xl font-semibold mb-4 gradient-text">Important Links</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors">GTU</a></li>
-                        <li><a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors">AICTE</a></li>
-                        <li><a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors">UGC</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-xl font-semibold mb-4 gradient-text">Follow Us</h3>
-                    <div class="flex space-x-4">
-                        <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors">Facebook</a>
-                        <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors">Twitter</a>
-                        <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors">LinkedIn</a>
+    <footer class="site-footer">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+                <!-- Brand -->
+                <div class="lg:col-span-1">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="GEC Rajkot Logo" class="w-9 h-9 object-contain brightness-200">
+                        <span class="text-lg font-bold text-white tracking-tight">GEC Rajkot</span>
+                    </div>
+                    <p class="text-sm leading-relaxed mb-5">Empowering future engineers with excellence in education, innovation, and research.</p>
+                    <div class="flex space-x-3">
+                        <a href="#" class="footer-social-link"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="footer-social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="footer-social-link"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="footer-social-link"><i class="fab fa-instagram"></i></a>
                     </div>
                 </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Quick Links</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#home" class="text-sm hover:pl-1 transition-all">Home</a></li>
+                        <li><a href="#about" class="text-sm hover:pl-1 transition-all">About Us</a></li>
+                        <li><a href="#departments" class="text-sm hover:pl-1 transition-all">Departments</a></li>
+                        <li><a href="#facilities" class="text-sm hover:pl-1 transition-all">Facilities</a></li>
+                    </ul>
+                </div>
+
+                <!-- Important Links -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Important Links</h4>
+                    <ul class="space-y-3">
+                        <li><a href="https://www.gtu.ac.in" target="_blank" class="text-sm hover:pl-1 transition-all">GTU</a></li>
+                        <li><a href="https://www.aicte-india.org" target="_blank" class="text-sm hover:pl-1 transition-all">AICTE</a></li>
+                        <li><a href="https://www.ugc.gov.in" target="_blank" class="text-sm hover:pl-1 transition-all">UGC</a></li>
+                        <li><a href="#placements" class="text-sm hover:pl-1 transition-all">Placements</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Contact</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-location-dot mt-1 text-xs text-indigo-400"></i>
+                            Mavadi-Kankot Road, Rajkot
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-phone text-xs text-indigo-400"></i>
+                            +91-9409755268
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-envelope text-xs text-indigo-400"></i>
+                            info@gecrajkot.ac.in
+                        </li>
+                    </ul>
+                </div>
             </div>
-            <div class="mt-8 text-center text-gray-600">
-                <p>&copy; 2024 Government Engineering College, Rajkot. All rights reserved.</p>
+
+            <!-- Bottom bar -->
+            <div class="mt-12 pt-8 border-t border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <p class="text-sm text-gray-500">&copy; 2024 Government Engineering College, Rajkot. All rights reserved.</p>
+                <div class="flex space-x-6 text-sm text-gray-500">
+                    <a href="#" class="hover:text-gray-300">Privacy Policy</a>
+                    <a href="#" class="hover:text-gray-300">Terms of Use</a>
+                </div>
             </div>
         </div>
     </footer>
 
-   
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-
     <script>
-        // 3D Logo Animation
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ alpha: true });
-        const container = document.getElementById('logo-container');
-        
-        renderer.setSize(64, 64);
-        container.appendChild(renderer.domElement);
-
-        const geometry = new THREE.TorusKnotGeometry(1, 0.3, 100, 16);
-        const material = new THREE.MeshPhongMaterial({
-            color: 0x4F46E5,
-            specular: 0xffffff,
-            shininess: 100
+        // Navigation scroll effect
+        const nav = document.getElementById('mainNav');
+        window.addEventListener('scroll', () => {
+            nav.classList.toggle('scrolled', window.scrollY > 20);
         });
-        const torusKnot = new THREE.Mesh(geometry, material);
-        scene.add(torusKnot);
 
-        const light = new THREE.DirectionalLight(0xffffff, 1);
-        light.position.set(1, 1, 1);
-        scene.add(light);
+        // Mobile menu
+        const menuBtn = document.getElementById('menuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        let menuOpen = false;
 
-        camera.position.z = 5;
+        menuBtn.addEventListener('click', () => {
+            menuOpen = !menuOpen;
+            mobileMenu.classList.toggle('open', menuOpen);
+            document.getElementById('menuIcon').setAttribute('d',
+                menuOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'
+            );
+        });
 
-        function animate() {
-            requestAnimationFrame(animate);
-            torusKnot.rotation.x += 0.01;
-            torusKnot.rotation.y += 0.01;
-            renderer.render(scene, camera);
+        function closeMobileMenu() {
+            menuOpen = false;
+            mobileMenu.classList.remove('open');
+            document.getElementById('menuIcon').setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
         }
-        animate();
 
-//placement    
-const swiper = new Swiper('.placement-swiper', {
-            slidesPerView: 1,
-            spaceBetween: 20,
+        // Scroll reveal animation
+        const revealElements = document.querySelectorAll('.reveal');
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+        revealElements.forEach(el => revealObserver.observe(el));
+
+        // Swiper - Placement carousel
+        const swiper = new Swiper('.placement-swiper', {
+            slidesPerView: 2,
+            spaceBetween: 16,
             loop: true,
             autoplay: {
-                delay: 3000, // Slower autoplay (3 seconds)
+                delay: 2500,
                 disableOnInteraction: false,
             },
-            speed: 1000, // Slower transition speed
-            effect: 'slide',
+            speed: 800,
             grabCursor: true,
             navigation: {
                 nextEl: '.swiper-button-next',
                 prevEl: '.swiper-button-prev',
             },
             breakpoints: {
-                480: {
-                    slidesPerView: 2,
-                },
-                768: {
-                    slidesPerView: 3,
-                },
-                1024: {
-                    slidesPerView: 4,
-                },
-                1200: {
-                    slidesPerView: 5,
-                },
+                480: { slidesPerView: 3, spaceBetween: 18 },
+                768: { slidesPerView: 4, spaceBetween: 20 },
+                1024: { slidesPerView: 5, spaceBetween: 20 },
+                1200: { slidesPerView: 6, spaceBetween: 24 },
             }
         });
     </script>
 </body>
-</html> 
+</html>

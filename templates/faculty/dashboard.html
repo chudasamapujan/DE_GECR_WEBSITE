@@ -280,9 +280,9 @@
                     </div>
                 </div>
 
-                <div class="w-10 h-10 rounded-full overflow-hidden bg-indigo-100" id="headerAvatar">
-                    <div class="w-full h-full flex items-center justify-center text-indigo-600 font-semibold">
-                        {{ faculty.name[0] if faculty.name else 'F' }}
+                <div class="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-indigo-400 to-indigo-600" id="headerAvatar">
+                    <div class="w-full h-full flex items-center justify-center text-white font-bold text-lg">
+                        {{ faculty.name[0]|upper if faculty and faculty.name else 'F' }}
                     </div>
                 </div>
             </div>
@@ -485,14 +485,23 @@
                     container.innerHTML = data.announcements.slice(0, 3).map((ann, index) => {
                         const colors = ['red', 'yellow', 'blue', 'green'];
                         const color = colors[index % colors.length];
-                        const timeAgo = getTimeAgo(new Date(ann.created_at));
+                        
+                        // Handle created_at properly
+                        let timeAgo = 'Recently';
+                        if (ann.created_at) {
+                            try {
+                                timeAgo = getTimeAgo(ann.created_at);
+                            } catch (e) {
+                                console.error('Error parsing date:', e);
+                            }
+                        }
                         
                         return `
                             <div class="flex items-start space-x-4">
                                 <div class="w-2 h-2 rounded-full bg-${color}-500 mt-2 flex-shrink-0"></div>
                                 <div>
-                                    <p class="text-gray-700 font-medium">${escapeHtml(ann.title)}</p>
-                                    <p class="text-gray-600 text-sm">${escapeHtml(ann.message)}</p>
+                                    <p class="text-gray-700 font-medium">${escapeHtml(ann.title || 'Untitled')}</p>
+                                    <p class="text-gray-600 text-sm">${escapeHtml(ann.message || '')}</p>
                                     <span class="text-xs text-gray-500">Posted: ${timeAgo}</span>
                                 </div>
                             </div>
@@ -521,17 +530,28 @@
                 
                 if (data.events && data.events.length > 0) {
                     container.innerHTML = data.events.slice(0, 3).map(event => {
-                        const eventDate = new Date(event.event_date);
-                        const formattedDate = eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        // Use start_time from the event
+                        const eventDate = event.start_time ? new Date(event.start_time) : null;
+                        let formattedDate = 'TBA';
+                        
+                        if (eventDate && !isNaN(eventDate.getTime())) {
+                            const month = eventDate.toLocaleDateString('en-US', { month: 'short' });
+                            const day = eventDate.getDate();
+                            formattedDate = `${month} ${day}`;
+                        }
                         
                         return `
                             <div class="flex items-start space-x-4">
                                 <div class="flex-shrink-0 w-12 h-12 bg-indigo-100 rounded-lg flex flex-col items-center justify-center">
-                                    <span class="text-xs text-indigo-600 font-medium">${formattedDate.split(' ')[0]}</span>
-                                    <span class="text-lg font-bold text-indigo-700">${formattedDate.split(' ')[1]}</span>
+                                    ${eventDate && !isNaN(eventDate.getTime()) ? `
+                                        <span class="text-xs text-indigo-600 font-medium">${eventDate.toLocaleDateString('en-US', { month: 'short' })}</span>
+                                        <span class="text-lg font-bold text-indigo-700">${eventDate.getDate()}</span>
+                                    ` : `
+                                        <span class="text-xs text-indigo-600 font-medium">TBA</span>
+                                    `}
                                 </div>
                                 <div>
-                                    <p class="text-gray-700 font-medium">${escapeHtml(event.title)}</p>
+                                    <p class="text-gray-700 font-medium">${escapeHtml(event.title || 'Untitled Event')}</p>
                                     <p class="text-gray-600 text-sm">${escapeHtml(event.description || '')}</p>
                                     <span class="text-xs text-gray-500">${event.location || 'Location TBA'}</span>
                                 </div>

@@ -1,246 +1,177 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Login - GEC Rajkot</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root {
-            --primary: #4F46E5;
-            --accent: #3B82F6;
-            --bg: #ffffff;
-            --text: #1f2937;
-            --card-bg: #f9fafb;
+        :root { --primary: #4F46E5; --accent: #3B82F6; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; }
+        .auth-wrapper { display: flex; min-height: 100vh; }
+        .auth-image-panel {
+            display: none; width: 50%; position: relative;
+            background: url('https://gecrajkot.ac.in/wp-content/uploads/2023/02/IMG-20230130-WA0007.jpg') center/cover no-repeat;
         }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(--bg) 0%, #f3f4f6 100%);
-            min-height: 100vh;
-            color: var(--text);
+        .auth-image-panel::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(79,70,229,0.88) 0%, rgba(59,130,246,0.82) 50%, rgba(79,70,229,0.92) 100%);
         }
-        .login-container {
-            background: linear-gradient(135deg, #4F46E5 0%, #3B82F6 50%, #8B5CF6 100%);
-            min-height: 100vh;
-            position: relative;
-            overflow: hidden;
+        .image-content {
+            position: relative; z-index: 2; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; height: 100%;
+            padding: 3rem; text-align: center; color: white;
         }
-        
-        .login-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff08" points="0,1000 1000,0 1000,1000"/></svg>');
-            pointer-events: none;
+        .image-content .college-name { font-family: 'Playfair Display', serif; font-size: 2.2rem; line-height: 1.2; margin-bottom: 0.5rem; }
+        .image-content .college-sub { font-size: 0.95rem; opacity: 0.85; font-weight: 300; letter-spacing: 0.5px; }
+        .image-features { margin-top: 3rem; display: flex; flex-direction: column; gap: 1.2rem; }
+        .image-features .feature { display: flex; align-items: center; gap: 1rem; text-align: left; font-size: 0.9rem; opacity: 0.9; }
+        .feature-icon {
+            width: 44px; height: 44px; border-radius: 12px;
+            background: rgba(255,255,255,0.15); backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.1rem;
         }
-        
-        .floating-shapes {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            pointer-events: none;
+        .auth-form-panel {
+            width: 100%; display: flex; flex-direction: column; justify-content: center;
+            align-items: center; padding: 2rem 1.5rem; background: #f8fafc;
+            position: relative; overflow-y: auto;
         }
-        
-        .shape {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            animation: float 6s ease-in-out infinite;
+        .form-container { width: 100%; max-width: 420px; animation: slideUp 0.5s ease-out; }
+        .form-header { text-align: center; margin-bottom: 2rem; }
+        .form-header img { width: 56px; height: 56px; object-fit: contain; margin: 0 auto 1rem; }
+        .form-header h1 { font-size: 1.75rem; font-weight: 700; color: #1e293b; margin-bottom: 0.25rem; }
+        .form-header p { color: #64748b; font-size: 0.9rem; }
+        .input-group { margin-bottom: 1.25rem; }
+        .input-group label { display: block; font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        .input-wrapper .input-icon { position: absolute; left: 14px; color: #9ca3af; font-size: 1rem; pointer-events: none; transition: color 0.2s; }
+        .input-wrapper input, .input-wrapper select {
+            width: 100%; padding: 0.8rem 1rem 0.8rem 2.75rem; border: 2px solid #e5e7eb;
+            border-radius: 12px; font-size: 0.95rem; font-family: 'Inter', sans-serif;
+            background: white; transition: all 0.3s; color: #1e293b;
         }
-        
-        .shape:nth-child(1) {
-            width: 80px;
-            height: 80px;
-            top: 10%;
-            left: 10%;
-            animation-delay: 0s;
+        .input-wrapper input:focus, .input-wrapper select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79,70,229,0.1); }
+        .input-wrapper input:focus ~ .input-icon { color: var(--primary); }
+        .toggle-password { position: absolute; right: 14px; background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 1rem; padding: 4px; transition: color 0.2s; }
+        .toggle-password:hover { color: #6b7280; }
+        .btn-primary {
+            width: 100%; padding: 0.85rem; border: none; border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white; font-size: 1rem; font-weight: 600; font-family: 'Inter', sans-serif;
+            cursor: pointer; transition: all 0.3s; display: flex; align-items: center;
+            justify-content: center; gap: 0.5rem;
         }
-        
-        .shape:nth-child(2) {
-            width: 120px;
-            height: 120px;
-            top: 20%;
-            right: 10%;
-            animation-delay: -2s;
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(79,70,229,0.35); }
+        .divider { display: flex; align-items: center; margin: 1.5rem 0; gap: 1rem; }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
+        .divider span { color: #9ca3af; font-size: 0.8rem; }
+        .register-btn {
+            display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.5rem;
+            border: 2px solid #e5e7eb; border-radius: 12px; color: #374151;
+            text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: all 0.3s;
         }
-        
-        .shape:nth-child(3) {
-            width: 60px;
-            height: 60px;
-            bottom: 20%;
-            left: 20%;
-            animation-delay: -4s;
-        }
-        
-        .shape:nth-child(4) {
-            width: 100px;
-            height: 100px;
-            bottom: 10%;
-            right: 20%;
-            animation-delay: -1s;
-        }
-        
-        .password-strength {
-            margin-top: 8px;
-            padding: 8px;
-            border-radius: 4px;
-            background: rgba(255, 255, 255, 0.1);
-            font-size: 12px;
-        }
-        
-        .strength-bar {
-            height: 4px;
-            border-radius: 2px;
-            margin: 4px 0;
-            background: rgba(255, 255, 255, 0.2);
-            overflow: hidden;
-        }
-        
-        .strength-fill {
-            height: 100%;
-            transition: width 0.3s ease;
-            border-radius: 2px;
-        }
-        
-        .glass-card {
-            background: rgba(255,255,255, 0.95);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-        }
-        .gradient-text {
-            background: linear-gradient(45deg, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .animate-float {
-            animation: float 6s ease-in-out infinite;
-        }
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-            100% { transform: translateY(0px); }
-        }
-        .logo-animation {
-            animation: pulse 2s ease-in-out infinite;
+        .register-btn:hover { border-color: var(--primary); color: var(--primary); background: rgba(79,70,229,0.04); }
+        .back-home { display: inline-flex; align-items: center; gap: 0.4rem; color: #64748b; font-size: 0.85rem; text-decoration: none; margin-top: 1.5rem; transition: color 0.2s; }
+        .back-home:hover { color: var(--primary); }
+        .blob-1, .blob-2 { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.08; pointer-events: none; }
+        .blob-1 { width: 300px; height: 300px; background: var(--primary); top: -100px; right: -80px; }
+        .blob-2 { width: 250px; height: 250px; background: var(--accent); bottom: -80px; left: -60px; }
+        .mobile-brand { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem; padding: 0.75rem 1rem; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 12px; color: white; }
+        .mobile-brand img { width: 32px; height: 32px; object-fit: contain; filter: brightness(0) invert(1); }
+        .mobile-brand span { font-weight: 600; font-size: 0.85rem; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .flash-alert { padding: 0.75rem 1rem; border-radius: 10px; margin-bottom: 1rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; }
+        @media (min-width: 1024px) {
+            .auth-image-panel { display: block; }
+            .auth-form-panel { width: 50%; padding: 3rem; }
+            .mobile-brand { display: none; }
         }
     </style>
 </head>
 <body>
-    <div class="login-container flex items-center justify-center px-4">
-        <!-- Floating background shapes -->
-        <div class="floating-shapes">
-            <div class="shape"></div>
-            <div class="shape"></div>
-            <div class="shape"></div>
-            <div class="shape"></div>
-        </div>
-        
-        <div class="glass-card p-8 rounded-lg w-full max-w-md animate-scale-in">
-            <!-- College Logo and Header -->
-            <div class="text-center mb-8">
-                <div class="logo-animation mb-4">
-                    <img src="{{ url_for('serve_logo') }}" alt="GEC Rajkot Logo" class="w-16 h-16 mx-auto object-contain">
+    <div class="auth-wrapper">
+        <div class="auth-image-panel">
+            <div class="image-content">
+                <img src="{{ url_for('serve_logo') }}" alt="GEC Logo" style="width:72px;height:72px;object-fit:contain;margin-bottom:1.5rem;filter:brightness(0) invert(1);">
+                <h2 class="college-name">Government Engineering<br>College, Rajkot</h2>
+                <p class="college-sub">Empowering Minds, Engineering Futures</p>
+                <div class="image-features">
+                    <div class="feature">
+                        <div class="feature-icon"><i class="fas fa-graduation-cap"></i></div>
+                        <div><div style="font-weight:600;">8 Engineering Departments</div><div style="font-size:0.8rem;opacity:0.7;">Computer, EC, Mechanical, Civil & more</div></div>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon"><i class="fas fa-laptop-code"></i></div>
+                        <div><div style="font-weight:600;">Smart Campus</div><div style="font-size:0.8rem;opacity:0.7;">Super Computer & modern labs</div></div>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon"><i class="fas fa-shield-halved"></i></div>
+                        <div><div style="font-weight:600;">Secure Portal</div><div style="font-size:0.8rem;opacity:0.7;">OTP verified access for safety</div></div>
+                    </div>
                 </div>
-                <h2 class="text-3xl font-bold gradient-text mb-2">Student Portal</h2>
-                <p class="text-gray-600">Government Engineering College, Rajkot</p>
             </div>
-            
-            <!-- Flash Messages -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    <div class="mb-6">
+        </div>
+        <div class="auth-form-panel">
+            <div class="blob-1"></div>
+            <div class="blob-2"></div>
+            <div class="form-container">
+                <div class="mobile-brand">
+                    <img src="{{ url_for('serve_logo') }}" alt="Logo">
+                    <span>GEC Rajkot &middot; Student Portal</span>
+                </div>
+                <div class="form-header">
+                    <img src="{{ url_for('serve_logo') }}" alt="GEC Rajkot Logo">
+                    <h1>Welcome Back</h1>
+                    <p>Sign in to your student portal</p>
+                </div>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
                         {% for category, message in messages %}
-                            <div class="alert alert-{{ category }} p-3 rounded-lg mb-2 {% if category == 'error' %}bg-red-100 text-red-700 border border-red-300{% elif category == 'success' %}bg-green-100 text-green-700 border border-green-300{% else %}bg-blue-100 text-blue-700 border border-blue-300{% endif %}">
+                            <div class="flash-alert {% if category == 'error' %}bg-red-50 text-red-700 border border-red-200{% elif category == 'success' %}bg-green-50 text-green-700 border border-green-200{% else %}bg-blue-50 text-blue-700 border border-blue-200{% endif %}">
+                                <i class="fas {% if category == 'error' %}fa-circle-exclamation{% elif category == 'success' %}fa-circle-check{% else %}fa-circle-info{% endif %}"></i>
                                 {{ message }}
                             </div>
                         {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                <form id="studentLoginForm">
+                    <div class="input-group">
+                        <label for="enrollment">Roll Number or Email</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-id-card input-icon"></i>
+                            <input type="text" id="enrollment" name="enrollment" placeholder="Enter your roll number or email" required>
+                        </div>
                     </div>
-                {% endif %}
-            {% endwith %}
-            
-            <form id="studentLoginForm" class="space-y-6" method="POST" action="{{ url_for('auth_login', user_type='student') }}">
-                <div class="form-group">
-                    <label for="enrollment" class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-id-card mr-2 text-indigo-600"></i>Roll Number or Email
-                    </label>
-                    <input
-                        type="text"
-                        id="enrollment"
-                        name="enrollment"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
-                        placeholder="Enter your roll number or email"
-                        required
-                    >
-                </div>
-                
-                <div class="form-group">
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-lock mr-2 text-indigo-600"></i>Password
-                    </label>
-                    <div class="relative">
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
-                            placeholder="Enter your password"
-                            required
-                        >
-                        <button
-                            type="button"
-                            id="togglePassword"
-                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
-                        >
-                            <i class="fas fa-eye"></i>
-                        </button>
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                            <button type="button" id="togglePassword" class="toggle-password"><i class="fas fa-eye"></i></button>
+                        </div>
                     </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                        <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;color:#64748b;cursor:pointer;">
+                            <input type="checkbox" name="remember" style="border-radius:4px;accent-color:var(--primary);">
+                            Remember me
+                        </label>
+                        <a href="{{ url_for('serve_forgot', user_type='student') }}" style="font-size:0.85rem;color:var(--primary);text-decoration:none;font-weight:500;">Forgot Password?</a>
+                    </div>
+                    <button type="submit" class="btn-primary"><i class="fas fa-sign-in-alt"></i>Sign In</button>
+                </form>
+                <div class="divider"><span>New here?</span></div>
+                <div style="text-align:center;">
+                    <a href="{{ url_for('serve_register', user_type='student') }}" class="register-btn"><i class="fas fa-user-plus"></i>Create Student Account</a>
                 </div>
-                
-                <!-- Remember Me and Forgot Password -->
-                <div class="flex justify-between items-center">
-                    <label class="flex items-center">
-                        <input type="checkbox" name="remember" class="mr-2 rounded">
-                        <span class="text-sm text-gray-600">Remember me</span>
-                    </label>
-                    <a href="{{ url_for('serve_forgot', user_type='student') }}" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">
-                        Forgot Password?
-                    </a>
-                </div>
-                
-                <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
-                    <i class="fas fa-sign-in-alt mr-2"></i>Sign In
-                </button>
-            </form>
-            
-            <!-- Additional Options -->
-            <div class="mt-6 text-center space-y-4">
-                <div class="flex items-center justify-center space-x-4">
-                    <span class="text-gray-400">New student?</span>
-                    <a href="{{ url_for('serve_register', user_type='student') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-all duration-300">
-                        <i class="fas fa-user-plus mr-2"></i>Register Here
-                    </a>
-                </div>
-                
-                <div class="border-t pt-4">
-                    <a href="{{ url_for('index') }}" class="text-indigo-600 hover:text-indigo-700 transition-colors text-sm">
-                        <i class="fas fa-arrow-left mr-2"></i>Back to Home
-                    </a>
+                <div style="text-align:center;">
+                    <a href="{{ url_for('index') }}" class="back-home"><i class="fas fa-arrow-left"></i>Back to Home</a>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Scripts -->
     <script src="{{ url_for('static', filename='js/validations.js') }}"></script>
     <script src="{{ url_for('static', filename='js/api.js') }}"></script>
     <script>
@@ -250,60 +181,61 @@
             const togglePassword = document.getElementById('togglePassword');
             const passwordField = document.getElementById('password');
             const enrollmentField = document.getElementById('enrollment');
-            
-            // Password visibility toggle
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('registered') === 'true') {
+                GECUtils.toast.success('Registration successful! Please login with your credentials.');
+            }
             togglePassword.addEventListener('click', function() {
                 const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
                 passwordField.setAttribute('type', type);
-                
                 const icon = togglePassword.querySelector('i');
                 icon.classList.toggle('fa-eye');
                 icon.classList.toggle('fa-eye-slash');
             });
-            
-            // Real-time validation
             enrollmentField.addEventListener('blur', function() {
                 const enrollment = this.value.trim();
                 if (enrollment && !validator.validateEnrollment(enrollment)) {
                     validator.showError('enrollment', 'Please enter a valid enrollment number (10-12 digits)');
-                } else if (enrollment) {
-                    validator.showSuccess('enrollment');
-                }
+                } else if (enrollment) { validator.showSuccess('enrollment'); }
             });
-            
             passwordField.addEventListener('blur', function() {
                 const password = this.value;
                 if (password && password.length < 6) {
                     validator.showError('password', 'Password must be at least 6 characters long');
-                } else if (password) {
-                    validator.showSuccess('password');
-                }
+                } else if (password) { validator.showSuccess('password'); }
             });
-            
-            // Basic form validation (server will handle authentication)
-            form.addEventListener('submit', function(e) {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
                 const enrollment = enrollmentField.value.trim();
                 const password = passwordField.value;
                 let isValid = true;
-                
                 validator.clearErrors();
-                
-                // Basic client-side validation
-                if (!enrollment) {
-                    validator.showError('enrollment', 'Roll number or email is required');
-                    isValid = false;
-                }
-                
-                if (!password) {
-                    validator.showError('password', 'Password is required');
-                    isValid = false;
-                }
-                
-                if (!isValid) {
-                    e.preventDefault();
+                if (!enrollment) { validator.showError('enrollment', 'Roll number or email is required'); isValid = false; }
+                if (!password) { validator.showError('password', 'Password is required'); isValid = false; }
+                if (!isValid) return;
+                const submitBtn = form.querySelector('button[type="submit"]');
+                GECUtils.LoadingManager.setLoading(submitBtn, true);
+                try {
+                    const response = await fetch('/api/auth/student/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: enrollment, password: password })
+                    });
+                    const result = await response.json();
+                    GECUtils.LoadingManager.setLoading(submitBtn, false);
+                    if (!response.ok) { GECUtils.toast.error(result.error || 'Login failed'); return; }
+                    GECUtils.toast.success(result.message || 'OTP sent to your email!');
+                    sessionStorage.setItem('otp_email', result.email);
+                    sessionStorage.setItem('otp_purpose', 'login');
+                    sessionStorage.setItem('otp_user_type', 'student');
+                    setTimeout(() => { window.location.href = '/auth/verify'; }, 1000);
+                } catch (error) {
+                    GECUtils.LoadingManager.setLoading(submitBtn, false);
+                    console.error('Login error:', error);
+                    GECUtils.toast.error('Network error. Please try again.');
                 }
             });
         });
     </script>
 </body>
-</html> 
+</html>

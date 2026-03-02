@@ -1,6 +1,6 @@
 """
 Authentication Routes for GEC Rajkot Website
-Handles login, registration, and password reset
+Handles login, registration, OTP verification, and password reset
 Author: GEC Rajkot Development Team
 """
 
@@ -12,6 +12,7 @@ import re
 # Import models and db
 from models import Student, Faculty
 from database import db
+from utils.send_email import send_email
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
@@ -79,23 +80,29 @@ def login():
         if not user.check_password(password):
             return jsonify({'error': 'Invalid password'}), 401
 
-        # Create access token
-        additional_claims = {
-            'user_type': user_type,
-            'user_id': user.id,
-            'full_name': user.full_name
-        }
-
-        access_token = create_access_token(
-            identity=user.email,
-            additional_claims=additional_claims,
-            expires_delta=timedelta(hours=24)
-        )
-
+        # Password correct - now send OTP for login verification
+        from models import OTP
+        otp = OTP.create_otp(email, 'login', user_type, expiry_minutes=10)
+        
+        # Send OTP via email
+        try:
+            subject = 'GEC Rajkot - Login Verification OTP'
+            html = f"""
+            <h2>GEC Rajkot - Login Verification</h2>
+            <p>Your login verification code is: <strong style="font-size: 24px; color: #4F46E5;">{otp.otp_code}</strong></p>
+            <p>This code will expire in {otp.time_remaining()} seconds.</p>
+            <p>If you didn't attempt to login, please secure your account immediately.</p>
+            """
+            send_email(email, subject, html_content=html)
+            current_app.logger.info(f"Login OTP sent to {email}")
+        except Exception as e:
+            current_app.logger.error(f"Failed to send login OTP: {e}")
+            return jsonify({'error': 'Failed to send verification email'}), 500
+        
         return jsonify({
-            'message': 'Login successful',
-            'access_token': access_token,
-            'user': user.to_dict(),
+            'message': 'OTP sent to your email for login verification',
+            'otp_expires_in': otp.time_remaining(),
+            'email': email,
             'user_type': user_type
         }), 200
         
@@ -168,32 +175,29 @@ def faculty_login():
             current_app.logger.warning(f"Invalid password for faculty: {email}")
             return jsonify({'error': 'Invalid password'}), 401
 
-        user_id_val = getattr(user, 'faculty_id', getattr(user, 'student_id', None))
-        additional_claims = {
-            'user_type': 'faculty',
-            'user_id': user_id_val,
-            'full_name': getattr(user, 'name', None)
-        }
-
-        access_token = create_access_token(
-            identity=user.email,
-            additional_claims=additional_claims,
-            expires_delta=timedelta(hours=24)
-        )
-
-        # Also set session for session-based auth fallbacks used in templates/tests
+        # Password correct - now send OTP for login verification
+        from models import OTP
+        otp = OTP.create_otp(email, 'login', 'faculty', expiry_minutes=10)
+        
+        # Send OTP via email
         try:
-            session['user_email'] = user.email
-            session['user_id'] = user.faculty_id
-            session['user_type'] = 'faculty'
-        except Exception:
-            # If session can't be set (e.g., testing config), ignore
-            pass
-
+            subject = 'GEC Rajkot - Login Verification OTP'
+            html = f"""
+            <h2>GEC Rajkot - Login Verification</h2>
+            <p>Your login verification code is: <strong style="font-size: 24px; color: #4F46E5;">{otp.otp_code}</strong></p>
+            <p>This code will expire in {otp.time_remaining()} seconds.</p>
+            <p>If you didn't attempt to login, please secure your account immediately.</p>
+            """
+            send_email(email, subject, html_content=html)
+            current_app.logger.info(f"Login OTP sent to {email}")
+        except Exception as e:
+            current_app.logger.error(f"Failed to send login OTP: {e}")
+            return jsonify({'error': 'Failed to send verification email'}), 500
+        
         return jsonify({
-            'message': 'Login successful',
-            'access_token': access_token,
-            'user': user.to_dict(),
+            'message': 'OTP sent to your email for login verification',
+            'otp_expires_in': otp.time_remaining(),
+            'email': email,
             'user_type': 'faculty'
         }), 200
 
@@ -207,14 +211,18 @@ def student_login():
     """Convenience endpoint for student login that sets user_type to 'student' and delegates to login logic."""
     try:
         data = request.get_json() or {}
-        email = data.get('email', '').strip().lower()
+        identifier = data.get('email', '').strip()  # Can be email or roll_no
         password = data.get('password', '')
 
-        if not all([email, password]):
-            return jsonify({'error': 'Email and password are required'}), 400
+        if not all([identifier, password]):
+            return jsonify({'error': 'Email/Roll number and password are required'}), 400
 
-        # Find student user
-        user = Student.find_by_email(email)
+        # Find student user by email or roll number
+        user = Student.find_by_email(identifier.lower())
+        if not user:
+            # Try finding by roll number
+            user = Student.find_by_roll_no(identifier)
+        
         if not user:
             return jsonify({'error': 'User not found'}), 404
         if not getattr(user, 'is_active', True):
@@ -222,31 +230,29 @@ def student_login():
         if not user.check_password(password):
             return jsonify({'error': 'Invalid password'}), 401
 
-        user_id_val = getattr(user, 'student_id', getattr(user, 'faculty_id', None))
-        additional_claims = {
-            'user_type': 'student',
-            'user_id': user_id_val,
-            'full_name': getattr(user, 'name', None)
-        }
-
-        access_token = create_access_token(
-            identity=user.email,
-            additional_claims=additional_claims,
-            expires_delta=timedelta(hours=24)
-        )
-
-        # Also set session for session-based auth fallbacks used in templates/tests
+        # Password correct - now send OTP for login verification
+        from models import OTP
+        otp = OTP.create_otp(user.email, 'login', 'student', expiry_minutes=10)
+        
+        # Send OTP via email
         try:
-            session['user_email'] = user.email
-            session['user_id'] = user.student_id
-            session['user_type'] = 'student'
-        except Exception:
-            pass
-
+            subject = 'GEC Rajkot - Login Verification OTP'
+            html = f"""
+            <h2>GEC Rajkot - Login Verification</h2>
+            <p>Your login verification code is: <strong style="font-size: 24px; color: #4F46E5;">{otp.otp_code}</strong></p>
+            <p>This code will expire in {otp.time_remaining()} seconds.</p>
+            <p>If you didn't attempt to login, please secure your account immediately.</p>
+            """
+            send_email(user.email, subject, html_content=html)
+            current_app.logger.info(f"Login OTP sent to {user.email}")
+        except Exception as e:
+            current_app.logger.error(f"Failed to send login OTP: {e}")
+            return jsonify({'error': 'Failed to send verification email'}), 500
+        
         return jsonify({
-            'message': 'Login successful',
-            'access_token': access_token,
-            'user': user.to_dict(),
+            'message': 'OTP sent to your email for login verification',
+            'otp_expires_in': otp.time_remaining(),
+            'email': user.email,
             'user_type': 'student'
         }), 200
 
@@ -302,12 +308,29 @@ def register():
         if existing_user:
             return jsonify({'error': 'User with this email already exists'}), 409
 
-        # Registration without OTP - directly allow registration
-        current_app.logger.info(f"Registration initiated for {email} as {user_type}")
+        # Create OTP and send via email
+        from models import OTP
+        otp = OTP.create_otp(email, 'registration', user_type, expiry_minutes=10)
+        
+        # Send OTP email
+        try:
+            subject = 'GEC Rajkot - OTP Verification'
+            html = f"""
+            <h2>GEC Rajkot - Email Verification</h2>
+            <p>Your verification code is: <strong style="font-size: 24px; color: #4F46E5;">{otp.otp_code}</strong></p>
+            <p>This code will expire in {otp.time_remaining()} seconds.</p>
+            <p>If you didn't request this code, please ignore this email.</p>
+            """
+            send_email(email, subject, html_content=html)
+            current_app.logger.info(f"OTP sent to {email} for registration")
+        except Exception as e:
+            current_app.logger.error(f"Failed to send OTP email: {e}")
+            return jsonify({'error': 'Failed to send verification email'}), 500
 
         return jsonify({
-            'message': 'Registration initiated. Proceed to complete your profile.',
-            'email': email
+            'message': 'OTP sent to your email for verification',
+            'email': email,
+            'otp_expires_in': otp.time_remaining()
         }), 200
         
         # Uncomment when models are available:
@@ -370,7 +393,7 @@ def verify_otp():
         if user_type not in ['student', 'faculty']:
             return jsonify({'error': 'Invalid user type'}), 400
         
-        if purpose not in ['registration', 'forgot_password']:
+        if purpose not in ['registration', 'forgot_password', 'login']:
             return jsonify({'error': 'Invalid purpose'}), 400
         
         # Find valid OTP
@@ -391,38 +414,47 @@ def verify_otp():
 
             # Create user record
             if user_type == 'student':
-                # Ensure required fields for Student model
-                required = ['first_name', 'last_name', 'email', 'password', 'phone', 'date_of_birth', 'address', 'enrollment_number', 'department', 'admission_year', 'current_semester', 'roll_number']
-                missing = [f for f in required if f not in user_data]
-                if missing:
-                    return jsonify({'error': f'Missing fields for student registration: {missing}'}), 400
-
-                # Avoid passing raw password into SQLAlchemy constructor and filter allowed fields
-                allowed = ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'address', 'blood_group', 'guardian_name', 'guardian_phone', 'emergency_contact', 'enrollment_number', 'department', 'admission_year', 'current_semester', 'roll_number']
-                user_kwargs = {k: v for k, v in user_data.items() if k in allowed}
-                # Convert date_of_birth from string to date if present
-                dob = user_kwargs.get('date_of_birth')
-                if isinstance(dob, str):
-                    try:
-                        user_kwargs['date_of_birth'] = datetime.strptime(dob, '%Y-%m-%d').date()
-                    except Exception:
-                        pass
+                # Student model fields: roll_no, name, email, password, department, semester, dob, address, phone
                 raw_password = user_data.get('password')
-                new_user = Student(**user_kwargs)
+                
+                # Build the student data with correct field names
+                student_data = {
+                    'name': user_data.get('name', f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}").strip(),
+                    'email': user_data.get('email'),
+                    'roll_no': user_data.get('roll_number') or user_data.get('enrollment_number'),
+                    'department': user_data.get('department'),
+                    'semester': user_data.get('current_semester') or user_data.get('semester'),
+                    'phone': user_data.get('phone', '0000000000'),
+                    'address': user_data.get('address', 'Not Provided')
+                }
+                
+                # Convert date_of_birth to dob if present
+                dob = user_data.get('date_of_birth') or user_data.get('dob')
+                if dob and isinstance(dob, str):
+                    try:
+                        student_data['dob'] = datetime.strptime(dob, '%Y-%m-%d').date()
+                    except Exception:
+                        student_data['dob'] = None
+                elif dob:
+                    student_data['dob'] = dob
+                
+                new_user = Student(**student_data)
                 new_user.set_password(raw_password)
             else:
                 # Faculty registration - match the actual Faculty model fields
-                required = ['name', 'email', 'password', 'phone', 'department']
-                missing = [f for f in required if f not in user_data]
-                if missing:
-                    return jsonify({'error': f'Missing fields for faculty registration: {missing}'}), 400
-
-                # Faculty model has: name, email, password, department, designation, salary, phone
-                allowed = ['name', 'email', 'phone', 'department', 'designation', 'salary']
-                user_kwargs = {k: v for k, v in user_data.items() if k in allowed}
-                
                 raw_password = user_data.get('password')
-                new_user = Faculty(**user_kwargs)
+                
+                # Build the faculty data with correct field names (handle first_name + last_name)
+                faculty_data = {
+                    'name': user_data.get('name', f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}").strip(),
+                    'email': user_data.get('email'),
+                    'phone': user_data.get('phone', '0000000000'),
+                    'department': user_data.get('department', 'Not Specified'),
+                    'designation': user_data.get('designation', 'Lecturer'),
+                    'salary': user_data.get('salary', 0)
+                }
+                
+                new_user = Faculty(**faculty_data)
                 new_user.set_password(raw_password)
 
             db.session.add(new_user)
@@ -432,6 +464,40 @@ def verify_otp():
                 'message': 'Registration completed successfully',
                 'user': new_user.to_dict()
             }), 201
+        
+        elif purpose == 'login':
+            # Handle login OTP verification - create access token
+            user = Student.find_by_email(email) if user_type == 'student' else Faculty.find_by_email(email)
+            if not user:
+                return jsonify({'error': 'User not found'}), 404
+            
+            user_id_val = getattr(user, f'{user_type}_id', None)
+            additional_claims = {
+                'user_type': user_type,
+                'user_id': user_id_val,
+                'full_name': getattr(user, 'name', None)
+            }
+            
+            access_token = create_access_token(
+                identity=user.email,
+                additional_claims=additional_claims,
+                expires_delta=timedelta(hours=24)
+            )
+            
+            # Set session for session-based auth fallbacks
+            try:
+                session['user_email'] = user.email
+                session['user_id'] = user_id_val
+                session['user_type'] = user_type
+            except Exception:
+                pass
+            
+            return jsonify({
+                'message': 'Login successful',
+                'access_token': access_token,
+                'user': user.to_dict(),
+                'user_type': user_type
+            }), 200
 
         # Other purposes (forgot_password) would be handled elsewhere
         return jsonify({'message': 'OTP verified'}), 200
@@ -508,14 +574,31 @@ def resend_otp():
         if user_type not in ['student', 'faculty']:
             return jsonify({'error': 'Invalid user type'}), 400
         
-        if purpose not in ['registration', 'forgot_password']:
+        if purpose not in ['registration', 'forgot_password', 'login']:
             return jsonify({'error': 'Invalid purpose'}), 400
 
-        # OTP resend disabled - registration does not require OTP
-        current_app.logger.info(f"OTP resend attempted for {email} (OTP system disabled)")
+        # Create new OTP
+        from models import OTP
+        otp = OTP.create_otp(email, purpose, user_type, expiry_minutes=10)
+        
+        # Send OTP via email
+        try:
+            subject = f'GEC Rajkot - OTP Verification (Resend)'
+            html = f"""
+            <h2>GEC Rajkot - Email Verification</h2>
+            <p>Your verification code is: <strong style="font-size: 24px; color: #4F46E5;">{otp.otp_code}</strong></p>
+            <p>This code will expire in {otp.time_remaining()} seconds.</p>
+            <p>If you didn't request this code, please ignore this email.</p>
+            """
+            send_email(email, subject, html_content=html)
+            current_app.logger.info(f"OTP resent to {email}")
+        except Exception as e:
+            current_app.logger.error(f"Failed to resend OTP email: {e}")
+            return jsonify({'error': 'Failed to send verification email'}), 500
         
         return jsonify({
-            'message': 'OTP system has been disabled. Please proceed with registration directly.',
+            'message': 'OTP resent successfully',
+            'otp_expires_in': otp.time_remaining()
         }), 200
         
         # Uncomment when models are available:
@@ -566,11 +649,28 @@ def forgot_password():
         if not validate_email(email):
             return jsonify({'error': 'Invalid email format'}), 400
         
-        # Password reset without OTP - direct reset allowed
-        current_app.logger.info(f"Password reset requested for {email} as {user_type}")
+        # Generate OTP for password reset
+        from models import OTP
+        otp = OTP.create_otp(email, 'forgot_password', user_type, expiry_minutes=10)
+        
+        # Send OTP via email
+        try:
+            subject = 'GEC Rajkot - Password Reset OTP'
+            html = f"""
+            <h2>GEC Rajkot - Password Reset</h2>
+            <p>Your password reset code is: <strong style="font-size: 24px; color: #4F46E5;">{otp.otp_code}</strong></p>
+            <p>This code will expire in {otp.time_remaining()} seconds.</p>
+            <p>If you didn't request this password reset, please ignore this email and your password will remain unchanged.</p>
+            """
+            send_email(email, subject, html_content=html)
+            current_app.logger.info(f"Password reset OTP sent to {email}")
+        except Exception as e:
+            current_app.logger.error(f"Failed to send password reset OTP: {e}")
+            return jsonify({'error': 'Failed to send verification email'}), 500
 
         return jsonify({
-            'message': 'Password reset initiated. You can now proceed with resetting your password.',
+            'message': 'If the email exists, an OTP has been sent for password reset',
+            'otp_expires_in': otp.time_remaining()
         }), 200
         
         # Uncomment when models are available:
@@ -637,8 +737,8 @@ def reset_password():
             }), 400
         
         # Verify the reset token via OTP
-            from models import OTP
-            otp = OTP.find_valid_otp(email, 'forgot_password', user_type)
+        from models import OTP
+        otp = OTP.find_valid_otp(email, 'forgot_password', user_type)
         if not otp:
             return jsonify({'error': 'No valid reset token found'}), 404
 

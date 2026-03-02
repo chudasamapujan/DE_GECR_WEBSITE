@@ -420,6 +420,7 @@
     <script>
         let allSubjects = [];
         let allStudents = [];
+        let totalUniqueStudents = 0;  // Track unique student count
         let currentTab = 'by-subject';
 
         // Load data on page load
@@ -462,6 +463,7 @@
                 }
 
                 allSubjects = data.subjects;
+                totalUniqueStudents = data.total_unique_students || 0;  // Store unique student count
                 updateSubjectsSummary();
                 renderSubjects();
 
@@ -475,6 +477,7 @@
         // Update summary cards
         function updateSubjectsSummary() {
             document.getElementById('totalSubjects').textContent = allSubjects.length;
+            // Sum all enrollments across subjects (total enrollments, not unique students)
             const enrolledCount = allSubjects.reduce((sum, subj) => sum + subj.enrolled_students, 0);
             document.getElementById('enrolledCount').textContent = enrolledCount;
         }

@@ -174,7 +174,7 @@ def get_profile():
                 'semester': subj.semester,
                 'faculty_name': subj.faculty.name if subj.faculty else None
             }
-            for subj in enrolled_subjects
+            for subj in enrolled_subjects if subj is not None
         ]
         
         # Count active enrollments

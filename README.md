@@ -112,8 +112,6 @@ DE_GECR_WEBSITE/
 └── instance/
     └── gec_rajkot.db           # SQLite database
 ```
-=======
->>>>>>> fbbba73cba07f62472468dae4cba4159d64e9650
 
 ## 🛠️ Technology Stack
 

@@ -1,0 +1,322 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification - GEC Rajkot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root { --primary: #4F46E5; --accent: #3B82F6; --success: #10b981; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; }
+        .auth-wrapper { display: flex; min-height: 100vh; }
+        .auth-image-panel {
+            display: none; width: 50%; position: relative;
+            background: url('https://gecrajkot.ac.in/wp-content/uploads/2023/02/IMG-20230130-WA0007.jpg') center/cover no-repeat;
+        }
+        .auth-image-panel::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(79,70,229,0.88) 0%, rgba(59,130,246,0.82) 50%, rgba(79,70,229,0.92) 100%);
+        }
+        .image-content {
+            position: relative; z-index: 2; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; height: 100%;
+            padding: 3rem; text-align: center; color: white;
+        }
+        .image-content .college-name { font-family: 'Playfair Display', serif; font-size: 2.2rem; line-height: 1.2; margin-bottom: 0.5rem; }
+        .image-content .college-sub { font-size: 0.95rem; opacity: 0.85; font-weight: 300; }
+        .auth-form-panel {
+            width: 100%; display: flex; flex-direction: column; justify-content: center;
+            align-items: center; padding: 2rem 1.5rem; background: #f8fafc;
+            position: relative; overflow-y: auto;
+        }
+        .form-container { width: 100%; max-width: 440px; animation: slideUp 0.5s ease-out; }
+        .email-icon-circle {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1.5rem; position: relative;
+        }
+        .email-icon-circle i { font-size: 2rem; color: var(--primary); }
+        .email-icon-circle::after {
+            content: ''; position: absolute; inset: -4px; border-radius: 50%;
+            border: 2px dashed rgba(79,70,229,0.2); animation: spin 20s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .form-header { text-align: center; margin-bottom: 2rem; }
+        .form-header h1 { font-size: 1.6rem; font-weight: 700; color: #1e293b; margin-bottom: 0.25rem; }
+        .form-header p { color: #64748b; font-size: 0.9rem; }
+        .form-header .user-email { font-weight: 600; color: #1e293b; margin-top: 0.25rem; }
+        /* OTP */
+        .otp-container { display: flex; justify-content: center; gap: 0.6rem; margin-bottom: 1.5rem; }
+        .otp-input {
+            width: 52px; height: 62px; text-align: center; font-size: 1.5rem; font-weight: 700;
+            border: 2px solid #e5e7eb; border-radius: 14px; font-family: 'Inter', sans-serif;
+            transition: all 0.3s; color: #1e293b; background: white;
+        }
+        .otp-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79,70,229,0.1); background: #fafbff; }
+        .otp-input.filled { border-color: var(--primary); background: #f5f3ff; }
+        /* Timer */
+        .timer-display {
+            text-align: center; margin-bottom: 1.5rem;
+            padding: 1rem; background: #f1f5f9; border-radius: 12px;
+        }
+        .timer-display .timer-label { font-size: 0.8rem; color: #64748b; margin-bottom: 0.25rem; }
+        .timer-display .timer-value { font-size: 1.75rem; font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums; }
+        .timer-display .timer-value.urgent { color: #ef4444; }
+        /* Buttons */
+        .btn-primary {
+            width: 100%; padding: 0.85rem; border: none; border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white; font-size: 1rem; font-weight: 600; font-family: 'Inter', sans-serif;
+            cursor: pointer; transition: all 0.3s; display: flex; align-items: center;
+            justify-content: center; gap: 0.5rem; margin-bottom: 0.75rem;
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(79,70,229,0.35); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-secondary {
+            width: 100%; padding: 0.85rem; border: 2px solid #e5e7eb; border-radius: 12px;
+            background: white; color: #374151; font-size: 1rem; font-weight: 500;
+            font-family: 'Inter', sans-serif; cursor: pointer; transition: all 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        }
+        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+        .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+        /* Messages */
+        .msg-box {
+            padding: 1rem; border-radius: 12px; margin-bottom: 1.25rem;
+            display: none; align-items: center; gap: 0.75rem; font-size: 0.9rem;
+        }
+        .msg-box.show { display: flex; animation: fadeIn 0.3s ease; }
+        .msg-success { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+        .msg-error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+        .msg-box i { font-size: 1.2rem; flex-shrink: 0; }
+        /* Back */
+        .back-link { display: inline-flex; align-items: center; gap: 0.4rem; color: #64748b; font-size: 0.85rem; text-decoration: none; margin-top: 1.5rem; transition: color 0.2s; }
+        .back-link:hover { color: var(--primary); }
+        .blob-1, .blob-2 { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.08; pointer-events: none; }
+        .blob-1 { width: 300px; height: 300px; background: var(--primary); top: -100px; right: -80px; }
+        .blob-2 { width: 250px; height: 250px; background: var(--accent); bottom: -80px; left: -60px; }
+        .mobile-brand { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem; padding: 0.75rem 1rem; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 12px; color: white; }
+        .mobile-brand img { width: 32px; height: 32px; object-fit: contain; filter: brightness(0) invert(1); }
+        .mobile-brand span { font-weight: 600; font-size: 0.85rem; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @media (min-width: 1024px) {
+            .auth-image-panel { display: block; }
+            .auth-form-panel { width: 50%; padding: 3rem; }
+            .mobile-brand { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-image-panel">
+            <div class="image-content">
+                <img src="/static/images/logo.png" alt="GEC Logo" style="width:72px;height:72px;object-fit:contain;margin-bottom:1.5rem;filter:brightness(0) invert(1);">
+                <h2 class="college-name">Government Engineering<br>College, Rajkot</h2>
+                <p class="college-sub">Secure Email Verification</p>
+                <div style="margin-top:3rem;display:flex;flex-direction:column;gap:1.2rem;max-width:280px;">
+                    <div style="display:flex;align-items:center;gap:1rem;text-align:left;">
+                        <div style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fas fa-envelope-circle-check"></i>
+                        </div>
+                        <div><div style="font-weight:600;">Check Your Email</div><div style="font-size:0.8rem;opacity:0.7;">We sent a 6-digit code</div></div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:1rem;text-align:left;">
+                        <div style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fas fa-keyboard"></i>
+                        </div>
+                        <div><div style="font-weight:600;">Enter the Code</div><div style="font-size:0.8rem;opacity:0.7;">Type the 6 digits below</div></div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:1rem;text-align:left;">
+                        <div style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fas fa-circle-check"></i>
+                        </div>
+                        <div><div style="font-weight:600;">Get Verified</div><div style="font-size:0.8rem;opacity:0.7;">Access your portal securely</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="auth-form-panel">
+            <div class="blob-1"></div>
+            <div class="blob-2"></div>
+            <div class="form-container">
+                <div class="mobile-brand">
+                    <img src="/static/images/logo.png" alt="Logo">
+                    <span>GEC Rajkot &middot; Verification</span>
+                </div>
+                <div class="email-icon-circle">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="form-header">
+                    <h1>Verify Your Email</h1>
+                    <p>We've sent a 6-digit code to</p>
+                    <p class="user-email" id="userEmail"></p>
+                </div>
+                <div id="successMessage" class="msg-box msg-success">
+                    <i class="fas fa-check-circle"></i>
+                    <div><strong>Verification Successful!</strong><br><span style="font-size:0.85rem;">Redirecting you...</span></div>
+                </div>
+                <div id="errorMessage" class="msg-box msg-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="errorText"></span>
+                </div>
+                <form id="otpForm">
+                    <div class="otp-container">
+                        <input type="text" maxlength="1" class="otp-input" id="otp1" autocomplete="off">
+                        <input type="text" maxlength="1" class="otp-input" id="otp2" autocomplete="off">
+                        <input type="text" maxlength="1" class="otp-input" id="otp3" autocomplete="off">
+                        <input type="text" maxlength="1" class="otp-input" id="otp4" autocomplete="off">
+                        <input type="text" maxlength="1" class="otp-input" id="otp5" autocomplete="off">
+                        <input type="text" maxlength="1" class="otp-input" id="otp6" autocomplete="off">
+                    </div>
+                    <div class="timer-display">
+                        <div class="timer-label">Code expires in</div>
+                        <div class="timer-value" id="timer">10:00</div>
+                    </div>
+                    <button type="submit" id="verifyBtn" class="btn-primary">
+                        <i class="fas fa-check-circle"></i><span>Verify Code</span>
+                    </button>
+                    <button type="button" id="resendBtn" class="btn-secondary" disabled>
+                        <i class="fas fa-redo"></i><span id="resendText">Resend Code</span>
+                    </button>
+                </form>
+                <div style="text-align:center;">
+                    <a href="/auth/login/student" class="back-link"><i class="fas fa-arrow-left"></i>Back to Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const email = sessionStorage.getItem('otp_email') || urlParams.get('email') || '';
+        const purpose = sessionStorage.getItem('otp_purpose') || urlParams.get('purpose') || 'registration';
+        const userType = sessionStorage.getItem('otp_user_type') || urlParams.get('user_type') || 'student';
+        const userData = sessionStorage.getItem('otp_user_data') ? JSON.parse(sessionStorage.getItem('otp_user_data')) : null;
+        document.getElementById('userEmail').textContent = email;
+        const otpInputs = document.querySelectorAll('.otp-input');
+        const otpForm = document.getElementById('otpForm');
+        const verifyBtn = document.getElementById('verifyBtn');
+        const resendBtn = document.getElementById('resendBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const successMessage = document.getElementById('successMessage');
+        otpInputs[0].focus();
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                const value = e.target.value;
+                if (!/^\d*$/.test(value)) { e.target.value = ''; return; }
+                if (value) { input.classList.add('filled'); } else { input.classList.remove('filled'); }
+                if (value && index < otpInputs.length - 1) otpInputs[index + 1].focus();
+                const allFilled = Array.from(otpInputs).every(inp => inp.value);
+                if (allFilled) verifyBtn.disabled = false;
+            });
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !input.value && index > 0) otpInputs[index - 1].focus();
+            });
+            input.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const pastedData = e.clipboardData.getData('text').trim();
+                if (/^\d{6}$/.test(pastedData)) {
+                    pastedData.split('').forEach((char, i) => { if (otpInputs[i]) { otpInputs[i].value = char; otpInputs[i].classList.add('filled'); } });
+                    otpInputs[5].focus(); verifyBtn.disabled = false;
+                }
+            });
+        });
+        let timeLeft = 600;
+        const timerDisplay = document.getElementById('timer');
+        function updateTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = minutes + ':' + seconds.toString().padStart(2, '0');
+            if (timeLeft <= 0) {
+                errorText.textContent = 'OTP has expired. Please request a new code.';
+                errorMessage.classList.add('show');
+                verifyBtn.disabled = true;
+                clearInterval(timerInterval);
+            } else if (timeLeft <= 60) { timerDisplay.classList.add('urgent'); }
+            timeLeft--;
+        }
+        const timerInterval = setInterval(updateTimer, 1000);
+        updateTimer();
+        otpForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const otp = Array.from(otpInputs).map(input => input.value).join('');
+            if (otp.length !== 6) { showError('Please enter all 6 digits'); return; }
+            verifyBtn.disabled = true;
+            verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>Verifying...';
+            try {
+                const response = await fetch('/api/auth/verify-otp', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, otp, purpose, user_type: userType, user_data: userData })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    successMessage.classList.add('show');
+                    errorMessage.classList.remove('show');
+                    if (purpose === 'login') {
+                        localStorage.setItem(userType + '_token', data.access_token);
+                        localStorage.setItem(userType + '_user', JSON.stringify(data.user));
+                        sessionStorage.removeItem('otp_email'); sessionStorage.removeItem('otp_purpose');
+                        sessionStorage.removeItem('otp_user_type'); sessionStorage.removeItem('otp_user_data');
+                        setTimeout(() => { window.location.href = '/' + userType + '/dashboard'; }, 2000);
+                    } else if (purpose === 'registration') {
+                        sessionStorage.removeItem('otp_email'); sessionStorage.removeItem('otp_purpose');
+                        sessionStorage.removeItem('otp_user_type'); sessionStorage.removeItem('otp_user_data');
+                        setTimeout(() => { window.location.href = '/auth/login/' + userType + '?registered=true'; }, 2000);
+                    } else if (purpose === 'forgot_password') {
+                        sessionStorage.removeItem('otp_email'); sessionStorage.removeItem('otp_purpose');
+                        sessionStorage.removeItem('otp_user_type'); sessionStorage.removeItem('otp_user_data');
+                        setTimeout(() => { window.location.href = '/auth/reset-password?email=' + email + '&user_type=' + userType; }, 2000);
+                    }
+                } else {
+                    showError(data.error || 'Verification failed');
+                    verifyBtn.disabled = false;
+                    verifyBtn.innerHTML = '<i class="fas fa-check-circle"></i><span>Verify Code</span>';
+                    otpInputs.forEach(input => { input.value = ''; input.classList.remove('filled'); });
+                    otpInputs[0].focus();
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+                verifyBtn.disabled = false;
+                verifyBtn.innerHTML = '<i class="fas fa-check-circle"></i><span>Verify Code</span>';
+            }
+        });
+        resendBtn.addEventListener('click', async () => {
+            resendBtn.disabled = true;
+            resendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>Sending...';
+            try {
+                const response = await fetch('/api/auth/resend-otp', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, purpose, user_type: userType })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    clearInterval(timerInterval);
+                    timeLeft = data.otp_expires_in || 600;
+                    const newTimerInterval = setInterval(updateTimer, 1000);
+                    timerDisplay.classList.remove('urgent');
+                    showSuccess('New code sent to your email');
+                    otpInputs.forEach(input => { input.value = ''; input.classList.remove('filled'); });
+                    otpInputs[0].focus();
+                    setTimeout(() => { resendBtn.disabled = false; resendBtn.innerHTML = '<i class="fas fa-redo"></i><span>Resend Code</span>'; }, 30000);
+                } else {
+                    showError(data.error || 'Failed to resend code');
+                    resendBtn.disabled = false;
+                    resendBtn.innerHTML = '<i class="fas fa-redo"></i><span>Resend Code</span>';
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+                resendBtn.disabled = false;
+                resendBtn.innerHTML = '<i class="fas fa-redo"></i><span>Resend Code</span>';
+            }
+        });
+        function showError(message) { errorText.textContent = message; errorMessage.classList.add('show'); successMessage.classList.remove('show'); }
+        function showSuccess(message) { successMessage.querySelector('span').textContent = message; successMessage.classList.add('show'); errorMessage.classList.remove('show'); }
+        if (!email) { window.location.href = '/auth/login/student'; }
+    </script>
+</body>
+</html>

@@ -6,7 +6,9 @@ Simple and efficient structure for academic management
 
 from database import db
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
+import random
+import string
 
 
 class Student(db.Model):
@@ -36,7 +38,7 @@ class Student(db.Model):
         """Get all subjects this student is enrolled in"""
         from models.gecr_models import StudentEnrollment
         enrollments = StudentEnrollment.query.filter_by(student_id=self.student_id, status='active').all()
-        return [enrollment.subject for enrollment in enrollments]
+        return [enrollment.subject for enrollment in enrollments if enrollment.subject is not None]
     
     def is_enrolled_in_subject(self, subject_id):
         """Check if student is enrolled in a specific subject"""
@@ -599,4 +601,98 @@ class Notification(db.Model):
             'link': self.link,
             'read': self.read,
             'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+
+class OTP(db.Model):
+    """OTP table for email verification"""
+    __tablename__ = 'otps'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    email = db.Column(db.String(100), nullable=False, index=True)
+    otp_code = db.Column(db.String(6), nullable=False)
+    purpose = db.Column(db.String(50), nullable=False)  # 'registration', 'forgot_password', 'login'
+    user_type = db.Column(db.String(20), nullable=False)  # 'student' or 'faculty'
+    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    is_verified = db.Column(db.Boolean, default=False)
+    attempts = db.Column(db.Integer, default=0)
+    
+    @staticmethod
+    def generate_otp_code():
+        """Generate a random 6-digit OTP"""
+        return ''.join(random.choices(string.digits, k=6))
+    
+    @classmethod
+    def create_otp(cls, email, purpose, user_type, expiry_minutes=10):
+        """Create a new OTP for the given email and purpose"""
+        # Delete any existing unverified OTPs for this email/purpose
+        cls.query.filter_by(
+            email=email,
+            purpose=purpose,
+            user_type=user_type,
+            is_verified=False
+        ).delete()
+        db.session.commit()
+        
+        # Create new OTP
+        otp_code = cls.generate_otp_code()
+        otp = cls(
+            email=email,
+            otp_code=otp_code,
+            purpose=purpose,
+            user_type=user_type,
+            expires_at=datetime.now() + timedelta(minutes=expiry_minutes)
+        )
+        db.session.add(otp)
+        db.session.commit()
+        return otp
+    
+    @classmethod
+    def find_valid_otp(cls, email, purpose, user_type):
+        """Find a valid unverified OTP"""
+        return cls.query.filter_by(
+            email=email,
+            purpose=purpose,
+            user_type=user_type,
+            is_verified=False
+        ).filter(cls.expires_at > datetime.now()).first()
+    
+    def verify_otp(self, code):
+        """Verify the OTP code"""
+        if self.is_verified:
+            return False, 'OTP already verified'
+        
+        if datetime.now() > self.expires_at:
+            return False, 'OTP has expired'
+        
+        if self.attempts >= 3:
+            return False, 'Too many failed attempts'
+        
+        if self.otp_code != code:
+            self.attempts += 1
+            db.session.commit()
+            return False, f'Invalid OTP. {3 - self.attempts} attempts remaining'
+        
+        self.is_verified = True
+        db.session.commit()
+        return True, 'OTP verified successfully'
+    
+    def time_remaining(self):
+        """Get time remaining in seconds"""
+        if datetime.now() > self.expires_at:
+            return 0
+        return int((self.expires_at - datetime.now()).total_seconds())
+    
+    def to_dict(self):
+        """Convert to dictionary"""
+        return {
+            'id': self.id,
+            'email': self.email,
+            'purpose': self.purpose,
+            'user_type': self.user_type,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'expires_at': self.expires_at.isoformat() if self.expires_at else None,
+            'is_verified': self.is_verified,
+            'time_remaining': self.time_remaining()
         }

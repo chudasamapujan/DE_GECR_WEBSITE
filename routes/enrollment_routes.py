@@ -316,6 +316,9 @@ def get_my_enrollments():
         enrollments_data = []
         for enrollment in enrollments:
             subject = enrollment.subject
+            if not subject:
+                # Skip orphaned enrollments where the subject was deleted
+                continue
             enrollments_data.append({
                 'enrollment_id': enrollment.enrollment_id,
                 'subject_id': subject.subject_id,
@@ -362,6 +365,9 @@ def get_subject_enrollments(subject_id):
         students_data = []
         for enrollment in enrollments:
             student = enrollment.student
+            if not student:
+                # Skip orphaned enrollments where the student was deleted
+                continue
             students_data.append({
                 'enrollment_id': enrollment.enrollment_id,
                 'student_id': student.student_id,
@@ -402,11 +408,19 @@ def get_all_faculty_enrollments():
         subjects = Subject.query.filter_by(faculty_id=session['user_id']).all()
         
         subjects_data = []
+        all_student_ids = set()  # Track unique students across all subjects
+        
         for subject in subjects:
-            enrolled_count = StudentEnrollment.query.filter_by(
+            enrollments = StudentEnrollment.query.filter_by(
                 subject_id=subject.subject_id,
                 status='active'
-            ).count()
+            ).all()
+            
+            enrolled_count = len(enrollments)
+            
+            # Add student IDs to the set for unique count
+            for enrollment in enrollments:
+                all_student_ids.add(enrollment.student_id)
             
             subjects_data.append({
                 'subject_id': subject.subject_id,
@@ -419,7 +433,8 @@ def get_all_faculty_enrollments():
         return jsonify({
             'success': True,
             'subjects': subjects_data,
-            'total_subjects': len(subjects_data)
+            'total_subjects': len(subjects_data),
+            'total_unique_students': len(all_student_ids)  # Unique student count
         }), 200
         
     except Exception as e:
