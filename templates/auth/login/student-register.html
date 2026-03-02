@@ -10,59 +10,63 @@
     <style>
         :root { --primary: #4F46E5; --accent: #3B82F6; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; min-height: 100vh; background: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; }
         .auth-wrapper { display: flex; min-height: 100vh; }
-        .auth-sidebar {
-            display: none; width: 320px; position: fixed; top: 0; left: 0; height: 100vh;
+        .auth-image-panel {
+            display: none; width: 50%; position: relative;
             background: url('https://gecrajkot.ac.in/wp-content/uploads/2023/02/IMG-20230130-WA0007.jpg') center/cover no-repeat;
-            flex-shrink: 0;
         }
-        .auth-sidebar::after {
+        .auth-image-panel::after {
             content: ''; position: absolute; inset: 0;
-            background: linear-gradient(180deg, rgba(79,70,229,0.92) 0%, rgba(59,130,246,0.88) 50%, rgba(79,70,229,0.95) 100%);
+            background: linear-gradient(135deg, rgba(79,70,229,0.88) 0%, rgba(59,130,246,0.82) 50%, rgba(79,70,229,0.92) 100%);
         }
-        .sidebar-content {
+        .image-content {
             position: relative; z-index: 2; display: flex; flex-direction: column;
             justify-content: center; align-items: center; height: 100%;
-            padding: 2rem; text-align: center; color: white;
+            padding: 3rem; text-align: center; color: white;
         }
-        .sidebar-content .college-name { font-family: 'Playfair Display', serif; font-size: 1.6rem; line-height: 1.2; margin-bottom: 0.5rem; }
-        .sidebar-content .college-sub { font-size: 0.85rem; opacity: 0.8; font-weight: 300; }
-        .sidebar-features { margin-top: 2.5rem; display: flex; flex-direction: column; gap: 1rem; width: 100%; }
-        .sidebar-features .sf-item { display: flex; align-items: center; gap: 0.75rem; text-align: left; font-size: 0.8rem; opacity: 0.9; }
-        .sf-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .image-content .college-name { font-family: 'Playfair Display', serif; font-size: 2.2rem; line-height: 1.2; margin-bottom: 0.5rem; }
+        .image-content .college-sub { font-size: 0.95rem; opacity: 0.85; font-weight: 300; letter-spacing: 0.5px; }
+        .image-features { margin-top: 3rem; display: flex; flex-direction: column; gap: 1.2rem; }
+        .image-features .feature { display: flex; align-items: center; gap: 1rem; text-align: left; font-size: 0.9rem; opacity: 0.9; }
+        .feature-icon {
+            width: 44px; height: 44px; border-radius: 12px;
+            background: rgba(255,255,255,0.15); backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.1rem;
+        }
         .auth-form-panel {
-            width: 100%; display: flex; flex-direction: column; align-items: center;
-            padding: 2rem 1.5rem; position: relative; overflow-y: auto;
+            width: 100%; display: flex; flex-direction: column; justify-content: center;
+            align-items: center; padding: 2rem 1.5rem; background: #f8fafc;
+            position: relative; overflow-y: auto;
         }
-        .form-container { width: 100%; max-width: 640px; animation: slideUp 0.5s ease-out; }
-        .form-card {
-            background: white; border-radius: 20px; padding: 2.5rem;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 1px solid #f1f5f9;
-        }
+        .blob-1, .blob-2 { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.08; pointer-events: none; }
+        .blob-1 { width: 300px; height: 300px; background: var(--primary); top: -100px; right: -80px; }
+        .blob-2 { width: 250px; height: 250px; background: var(--accent); bottom: -80px; left: -60px; }
+        .form-container { width: 100%; max-width: 480px; animation: slideUp 0.5s ease-out; }
         .form-header { text-align: center; margin-bottom: 2rem; }
-        .form-header img { width: 48px; height: 48px; object-fit: contain; margin: 0 auto 0.75rem; }
-        .form-header h1 { font-size: 1.6rem; font-weight: 700; color: #1e293b; margin-bottom: 0.25rem; }
+        .form-header img { width: 56px; height: 56px; object-fit: contain; margin: 0 auto 1rem; }
+        .form-header h1 { font-size: 1.75rem; font-weight: 700; color: #1e293b; margin-bottom: 0.25rem; }
         .form-header p { color: #64748b; font-size: 0.9rem; }
-        .form-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
-        .input-group { margin-bottom: 0; }
-        .input-group label { display: block; font-size: 0.75rem; font-weight: 600; color: #374151; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 1.25rem; margin-bottom: 1.25rem; }
+        .input-group { margin-bottom: 1.25rem; }
+        .form-grid .input-group { margin-bottom: 0; }
+        .input-group label { display: block; font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
         .input-wrapper { position: relative; display: flex; align-items: center; }
-        .input-wrapper .input-icon { position: absolute; left: 12px; color: #9ca3af; font-size: 0.9rem; pointer-events: none; transition: color 0.2s; }
+        .input-wrapper .input-icon { position: absolute; left: 14px; color: #9ca3af; font-size: 1rem; pointer-events: none; transition: color 0.2s; }
         .input-wrapper input, .input-wrapper select {
-            width: 100%; padding: 0.7rem 0.75rem 0.7rem 2.5rem; border: 2px solid #e5e7eb;
-            border-radius: 10px; font-size: 0.9rem; font-family: 'Inter', sans-serif;
+            width: 100%; padding: 0.8rem 1rem 0.8rem 2.75rem; border: 2px solid #e5e7eb;
+            border-radius: 12px; font-size: 0.95rem; font-family: 'Inter', sans-serif;
             background: white; transition: all 0.3s; color: #1e293b;
         }
-        .input-wrapper select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
-        .input-wrapper input:focus, .input-wrapper select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+        .input-wrapper select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; }
+        .input-wrapper input:focus, .input-wrapper select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79,70,229,0.1); }
         .input-wrapper input:focus ~ .input-icon { color: var(--primary); }
-        .toggle-password { position: absolute; right: 12px; background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 0.9rem; padding: 4px; transition: color 0.2s; }
+        .toggle-password { position: absolute; right: 14px; background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 1rem; padding: 4px; transition: color 0.2s; }
         .toggle-password:hover { color: #6b7280; }
         .btn-primary {
-            width: 100%; padding: 0.8rem; border: none; border-radius: 12px;
+            width: 100%; padding: 0.85rem; border: none; border-radius: 12px;
             background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-            color: white; font-size: 0.95rem; font-weight: 600; font-family: 'Inter', sans-serif;
+            color: white; font-size: 1rem; font-weight: 600; font-family: 'Inter', sans-serif;
             cursor: pointer; transition: all 0.3s; display: flex; align-items: center;
             justify-content: center; gap: 0.5rem;
         }
@@ -88,38 +92,48 @@
         .flash-alert { padding: 0.75rem 1rem; border-radius: 10px; margin-bottom: 1rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; }
         @media (min-width: 768px) { .form-grid { grid-template-columns: 1fr 1fr; } }
         @media (min-width: 1024px) {
-            .auth-sidebar { display: block; }
-            .auth-form-panel { margin-left: 320px; padding: 2rem 3rem; }
+            .auth-image-panel { display: block; }
+            .auth-form-panel { width: 50%; padding: 2rem 3rem; }
             .mobile-brand { display: none; }
         }
     </style>
 </head>
 <body>
     <div class="auth-wrapper">
-        <div class="auth-sidebar">
-            <div class="sidebar-content">
-                <img src="{{ url_for('serve_logo') }}" alt="GEC Logo" style="width:60px;height:60px;object-fit:contain;margin-bottom:1.5rem;filter:brightness(0) invert(1);">
+        <div class="auth-image-panel">
+            <div class="image-content">
+                <img src="{{ url_for('serve_logo') }}" alt="GEC Logo" style="width:72px;height:72px;object-fit:contain;margin-bottom:1.5rem;filter:brightness(0) invert(1);">
                 <h2 class="college-name">Government Engineering<br>College, Rajkot</h2>
                 <p class="college-sub">Student Registration Portal</p>
-                <div class="sidebar-features">
-                    <div class="sf-item"><div class="sf-icon"><i class="fas fa-user-plus"></i></div><div><strong>Quick Registration</strong><br>Get started in minutes</div></div>
-                    <div class="sf-item"><div class="sf-icon"><i class="fas fa-shield-halved"></i></div><div><strong>Email Verified</strong><br>OTP verification for security</div></div>
-                    <div class="sf-item"><div class="sf-icon"><i class="fas fa-book-open"></i></div><div><strong>Access Subjects</strong><br>Enroll in courses easily</div></div>
+                <div class="image-features">
+                    <div class="feature">
+                        <div class="feature-icon"><i class="fas fa-user-plus"></i></div>
+                        <div><div style="font-weight:600;">Quick Registration</div><div style="font-size:0.8rem;opacity:0.7;">Get started in minutes</div></div>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon"><i class="fas fa-shield-halved"></i></div>
+                        <div><div style="font-weight:600;">Email Verified</div><div style="font-size:0.8rem;opacity:0.7;">OTP verification for security</div></div>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon"><i class="fas fa-book-open"></i></div>
+                        <div><div style="font-weight:600;">Access Subjects</div><div style="font-size:0.8rem;opacity:0.7;">Enroll in courses easily</div></div>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="auth-form-panel">
+            <div class="blob-1"></div>
+            <div class="blob-2"></div>
             <div class="form-container">
                 <div class="mobile-brand">
                     <img src="{{ url_for('serve_logo') }}" alt="Logo">
                     <span>GEC Rajkot &middot; Student Registration</span>
                 </div>
-                <div class="form-card">
-                    <div class="form-header">
-                        <img src="{{ url_for('serve_logo') }}" alt="GEC Rajkot Logo">
-                        <h1>Create Student Account</h1>
-                        <p>Fill in your details to register</p>
-                    </div>
+                <div class="form-header">
+                    <img src="{{ url_for('serve_logo') }}" alt="GEC Rajkot Logo">
+                    <h1>Create Student Account</h1>
+                    <p>Fill in your details to register</p>
+                </div>
                     {% with messages = get_flashed_messages(with_categories=true) %}
                         {% if messages %}
                             {% for category, message in messages %}
@@ -131,21 +145,21 @@
                         {% endif %}
                     {% endwith %}
                     <form id="studentRegistrationForm" method="POST" action="{{ url_for('auth_register', user_type='student') }}">
-                        <div class="input-group" style="margin-bottom:1rem;">
+                        <div class="input-group">
                             <label for="name">Full Name</label>
                             <div class="input-wrapper">
                                 <i class="fas fa-user input-icon"></i>
                                 <input type="text" id="name" name="name" placeholder="Enter your full name" required>
                             </div>
                         </div>
-                        <div class="input-group" style="margin-bottom:1rem;">
+                        <div class="input-group">
                             <label for="email">Email Address</label>
                             <div class="input-wrapper">
                                 <i class="fas fa-envelope input-icon"></i>
                                 <input type="email" id="email" name="email" placeholder="Enter your email" required>
                             </div>
                         </div>
-                        <div class="form-grid" style="margin-bottom:1rem;">
+                        <div class="form-grid">
                             <div class="input-group">
                                 <label for="rollNo">Roll Number</label>
                                 <div class="input-wrapper">
@@ -161,7 +175,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="form-grid" style="margin-bottom:1rem;">
+                        <div class="form-grid">
                             <div class="input-group">
                                 <label for="department">Department</label>
                                 <div class="input-wrapper">
@@ -197,7 +211,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="form-grid" style="margin-bottom:1rem;">
+                        <div class="form-grid">
                             <div class="input-group">
                                 <label for="password">Password</label>
                                 <div class="input-wrapper">
@@ -223,9 +237,8 @@
                             <button type="submit" class="btn-primary"><i class="fas fa-user-plus"></i>Register</button>
                         </div>
                     </form>
-                    <div class="form-footer">
-                        Already have an account? <a href="{{ url_for('serve_login', user_type='student') }}">Sign in here</a>
-                    </div>
+                <div class="form-footer">
+                    Already have an account? <a href="{{ url_for('serve_login', user_type='student') }}">Sign in here</a>
                 </div>
             </div>
         </div>
