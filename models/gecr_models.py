@@ -279,10 +279,6 @@ class Attendance(db.Model):
     subject_id = db.Column(db.Integer, db.ForeignKey('subjects.subject_id'))
     date = db.Column(db.Date)
     status = db.Column(db.String(10))  # Present, Absent, Late
-    session_id = db.Column(db.Integer, db.ForeignKey('attendance_sessions.session_id'), nullable=True)  # Link to QR session
-    photo_path = db.Column(db.String(500), nullable=True)  # Path to student photo
-    latitude = db.Column(db.Float, nullable=True)  # GPS location
-    longitude = db.Column(db.Float, nullable=True)
     marked_at = db.Column(db.DateTime, nullable=True)  # Timestamp when attendance was marked
     
     def to_dict(self):
@@ -295,66 +291,8 @@ class Attendance(db.Model):
             'status': self.status,
             'student_name': self.student.name if self.student else None,
             'subject_name': self.subject.subject_name if self.subject else None,
-            'photo_path': self.photo_path,
-            'latitude': self.latitude,
-            'longitude': self.longitude,
             'marked_at': self.marked_at.isoformat() if self.marked_at else None
         }
-
-
-class AttendanceSession(db.Model):
-    """QR Code based Attendance Sessions"""
-    __tablename__ = 'attendance_sessions'
-    
-    session_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    faculty_id = db.Column(db.Integer, db.ForeignKey('faculty.faculty_id'), nullable=False)
-    subject_id = db.Column(db.Integer, db.ForeignKey('subjects.subject_id'), nullable=False)
-    session_date = db.Column(db.Date, nullable=False)
-    session_time = db.Column(db.Time, nullable=False)
-    unique_code = db.Column(db.String(100), unique=True, nullable=False)  # Unique QR code string
-    qr_image_path = db.Column(db.String(500), nullable=True)  # Path to generated QR image
-    expires_at = db.Column(db.DateTime, nullable=False)  # When QR code expires
-    status = db.Column(db.String(20), default='active')  # active, expired, closed
-    created_at = db.Column(db.DateTime, default=db.func.now())
-    require_photo = db.Column(db.Boolean, default=True)  # Whether photo is required
-    require_location = db.Column(db.Boolean, default=False)  # Whether GPS is required
-    max_distance = db.Column(db.Float, nullable=True)  # Max distance in meters (if location required)
-    
-    # Relationships
-    attendance_records = db.relationship('Attendance', backref='session', lazy=True)
-    
-    def to_dict(self):
-        """Convert to dictionary"""
-        from datetime import datetime
-        is_expired = datetime.now() > self.expires_at if self.expires_at else True
-        
-        return {
-            'session_id': self.session_id,
-            'faculty_id': self.faculty_id,
-            'subject_id': self.subject_id,
-            'session_date': self.session_date.isoformat() if self.session_date else None,
-            'session_time': self.session_time.isoformat() if self.session_time else None,
-            'unique_code': self.unique_code,
-            'qr_image_path': self.qr_image_path,
-            'expires_at': self.expires_at.isoformat() if self.expires_at else None,
-            'status': self.status,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'require_photo': self.require_photo,
-            'require_location': self.require_location,
-            'max_distance': self.max_distance,
-            'is_expired': is_expired,
-            'subject_name': self.subject.subject_name if self.subject else None,
-            'faculty_name': self.faculty.name if self.faculty else None,
-            'attendance_count': len(self.attendance_records) if self.attendance_records else 0
-        }
-    
-    def is_valid(self):
-        """Check if session is still valid"""
-        from datetime import datetime
-        return (
-            self.status == 'active' and 
-            datetime.now() <= self.expires_at
-        )
 
 
 class Announcement(db.Model):

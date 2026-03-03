@@ -393,7 +393,7 @@ def get_faculty_recent_activities(faculty_id, faculty_subjects):
     Combines attendance sessions, graded submissions, created assignments, etc.
     """
     try:
-        from models.gecr_models import AttendanceSession, Attendance, Announcement, Event
+        from models.gecr_models import Attendance, Announcement, Event
         
         activities = []
         now = datetime.now()
@@ -401,30 +401,7 @@ def get_faculty_recent_activities(faculty_id, faculty_subjects):
         # Get subject IDs for this faculty
         subject_ids = [s.subject_id for s in faculty_subjects]
         
-        # 1. Recent attendance sessions (marked attendance)
-        recent_sessions = AttendanceSession.query.filter_by(
-            faculty_id=faculty_id
-        ).order_by(desc(AttendanceSession.created_at)).limit(5).all()
-        
-        for session in recent_sessions:
-            # Count students who attended this session
-            attendance_count = Attendance.query.filter_by(
-                session_id=session.session_id,
-                status='Present'
-            ).count()
-            
-            time_diff = now - session.created_at if session.created_at else timedelta(days=0)
-            
-            activities.append({
-                'type': 'attendance',
-                'icon': 'check-circle',
-                'description': f"Marked attendance for {session.subject.subject_name if session.subject else 'Unknown'}",
-                'detail': f"{attendance_count} students • {format_time_ago(time_diff)}",
-                'timestamp': session.created_at,
-                'link': '/faculty/attendance'
-            })
-        
-        # 2. Recently graded submissions
+        # 1. Recently graded submissions
         recent_graded = Submission.query.join(Assignment).filter(
             Assignment.faculty_id == faculty_id,
             Submission.grade.isnot(None)

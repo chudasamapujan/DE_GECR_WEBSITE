@@ -1,6 +1,6 @@
 # GEC Rajkot — AI & Data Science Department Portal
 
-A full-stack web application for the **Artificial Intelligence & Data Science** department at **Government Engineering College, Rajkot**. It provides separate portals for students and faculty with QR-based attendance, subject enrollment, email OTP verification, and a modern responsive UI.
+A full-stack web application for the **Artificial Intelligence & Data Science** department at **Government Engineering College, Rajkot**. It provides separate portals for students and faculty with attendance management, subject enrollment, email OTP verification, and a modern responsive UI.
 
 ---
 
@@ -27,7 +27,7 @@ A full-stack web application for the **Artificial Intelligence & Data Science** 
 |---|---|
 | **Dual Portal** | Independent dashboards, profiles, and settings for Students and Faculty |
 | **Authentication** | Registration, login, OTP-based password reset, JWT tokens |
-| **QR Attendance** | Faculty generates time-limited QR codes; students scan with camera + optional photo & GPS verification |
+| **Attendance** | Faculty marks attendance for enrolled students; students view their attendance records and statistics |
 | **Subject Management** | Faculty creates subjects; students enroll/drop; automatic enrollment tracking |
 | **Assignments** | Faculty publishes assignments; students submit files with grading support |
 | **Events & Announcements** | Faculty posts announcements and events; students can register for events |
@@ -46,7 +46,6 @@ A full-stack web application for the **Artificial Intelligence & Data Science** 
 | **Database** | SQLite (file: `instance/gec_rajkot.db`) |
 | **Frontend** | Jinja2 templates, Tailwind CSS (CDN), Swiper.js, Font Awesome 6.5 |
 | **Auth** | Werkzeug password hashing, JWT access/refresh tokens, 6-digit OTP via email |
-| **QR System** | `qrcode` (generation) + `html5-qrcode` (browser scanning) |
 | **Email** | Gmail SMTP (App Password) |
 | **Utilities** | Pillow (images), openpyxl / pandas (Excel parsing), python-dotenv |
 | **Production** | Gunicorn, psycopg2 (optional PostgreSQL) |
@@ -73,7 +72,7 @@ DE_GECR_WEBSITE/
 │   ├── auth_routes.py              # Register, login, OTP, password reset
 │   ├── student_routes.py           # Student dashboard, profile, settings
 │   ├── faculty_routes.py           # Faculty dashboard, profile, student mgmt
-│   ├── attendance_routes.py        # QR session create/scan, attendance CRUD
+│   ├── attendance_routes.py        # Attendance marking & records
 │   ├── enrollment_routes.py        # Subject enrollment & drop
 │   └── subject_routes.py           # Subject CRUD for faculty
 │
@@ -222,8 +221,7 @@ All models live in `models/gecr_models.py`. The database contains the following 
 | `Subject` | `subjects` | Subjects — code, name, dept, semester, credits, assigned faculty |
 | `StudentEnrollment` | `student_enrollments` | Many-to-many link between students and subjects |
 | `Timetable` | `timetable` | Weekly schedule slots (day, time, room, class type) |
-| `Attendance` | `attendance` | Per-student attendance records with optional photo & GPS |
-| `AttendanceSession` | `attendance_sessions` | QR-based attendance sessions with expiry, photo/location requirements |
+| `Attendance` | `attendance` | Per-student attendance records |
 | `Assignment` | `assignments` | Assignments created by faculty for a subject |
 | `Submission` | `submissions` | Student assignment submissions with file path & grade |
 | `Announcement` | `announcements` | Faculty announcements with expiry |
@@ -249,7 +247,6 @@ Student ──┬── StudentEnrollment ── Subject (many-to-many)
           ├── Submission (one-to-many)
           └── Fee (one-to-many)
 
-AttendanceSession ── Attendance (one-to-many)
 Event ── EventRegistration ── Student (many-to-many)
 ```
 
@@ -293,9 +290,8 @@ The app uses **6 Blueprints** registered in `app.py`:
 
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/api/attendance/session/create` | Create QR attendance session |
-| POST | `/api/attendance/mark` | Mark attendance (scan QR) |
-| GET | `/api/attendance/session/<id>` | Get session details |
+| POST | `/api/attendance/faculty/mark` | Mark attendance for students |
+| GET | `/api/attendance/student/records` | Get student attendance records |
 
 ### Enrollment (`enrollment_routes.py`)
 
@@ -344,7 +340,7 @@ The app uses **6 Blueprints** registered in `app.py`:
 ### Portal Pages
 
 - **Student**: Dashboard, Profile, Attendance, Enroll Subjects, Events, Schedule, Settings
-- **Faculty**: Dashboard, Profile, Attendance (QR), Subjects, Manage Subjects, Enrollments, Assignments, Announcements, Events, Schedule, Settings
+- **Faculty**: Dashboard, Profile, Attendance, Subjects, Manage Subjects, Enrollments, Assignments, Announcements, Events, Schedule, Settings
 
 ### CSS Architecture
 
@@ -399,7 +395,7 @@ The app uses **6 Blueprints** registered in `app.py`:
 
 ## 📄 License
 
-Developed for **Government Engineering College, Rajkot**. All rights reserved.
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
 
 ---
 

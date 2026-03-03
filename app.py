@@ -586,7 +586,7 @@ def register_main_routes(app):
         return render_template('student/events.html', student=student)
 
     # Note: Student attendance is marked by faculty, students can view their attendance records
-    # at /student/attendance. QR-based attendance has been removed.
+    # at /student/attendance.
 
     # ==================== Faculty Pages ====================
 

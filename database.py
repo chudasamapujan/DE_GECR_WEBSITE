@@ -27,7 +27,7 @@ def init_database(app):
     # Import all models to ensure they are registered
     from models.gecr_models import (
         Student, Faculty, Subject, Timetable, 
-        Attendance, AttendanceSession, Assignment, Submission, 
+        Attendance, Assignment, Submission, 
         Message, Fee, Salary, Announcement, Event, Activity, Notification
     )
     
@@ -41,7 +41,7 @@ def create_tables(app):
         # Import models
         from models.gecr_models import (
             Student, Faculty, Subject, Timetable, 
-            Attendance, AttendanceSession, Assignment, Submission, 
+            Attendance, Assignment, Submission, 
             Message, Fee, Salary, Announcement, Event, Activity, Notification
         )
         
@@ -64,7 +64,7 @@ def reset_database(app):
         # Import models
         from models.gecr_models import (
             Student, Faculty, Subject, Timetable, 
-            Attendance, AttendanceSession, Assignment, Submission, 
+            Attendance, Assignment, Submission, 
             Message, Fee, Salary, Announcement, Event, Activity, Notification
         )
         
