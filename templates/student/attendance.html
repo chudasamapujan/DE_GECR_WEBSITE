@@ -5,96 +5,250 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Attendance - Student Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/portal-base.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Attendance Page Specific Styles */
+        .stat-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(79, 70, 229, 0.15);
+        }
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .chart-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        .data-table {
+            width: 100%;
+        }
+        .data-table thead {
+            background: linear-gradient(to right, rgba(79, 70, 229, 0.05), transparent);
+        }
+        .data-table th {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+        }
+        .data-table td {
+            padding: 0.75rem 1rem;
+        }
+        .data-table tbody tr {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            transition: background 0.2s ease;
+        }
+        .data-table tbody tr:hover {
+            background: rgba(79, 70, 229, 0.02);
+        }
+        .filter-input {
+            padding: 0.625rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        .btn-filter {
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.75rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-filter:hover {
+            transform: translateY(-1px);
+        }
+        .btn-filter.primary {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        .btn-filter.secondary {
+            background: white;
+            color: #6B7280;
+            border: 2px solid #e5e7eb;
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="max-w-7xl mx-auto p-6">
-        <div class="bg-white rounded-lg shadow p-6 mb-6">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900">My Attendance</h1>
-                    <p class="text-gray-600 mt-1">View your attendance records and statistics</p>
-                </div>
-                <a href="/student/dashboard" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Back to Dashboard</a>
+<body>
+    <!-- Mobile Menu Button -->
+    <button id="mobileMenuButton" class="mobile-menu-button">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+    </button>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="flex items-center space-x-3">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="GEC Rajkot Logo" class="w-12 h-12 object-contain">
+                <div class="text-2xl font-bold gradient-text">GEC Rajkot</div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/student/dashboard" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span class="ml-3">Dashboard</span>
+            </a>
+            <a href="/student/profile" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span class="ml-3">Profile</span>
+            </a>
+            <a href="/api/enrollment/student/enroll-page" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <span class="ml-3">Enroll in Subjects</span>
+            </a>
+            <a href="/student/attendance" class="sidebar-item active flex items-center p-3 text-indigo-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+                <span class="ml-3">My Attendance</span>
+            </a>
+            <a href="/student/schedule" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span class="ml-3">Schedule</span>
+            </a>
+            <a href="/student/events" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span class="ml-3">Events</span>
+                <div class="notification-badge ml-auto">2</div>
+            </a>
+            <div class="menu-divider"></div>
+            <a href="/student/settings" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span class="ml-3">Settings</span>
+            </a>
+            <a href="/" class="sidebar-item flex items-center p-3 text-gray-600 hover:text-indigo-600 mt-4">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+                </svg>
+                <span class="ml-3">Logout</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold gradient-text">My Attendance</h1>
+                <p class="text-gray-500 mt-1">View your attendance records and statistics</p>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            <div class="bg-white rounded-lg shadow p-6">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="stat-card">
                 <div class="flex items-center">
-                    <div class="p-3 bg-blue-100 rounded-full">
-                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="stat-icon bg-indigo-50">
+                        <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                         </svg>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Overall Attendance</p>
-                        <p class="text-3xl font-bold text-gray-900" id="overall-percentage">0%</p>
+                        <p class="text-sm font-medium text-gray-500">Overall Attendance</p>
+                        <p class="text-3xl font-bold gradient-text" id="overall-percentage">0%</p>
                     </div>
                 </div>
             </div>
-
-            <div class="bg-white rounded-lg shadow p-6">
+            <div class="stat-card">
                 <div class="flex items-center">
-                    <div class="p-3 bg-green-100 rounded-full">
-                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="stat-icon bg-green-50">
+                        <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Classes Attended</p>
+                        <p class="text-sm font-medium text-gray-500">Classes Attended</p>
                         <p class="text-3xl font-bold text-green-600" id="total-present">0</p>
                     </div>
                 </div>
             </div>
-
-            <div class="bg-white rounded-lg shadow p-6">
+            <div class="stat-card">
                 <div class="flex items-center">
-                    <div class="p-3 bg-red-100 rounded-full">
-                        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="stat-icon bg-red-50">
+                        <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Classes Missed</p>
+                        <p class="text-sm font-medium text-gray-500">Classes Missed</p>
                         <p class="text-3xl font-bold text-red-600" id="total-absent">0</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-xl font-semibold mb-4">Attendance by Subject</h2>
+        <!-- Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="chart-card">
+                <h2 class="text-lg font-semibold mb-4 gradient-text">Attendance by Subject</h2>
                 <canvas id="subjectChart" style="max-height: 300px;"></canvas>
             </div>
-
-            <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-xl font-semibold mb-4">Overall Distribution</h2>
+            <div class="chart-card">
+                <h2 class="text-lg font-semibold mb-4 gradient-text">Overall Distribution</h2>
                 <canvas id="statusChart" style="max-height: 300px;"></canvas>
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <!-- Subject-wise Table -->
+        <div class="glass-card rounded-xl p-6 mb-8">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold">Subject-wise Attendance</h2>
-                <div class="flex space-x-2">
-                    <select id="filter-subject" class="px-4 py-2 border rounded text-sm">
-                        <option value="">All Subjects</option>
-                    </select>
-                </div>
+                <h2 class="text-lg font-semibold gradient-text">Subject-wise Attendance</h2>
+                <select id="filter-subject" class="filter-input">
+                    <option value="">All Subjects</option>
+                </select>
             </div>
-
             <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-100">
+                <table class="data-table">
+                    <thead>
                         <tr>
-                            <th class="px-4 py-3 text-left text-sm font-semibold">Subject</th>
-                            <th class="px-4 py-3 text-center text-sm font-semibold">Total Classes</th>
-                            <th class="px-4 py-3 text-center text-sm font-semibold">Present</th>
-                            <th class="px-4 py-3 text-center text-sm font-semibold">Absent</th>
-                            <th class="px-4 py-3 text-center text-sm font-semibold">Late</th>
-                            <th class="px-4 py-3 text-center text-sm font-semibold">Percentage</th>
+                            <th>Subject</th>
+                            <th class="text-center">Total Classes</th>
+                            <th class="text-center">Present</th>
+                            <th class="text-center">Absent</th>
+                            <th class="text-center">Late</th>
+                            <th class="text-center">Percentage</th>
                         </tr>
                     </thead>
                     <tbody id="subject-table-body">
@@ -103,36 +257,38 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold">Recent Attendance Records</h2>
-                <div class="flex space-x-2">
-                    <input type="date" id="filter-start-date" class="px-3 py-2 border rounded text-sm" placeholder="Start Date">
-                    <input type="date" id="filter-end-date" class="px-3 py-2 border rounded text-sm" placeholder="End Date">
-                    <button onclick="filterRecords()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Filter</button>
-                    <button onclick="clearFilters()" class="bg-gray-500 text-white px-4 py-2 rounded text-sm">Clear</button>
+        <!-- Recent Records -->
+        <div class="glass-card rounded-xl p-6">
+            <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
+                <h2 class="text-lg font-semibold gradient-text">Recent Attendance Records</h2>
+                <div class="flex flex-wrap items-center gap-2">
+                    <input type="date" id="filter-start-date" class="filter-input" placeholder="Start Date">
+                    <input type="date" id="filter-end-date" class="filter-input" placeholder="End Date">
+                    <button onclick="filterRecords()" class="btn-filter primary">Filter</button>
+                    <button onclick="clearFilters()" class="btn-filter secondary">Clear</button>
                 </div>
             </div>
-
             <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-100">
+                <table class="data-table">
+                    <thead>
                         <tr>
-                            <th class="px-4 py-3 text-left text-sm font-semibold">Date</th>
-                            <th class="px-4 py-3 text-left text-sm font-semibold">Subject</th>
-                            <th class="px-4 py-3 text-center text-sm font-semibold">Status</th>
+                            <th>Date</th>
+                            <th>Subject</th>
+                            <th class="text-center">Status</th>
                         </tr>
                     </thead>
                     <tbody id="records-table-body">
                     </tbody>
                 </table>
             </div>
-
-            <div id="no-records" class="text-center py-12 text-gray-500 hidden">
-                <p>No attendance records found</p>
+            <div id="no-records" class="text-center py-12 text-gray-400 hidden">
+                <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <p class="font-medium">No attendance records found</p>
             </div>
         </div>
-    </div>
+    </main>
 
     <script>
         let attendanceData = null;
@@ -330,6 +486,11 @@
 
         loadAttendanceData();
         loadRecords();
+
+        // Mobile menu toggle
+        document.getElementById('mobileMenuButton')?.addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('open');
+        });
     </script>
 </body>
 </html>
